@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
-<meta name="description" content="WebGIS 実験室">
 <title>WebGIS Lab</title>
 <link rel="stylesheet" href="http://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
 <script src="http://openlayers.org/en/v3.10.1/build/ol.js" type="text/javascript"></script>
@@ -15,14 +14,101 @@
     height: 100%;
     width: 100%;
   }
+  #info {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, 0.6)
+  }
 </style>
 </head>
 <body>
-<div id="map">
+<div id="map"></div>
+<div id="info"></div>
 <script>
+var defaultStyle = {
+  'Point': [new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(255,255,0,0.5)'
+      }),
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        color: '#ff0',
+        width: 1
+      })
+    })
+  })],
+  'LineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#f00',
+      width: 3
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(0,255,255,0.5)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#0ff',
+      width: 1
+    })
+  })],
+  'MultiPoint': [new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(255,0,255,0.5)'
+      }),
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        color: '#f0f',
+        width: 1
+      })
+    })
+  })],
+  'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#0f0',
+      width: 3
+    })
+  })],
+  'MultiPolygon': [new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(0,0,255,0.5)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#00f',
+      width: 1
+    })
+  })]
+};
+
+var styleFunction = function(feature, resolution) {
+  var featureStyleFunction = feature.getStyleFunction();
+  if (featureStyleFunction) {
+    return featureStyleFunction.call(feature, resolution);
+  } else {
+    return defaultStyle[feature.getGeometry().getType()];
+  }
+};
+
+var dragAndDropInteraction = new ol.interaction.DragAndDrop({
+  formatConstructors: [
+    ol.format.GPX,
+    ol.format.GeoJSON,
+    ol.format.IGC,
+    ol.format.KML,
+    ol.format.TopoJSON
+  ]
+});
+
 var map = new ol.Map({
-  target: "map",
-  renderer: ["canvas", "dom"],
+  controls: ol.control.defaults({
+    attributionOptions: ({
+      collapsible: false
+    })
+  }),
+  interactions: ol.interaction.defaults().extend([dragAndDropInteraction]),
   layers: [
     new ol.layer.Tile({
       source: new ol.source.XYZ({
@@ -31,22 +117,60 @@ var map = new ol.Map({
             html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
           })
         ],
-        url: "http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
-        projection: "EPSG:3857"
+        url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+        projection: 'EPSG:3857'
       })
     })
   ],
-  controls: ol.control.defaults({
-    attributionOptions: ({
-      collapsible: false
-    })
-  }),
+  renderer: ['canvas', 'dom'],
+  target: 'map',
   view: new ol.View({
-    projection: "EPSG:3857",
-    center: ol.proj.transform([138.7313889, 35.3622222], "EPSG:4326", "EPSG:3857"),
+    projection: 'EPSG:3857',
+    center: ol.proj.transform([138.7313889, 35.3622222], 'EPSG:4326', 'EPSG:3857'),
     maxZoom: 18,
     zoom: 5
   })
+});
+
+dragAndDropInteraction.on('addfeatures', function(event) {
+  var vectorSource = new ol.source.Vector({
+    features: event.features
+  });
+  map.addLayer(new ol.layer.Vector({
+    source: vectorSource,
+    style: styleFunction
+  }));
+  map.getView().fit(
+      vectorSource.getExtent(), /** @type {ol.Size} */ (map.getSize()));
+});
+
+var displayFeatureInfo = function(pixel) {
+  var features = [];
+  map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+    features.push(feature);
+  });
+  if (features.length > 0) {
+    var info = [];
+    var i, ii;
+    for (i = 0, ii = features.length; i < ii; ++i) {
+      info.push(features[i].get('name'));
+    }
+    document.getElementById('info').innerHTML = info.join(', ') || '&nbsp';
+  } else {
+    document.getElementById('info').innerHTML = '&nbsp;';
+  }
+};
+
+map.on('pointermove', function(evt) {
+  if (evt.dragging) {
+    return;
+  }
+  var pixel = map.getEventPixel(evt.originalEvent);
+  displayFeatureInfo(pixel);
+});
+
+map.on('click', function(evt) {
+  displayFeatureInfo(evt.pixel);
 });
 </script>
 </body>
