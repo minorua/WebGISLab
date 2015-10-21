@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
 <title>WebGIS Lab</title>
+<link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
+<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
 <link rel="stylesheet" href="css/ol.css" type="text/css">
+<script src="js/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+<script src="js/bootstrap.min.js" type="text/javascript"></script>
 <script src="js/ol.js" type="text/javascript"></script>
 <style>
   body {
@@ -13,6 +18,13 @@
   html, body, #map {
     height: 100%;
     width: 100%;
+  }
+  #map {
+    position: absolute;
+    top: 50px;
+    bottom: 0px;
+    width: 100%;
+    height: auto;
   }
   #info {
     position: absolute;
@@ -23,8 +35,47 @@
 </style>
 </head>
 <body>
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">WebGIS Lab</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">New</a></li>
+            <li><a href="#">Open...</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Save</a></li>
+            <li><a href="#">Save As...</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Properties...</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Print...</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Layer<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Add Layer from File (GeoJSON, KML, etc.)...</a></li>
+            <li><a href="#">Add Tiled Map Layer...</a></li>
+          </ul>
+        </li>
+        <li><a href="#">About</a></li>
+      </ul>
+  </div>
+</nav>
 <div id="map"></div>
 <div id="info"></div>
+
 <script>
 var defaultStyle = {
   'Point': [new ol.style.Style({
