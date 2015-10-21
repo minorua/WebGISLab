@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+<meta name="description" content="WebGIS 実験室">
+<title>WebGIS Lab</title>
+<link rel="stylesheet" href="http://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
+<script src="http://openlayers.org/en/v3.10.1/build/ol.js" type="text/javascript"></script>
+<style>
+  body {
+    margin: 0
+  }
+  html, body, #map {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+<div id="map">
+<script>
+var map = new ol.Map({
+  target: "map",
+  renderer: ["canvas", "dom"],
+  layers: [
+    new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        attributions: [
+          new ol.Attribution({
+            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+          })
+        ],
+        url: "http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
+        projection: "EPSG:3857"
+      })
+    })
+  ],
+  controls: ol.control.defaults({
+    attributionOptions: ({
+      collapsible: false
+    })
+  }),
+  view: new ol.View({
+    projection: "EPSG:3857",
+    center: ol.proj.transform([138.7313889, 35.3622222], "EPSG:4326", "EPSG:3857"),
+    maxZoom: 18,
+    zoom: 5
+  })
+});
+</script>
+</body>
+</html>
