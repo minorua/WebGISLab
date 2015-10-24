@@ -109,7 +109,11 @@
 $('#slider').slideReveal({
   push: false,
   top: 50,
-  trigger: $('#trigger')
+  trigger: $('#trigger'),
+  hidden: function(slider, trigger){
+    // Need to remove pushed style manually when the panel is closed with ESC key.
+    $('#trigger').removeClass('active');
+  }
 });
 
 // layer list
