@@ -30,15 +30,11 @@
   #slider {
     background-color: rgba(255, 255, 255, 0.9);
   }
-  #sortable {
+  #layer_list {
     list-style-type: none;
     margin: 0;
     padding: 5px;
     width: 100%;
-  }
-  #sortable li {
-    margin: 0 3px 3px 3px;
-    padding: 2px 5px;
   }
   #trigger {
     background-color: #f4f4f4;
@@ -99,22 +95,27 @@
 <div id="map"></div>
 <div id="slider">
   <br/>
-  <ul id="sortable">
-    <li class="ui-state-default"><input type="checkbox">Layer 1</li>
-    <li class="ui-state-default"><input type="checkbox">Layer 2</li>
-    <li class="ui-state-default"><input type="checkbox">Layer 3</li>
-  </ul>
+  <div id="layer_list" class="list-group">
+    <a href="#" class="list-group-item"><input type="checkbox">Layer 1</a>
+    <a href="#" class="list-group-item"><input type="checkbox">Layer 2</a>
+    <a href="#" class="list-group-item"><input type="checkbox">Layer 3</a>
+  </div>
 </div>
 <div id="info"></div>
 
 <script>
+// left panel
 $('#slider').slideReveal({
   push: false,
   top: 50,
   trigger: $('#trigger')
 });
 
-$('#sortable').sortable();
+// layer list
+$('#layer_list').sortable().find('.list-group-item').click(function (event) {
+  $('#layer_list .active').removeClass('active');
+  $(event.target).addClass('active');
+});
 
 var defaultStyle = {
   'Point': [new ol.style.Style({
