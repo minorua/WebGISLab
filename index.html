@@ -97,9 +97,7 @@
 <div id="slider">
   <br/>
   <div id="layer_list" class="list-group">
-    <a href="#" class="list-group-item"><input type="checkbox">Layer 1</a>
-    <a href="#" class="list-group-item"><input type="checkbox">Layer 2</a>
-    <a href="#" class="list-group-item"><input type="checkbox">Layer 3</a>
+    <a href="#" class="list-group-item"><input type="checkbox" checked>地理院地図 (標準地図)</a>
   </div>
 </div>
 <div id="info"></div>
@@ -250,7 +248,7 @@ map.on('click', function (evt) {
 function addLayer(layer) {
   if (layer.title === undefined) layer.title = 'no title';
   map.addLayer(layer);
-  map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
+  $('#layer_list').append('<a href="#" class="list-group-item"><input type="checkbox" checked>' + layer.title + '</a>');
 }
 
 function loadText(text, formatConstructors) {
@@ -309,6 +307,8 @@ function loadFile(file) {
     if (layer) {
       layer.title = file.name;
       addLayer(layer);
+
+      map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
     }
     else {
       alert('Unknown format file: ' + file.name);
