@@ -179,7 +179,7 @@ var defaultStyle = {
   })]
 };
 
-var styleFunction = function(feature, resolution) {
+var styleFunction = function (feature, resolution) {
   var featureStyleFunction = feature.getStyleFunction();
   if (featureStyleFunction) {
     return featureStyleFunction.call(feature, resolution);
@@ -188,23 +188,12 @@ var styleFunction = function(feature, resolution) {
   }
 };
 
-var dragAndDropInteraction = new ol.interaction.DragAndDrop({
-  formatConstructors: [
-    ol.format.GPX,
-    ol.format.GeoJSON,
-    ol.format.IGC,
-    ol.format.KML,
-    ol.format.TopoJSON
-  ]
-});
-
 var map = new ol.Map({
   controls: ol.control.defaults({
     attributionOptions: ({
       collapsible: false
     })
   }),
-  interactions: ol.interaction.defaults().extend([dragAndDropInteraction]),
   layers: [
     new ol.layer.Tile({
       source: new ol.source.XYZ({
@@ -228,21 +217,9 @@ var map = new ol.Map({
   })
 });
 
-dragAndDropInteraction.on('addfeatures', function(event) {
-  var vectorSource = new ol.source.Vector({
-    features: event.features
-  });
-  map.addLayer(new ol.layer.Vector({
-    source: vectorSource,
-    style: styleFunction
-  }));
-  map.getView().fit(
-      vectorSource.getExtent(), /** @type {ol.Size} */ (map.getSize()));
-});
-
-var displayFeatureInfo = function(pixel) {
+var displayFeatureInfo = function (pixel) {
   var features = [];
-  map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+  map.forEachFeatureAtPixel(pixel, function (feature, layer) {
     features.push(feature);
   });
   if (features.length > 0) {
@@ -257,7 +234,7 @@ var displayFeatureInfo = function(pixel) {
   }
 };
 
-map.on('pointermove', function(evt) {
+map.on('pointermove', function (evt) {
   if (evt.dragging) {
     return;
   }
@@ -265,8 +242,100 @@ map.on('pointermove', function(evt) {
   displayFeatureInfo(pixel);
 });
 
-map.on('click', function(evt) {
+map.on('click', function (evt) {
   displayFeatureInfo(evt.pixel);
+});
+
+
+function addLayer(layer) {
+  if (layer.title === undefined) layer.title = 'no title';
+  map.addLayer(layer);
+  map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
+}
+
+function loadText(text, formatConstructors) {
+  var transform = ol.proj.getTransform('EPSG:4326', 'EPSG:3857');
+
+  for (var i = 0; i < formatConstructors.length; i++) {
+    var format = new formatConstructors[i]();
+    var features = [];
+    try {
+      features = format.readFeatures(text);
+    } catch (e) {
+      continue;
+    }
+    if (features.length == 0) continue;
+
+    features.forEach(function (feature) {
+      var geometry = feature.getGeometry();
+      if (geometry) geometry.applyTransform(transform);
+    });
+
+    var source = new ol.source.Vector({
+      features: features
+    });
+
+    var layer = new ol.layer.Vector({
+      source: source,
+      style: styleFunction
+    });
+
+    return layer;
+  }
+  return null;
+}
+
+function loadFile(file) {
+  var ext2formatConstructors = {
+    'gpx': [ol.format.GPX],
+    'kml': [ol.format.KML],
+    'json': [ol.format.GeoJSON, ol.format.TopoJSON]
+  };
+
+  var ext = file.name.split('.').pop().toLowerCase();
+  var formatConstructors = ext2formatConstructors[ext];
+  if (!formatConstructors) formatConstructors = [
+    ol.format.GeoJSON,
+    ol.format.GPX,
+    ol.format.IGC,
+    ol.format.KML,
+    ol.format.TopoJSON
+  ];
+
+  var reader = new FileReader();
+  reader.onload = function (event) {
+    var layer = loadText(reader.result, formatConstructors);
+
+    if (layer) {
+      layer.title = file.name;
+      addLayer(layer);
+    }
+    else {
+      alert('Unknown format file: ' + file.name);
+    }
+  }
+  reader.readAsText(file, 'UTF-8');
+}
+
+// accept file drop
+$(document).on('dragenter', function (e) {
+  e.stopPropagation();
+  e.preventDefault();
+});
+
+$(document).on('dragover', function (e) {
+  e.stopPropagation();
+  e.preventDefault();
+});
+
+$(document).on('drop', function (e) {
+  e.stopPropagation();
+  e.preventDefault();
+
+  var files = e.originalEvent.dataTransfer.files;
+  for (var i = 0; i < files.length; i++) {
+    loadFile(files[i]);
+  }
 });
 </script>
 </body>
