@@ -321,6 +321,7 @@ function addLayer(layer) {
     layer.setVisible(visible);
   });
   item.find('button').click(function () {
+    var layerId = item.attr('id');
     $('#layer_list .glyphicon-chevron-up').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
     $('#layer_list .button-container').slideUp('fast', function () {
       $(this).remove();
@@ -330,11 +331,23 @@ function addLayer(layer) {
       $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
       var html = '<div class="button-container" style="display: none;">' +
+                 '<div class="opacity-slider"></div>' +
                  '<button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
                  '<button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
                  '<button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
                  '</div>';
       item.append(html);
+      item.find('.opacity-slider').slider({
+        change: function (event, ui) {
+          var opacity = ui.value / 100;
+          mapLayers[layerId].setOpacity(opacity);
+        },
+        slide: function (event, ui) {
+          var opacity = ui.value / 100;
+          mapLayers[layerId].setOpacity(opacity);
+        },
+        value: mapLayers[layerId].getOpacity() * 100
+      });
       item.find('.button-container').slideDown('fast');
     }
   });
