@@ -226,6 +226,7 @@ layer = new ol.layer.Tile({
     projection: 'EPSG:3857'
   })
 });
+layer.setVisible(false);
 layer.title = '色別標高図';
 addLayer(layer);
 
@@ -260,9 +261,10 @@ map.on('click', function (evt) {
 
 
 function addLayer(layer) {
+  var checked = (layer.getVisible()) ? ' checked' : '';
   if (layer.title === undefined) layer.title = 'no title';
   map.addLayer(layer);
-  $('#layer_list').prepend('<a href="#" class="list-group-item"><input type="checkbox" checked>' + layer.title + '</a>');
+  $('#layer_list').prepend('<a href="#" class="list-group-item"><input type="checkbox"' + checked + '>' + layer.title + '</a>');
 }
 
 function loadText(text, formatConstructors) {
