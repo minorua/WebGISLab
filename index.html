@@ -118,6 +118,14 @@ $('#layer_list').sortable().find('.list-group-item').click(function (event) {
   $(event.target).addClass('active');
 });
 
+var getNextLayerId = (function () {
+  var lastId = -1;
+  return function() {
+    lastId++;
+    return 'L' + lastId;
+  };
+})();
+
 var defaultStyle = {
   'Point': [new ol.style.Style({
     image: new ol.style.Circle({
@@ -200,6 +208,16 @@ var map = new ol.Map({
   })
 });
 
+var getLayerById = function (id) {
+  var layers = map.getLayers();
+  for (var i = 0; i < layers.getLength(); i++) {
+    var layer = layers.item(i);
+    if (layer.id === id) return layer;
+  }
+  return null;
+};
+
+
 // initial layers
 var layer = new ol.layer.Tile({
   source: new ol.source.XYZ({
@@ -259,12 +277,19 @@ map.on('click', function (evt) {
   displayFeatureInfo(evt.pixel);
 });
 
-
 function addLayer(layer) {
-  var checked = (layer.getVisible()) ? ' checked' : '';
+  if (layer.id === undefined) layer.id = getNextLayerId();
   if (layer.title === undefined) layer.title = 'no title';
   map.addLayer(layer);
-  $('#layer_list').prepend('<a href="#" class="list-group-item"><input type="checkbox"' + checked + '>' + layer.title + '</a>');
+
+  var checked = (layer.getVisible()) ? ' checked' : '';
+  $('#layer_list').prepend('<a href="#" class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '</a>')
+    .find(':checkbox').first().change(function () {
+      var visible = $(this).is(':checked');
+      var layerId = $(this).parent().attr('id'),
+          layer = getLayerById(layerId);
+      layer.setVisible(visible);
+    });
 }
 
 function loadText(text, formatConstructors) {
