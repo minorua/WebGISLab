@@ -248,6 +248,22 @@ layer.setVisible(false);
 layer.title = '色別標高図';
 addLayer(layer);
 
+layer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    attributions: [
+      new ol.Attribution({
+        html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      })
+    ],
+    url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
+    projection: 'EPSG:3857'
+  })
+});
+layer.setVisible(false);
+layer.title = '写真';
+addLayer(layer);
+
+
 var displayFeatureInfo = function (pixel) {
   var features = [];
   map.forEachFeatureAtPixel(pixel, function (feature, layer) {
