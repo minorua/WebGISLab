@@ -186,7 +186,7 @@ var map = new ol.Map({
       collapsible: false
     })
   }),
-  renderer: ['canvas', 'dom'],
+  renderer: ['canvas', 'dom'],    // dom
   target: 'map',
   view: new ol.View({
     projection: 'EPSG:3857',
@@ -303,6 +303,14 @@ map.on('click', function (evt) {
 function addLayer(layer) {
   if (layer.id === undefined) layer.id = getNextLayerId();
   if (layer.title === undefined) layer.title = 'no title';
+  if (layer.blendMode === undefined) layer.blendMode = 'source-over';
+
+  layer.on('precompose', function (evt) {
+    evt.context.globalCompositeOperation = this.blendMode;
+  });
+  layer.on('postcompose', function (evt) {
+    evt.context.globalCompositeOperation = 'source-over';
+  });
 
   mapLayers[layer.id] = layer;
   map.addLayer(layer);
@@ -331,7 +339,10 @@ function addLayer(layer) {
       $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
       var html = '<div class="button-container" style="display: none;">' +
+                 '<div>' +
                  '<div class="opacity-slider"></div>' +
+                 '<button class="btn" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></button>' +
+                 '</div>' +
                  '<button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
                  '<button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
                  '<button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
@@ -349,6 +360,15 @@ function addLayer(layer) {
         value: mapLayers[layerId].getOpacity() * 100
       });
       item.find('.button-container').slideDown('fast');
+      item.find('.button-container').find('button').first().click(function () {
+        var blendMode = (mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
+        mapLayers[layerId].blendMode = blendMode;
+
+        $(this).removeClass('active');
+        if (blendMode == 'multiply') $(this).addClass('active');
+
+        map.render();
+      });
     }
   });
 
