@@ -214,9 +214,6 @@ $('#layer_list').sortable({
     stop: function (event, ui) {
       updateLayerOrder();
     }
-  }).find('.list-group-item').click(function (event) {
-    $('#layer_list .active').removeClass('active');
-    $(event.target).addClass('active');
   });
 
 var getNextLayerId = (function () {
@@ -312,7 +309,10 @@ function addLayer(layer) {
 
   var checked = (layer.getVisible()) ? ' checked' : '';
   $('#layer_list').prepend('<a href="#" class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '</a>')
-    .find(':checkbox').first().change(function () {
+    .find('.list-group-item').first().click(function (event) {
+      $('#layer_list .active').removeClass('active');
+      $(event.target).addClass('active');
+    }).find(':checkbox').change(function () {
       var visible = $(this).is(':checked');
       var layerId = $(this).parent().attr('id'),
           layer = getLayerById(layerId);
