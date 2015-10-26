@@ -318,13 +318,7 @@ function loadFile(file) {
 }
 
 // accept file drop
-$(document).on('dragenter', function (e) {
-  e.stopPropagation();
-  e.preventDefault();
-});
-
 $(document).on('dragover', function (e) {
-  e.stopPropagation();
   e.preventDefault();
 });
 
