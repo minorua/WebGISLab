@@ -262,7 +262,7 @@ map.on('click', function (evt) {
 function addLayer(layer) {
   if (layer.title === undefined) layer.title = 'no title';
   map.addLayer(layer);
-  $('#layer_list').append('<a href="#" class="list-group-item"><input type="checkbox" checked>' + layer.title + '</a>');
+  $('#layer_list').prepend('<a href="#" class="list-group-item"><input type="checkbox" checked>' + layer.title + '</a>');
 }
 
 function loadText(text, formatConstructors) {
