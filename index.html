@@ -101,6 +101,8 @@
 <div id="info"></div>
 
 <script>
+var mapLayers = {};
+
 // left panel
 $('#slider').slideReveal({
   push: false,
@@ -111,20 +113,6 @@ $('#slider').slideReveal({
     $('#trigger').removeClass('active');
   }
 });
-
-// layer list
-$('#layer_list').sortable().find('.list-group-item').click(function (event) {
-  $('#layer_list .active').removeClass('active');
-  $(event.target).addClass('active');
-});
-
-var getNextLayerId = (function () {
-  var lastId = -1;
-  return function() {
-    lastId++;
-    return 'L' + lastId;
-  };
-})();
 
 var defaultStyle = {
   'Point': [new ol.style.Style({
@@ -209,13 +197,35 @@ var map = new ol.Map({
 });
 
 var getLayerById = function (id) {
-  var layers = map.getLayers();
-  for (var i = 0; i < layers.getLength(); i++) {
-    var layer = layers.item(i);
-    if (layer.id === id) return layer;
-  }
-  return null;
+  return (mapLayers[id] !== undefined) ? mapLayers[id] : null;
 };
+
+var updateLayerOrder = function () {
+  var layers = map.getLayers();
+  layers.clear();
+  $('#layer_list .list-group-item').each(function (index) {
+    var id = $(this).attr('id');
+    layers.insertAt(0, mapLayers[id]);
+  });
+};
+
+// layer list
+$('#layer_list').sortable({
+    stop: function (event, ui) {
+      updateLayerOrder();
+    }
+  }).find('.list-group-item').click(function (event) {
+    $('#layer_list .active').removeClass('active');
+    $(event.target).addClass('active');
+  });
+
+var getNextLayerId = (function () {
+  var lastId = -1;
+  return function() {
+    lastId++;
+    return 'L' + lastId;
+  };
+})();
 
 
 // initial layers
@@ -296,6 +306,8 @@ map.on('click', function (evt) {
 function addLayer(layer) {
   if (layer.id === undefined) layer.id = getNextLayerId();
   if (layer.title === undefined) layer.title = 'no title';
+
+  mapLayers[layer.id] = layer;
   map.addLayer(layer);
 
   var checked = (layer.getVisible()) ? ' checked' : '';
