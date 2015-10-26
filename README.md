@@ -1,4 +1,4 @@
-# Welcome to WebGIS5 Lab
+# Welcome to WebGIS Lab
 
 目標: デスクトップGISのような操作性のHTML5 WebGISアプリケーション
 
@@ -24,3 +24,8 @@
         - var project = {JSON format data};
 - 3Dビューアの起動 (Cesium)
     - ローカルストレージデータの共有
+
+
+## TODO
+
+https://github.com/minorua/WebGISLab/issues/1
