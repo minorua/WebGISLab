@@ -308,16 +308,37 @@ function addLayer(layer) {
   map.addLayer(layer);
 
   var checked = (layer.getVisible()) ? ' checked' : '';
-  $('#layer_list').prepend('<a href="#" class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '</a>')
-    .find('.list-group-item').first().click(function (event) {
-      $('#layer_list .active').removeClass('active');
-      $(event.target).addClass('active');
-    }).find(':checkbox').change(function () {
-      var visible = $(this).is(':checked');
-      var layerId = $(this).parent().attr('id'),
-          layer = getLayerById(layerId);
-      layer.setVisible(visible);
+  var html = '<a href="#" class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '<button class="btn" title="Actions"><span class="glyphicon glyphicon-chevron-down"></span></button></a>';
+  var item = $('#layer_list').prepend(html).find('.list-group-item').first();
+  item.click(function (event) {
+    $('#layer_list .active').removeClass('active');
+    $(event.target).addClass('active');
+  });
+  item.find(':checkbox').change(function () {
+    var visible = $(this).is(':checked');
+    var layerId = $(this).parent().attr('id'),
+        layer = getLayerById(layerId);
+    layer.setVisible(visible);
+  });
+  item.find('button').click(function () {
+    $('#layer_list .glyphicon-chevron-up').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+    $('#layer_list .button-container').slideUp('fast', function () {
+      $(this).remove();
     });
+
+    if ($(this).parent().find('.button-container').length == 0) {
+      $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+
+      var html = '<div class="button-container" style="display: none;">' +
+                 '<button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+                 '<button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+                 '<button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+                 '</div>';
+      item.append(html);
+      item.find('.button-container').slideDown('fast');
+    }
+  });
+
 }
 
 function loadText(text, formatConstructors) {
