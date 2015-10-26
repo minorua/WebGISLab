@@ -96,9 +96,7 @@
 <div id="map"></div>
 <div id="slider">
   <br/>
-  <div id="layer_list" class="list-group">
-    <a href="#" class="list-group-item"><input type="checkbox" checked>地理院地図 (標準地図)</a>
-  </div>
+  <div id="layer_list" class="list-group"></div>
 </div>
 <div id="info"></div>
 
@@ -192,19 +190,6 @@ var map = new ol.Map({
       collapsible: false
     })
   }),
-  layers: [
-    new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-        projection: 'EPSG:3857'
-      })
-    })
-  ],
   renderer: ['canvas', 'dom'],
   target: 'map',
   view: new ol.View({
@@ -214,6 +199,35 @@ var map = new ol.Map({
     zoom: 5
   })
 });
+
+// initial layers
+var layer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    attributions: [
+      new ol.Attribution({
+        html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      })
+    ],
+    url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+    projection: 'EPSG:3857'
+  })
+});
+layer.title = '地理院地図 (標準地図)';
+addLayer(layer);
+
+layer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    attributions: [
+      new ol.Attribution({
+        html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      })
+    ],
+    url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
+    projection: 'EPSG:3857'
+  })
+});
+layer.title = '色別標高図';
+addLayer(layer);
 
 var displayFeatureInfo = function (pixel) {
   var features = [];
