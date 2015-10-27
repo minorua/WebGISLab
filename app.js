@@ -411,3 +411,32 @@ $(document).on('drop', function (e) {
     loadFile(files[i]);
   }
 });
+
+// search
+$('form').submit(function (event) {
+  var q = $('#search').val();
+  if (q) {
+    var url = 'http://nominatim.openstreetmap.org/search?format=json&json_callback=callback&limit=1&q=' + encodeURIComponent(q);
+    $.ajax({
+      type: 'GET',
+      url: url,
+      dataType: 'jsonp',
+      jsonpCallback: 'callback',
+      success: function(json){
+        if (json.length) {
+          var dispName = json[0].display_name,
+              lon = json[0].lon,
+              lat = json[0].lat,
+              license = json[0].licence;
+          if(confirm('Jump to ' + dispName + ' (' + lon + ', ' + lat + ') ?\n  Search result provided by Nominatim.')) {
+            
+          }
+        }
+        else {
+          alert("No search results for '" + q + "'");
+        }
+      }
+    });
+  }
+  event.preventDefault();
+});
