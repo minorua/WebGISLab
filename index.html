@@ -47,6 +47,9 @@
   #trigger:focus {
     outline: 0 none;
   }
+  #search {
+    width: 120px;
+  }
   #info {
     position: absolute;
     left: 0px;
@@ -96,6 +99,16 @@
             <li><a href="#">Add Layer from File (GeoJSON, KML, etc.)...</a></li>
             <li><a href="#">Add Tiled Map Layer...</a></li>
           </ul>
+        </li>
+        <li>
+          <form class="navbar-form" role="search">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search OSM..." name="q" id="search">
+              <div class="input-group-btn">
+                <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+              </div>
+            </div>
+          </form>
         </li>
         <li><a href="#">About</a></li>
       </ul>
