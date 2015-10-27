@@ -413,6 +413,7 @@ $(document).on('drop', function (e) {
 });
 
 // search
+// https://nominatim.openstreetmap.org/
 $('form').submit(function (event) {
   var q = $('#search').val();
   if (q) {
@@ -425,15 +426,17 @@ $('form').submit(function (event) {
       success: function(json){
         if (json.length) {
           var dispName = json[0].display_name,
-              lon = json[0].lon,
-              lat = json[0].lat,
+              lon = parseFloat(json[0].lon),
+              lat = parseFloat(json[0].lat),
               license = json[0].licence;
           if(confirm('Jump to ' + dispName + ' (' + lon + ', ' + lat + ') ?\n  Search result provided by Nominatim.')) {
-            
+            var target = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
+            map.getView().setCenter(target);
+            map.getView().setResolution(4.7773);    // zoom level 15
           }
         }
         else {
-          alert("No search results for '" + q + "'");
+          alert("No search results for '" + q + "'.");
         }
       }
     });
