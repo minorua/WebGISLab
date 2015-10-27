@@ -102,6 +102,7 @@
 
 <script>
 var mapLayers = {};
+var vectorTileLayers = [];
 
 // left panel
 $('#slider').slideReveal({
@@ -226,6 +227,9 @@ var getNextLayerId = (function () {
 
 
 // initial layers
+
+// GSI tiles
+// http://maps.gsi.go.jp/development/
 var layer = new ol.layer.Tile({
   source: new ol.source.XYZ({
     attributions: [
@@ -271,8 +275,8 @@ layer.title = '写真';
 addLayer(layer);
 
 
-// EXPERIMENTAL
-// TODO: Need to limit zoom level range
+// EXPERIMENTAL vector tile
+// https://github.com/gsi-cyberjapan/vector-tile-experiment
 layer = new ol.layer.Vector({
   source: new ol.source.TileVector({
     attributions: [
@@ -298,9 +302,9 @@ layer = new ol.layer.Vector({
   }
 });
 layer.setVisible(false);
-layer.title = '道路中心線 (Z>=16)';
+layer.title = '道路中心線 (z>=16)';
 addLayer(layer);
-var vectorTileLayers = [layer];
+vectorTileLayers.push(layer);
 
 var displayFeatureInfo = function (pixel) {
   var features = [];
@@ -331,21 +335,25 @@ map.on('click', function (evt) {
   displayFeatureInfo(evt.pixel);
 });
 
-function resolutionChanged(evt) {
-  // show/hide vector tile layer internally
+function updateVectorTileLayerVisibility() {
+  // Zoom level range limit for vector tile layer rendering.
+  // ol: Layer rendering (data fetching) isn't affected by zoom level range of tile grid?
   var z = map.getView().getZoom();
-  console.log(map.getView().getZoom());
-
-  // zoom level range limit for vector tile layers
-  // tile gridのズームレベル制限が効いてないので
   vectorTileLayers.forEach(function (layer) {
-    var visible = (z >= 16 && $('#' + layer.id + ' :checkbox').is(':checked'));
+    var zmin = 16;    // TODO: get from layer.tileGrid
+    var visible = (z >= zmin && $('#' + layer.id + ' :checkbox').is(':checked'));
     layer.setVisible(visible);
   });
 }
 
-map.getView().on('change:resolution', resolutionChanged);
-resolutionChanged();    //
+map.getView().on('change:resolution', function (evt) {
+  var z = map.getView().getZoom();
+  console.log('z: ' + z);
+
+  updateVectorTileLayerVisibility();
+});
+
+updateVectorTileLayerVisibility();
 
 function addLayer(layer) {
   if (layer.id === undefined) layer.id = getNextLayerId();
@@ -375,7 +383,7 @@ function addLayer(layer) {
         layer = getLayerById(layerId);
 
     if (vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
-    else resolutionChanged(undefined);
+    else updateVectorTileLayerVisibility();     // should consider zoom level
   });
   item.find('button').click(function () {
     var layerId = item.attr('id');
@@ -420,7 +428,6 @@ function addLayer(layer) {
       });
     }
   });
-
 }
 
 function loadText(text, formatConstructors) {
