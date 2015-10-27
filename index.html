@@ -37,6 +37,10 @@
     padding: 5px;
     width: 100%;
   }
+  .opacity-slider {
+    margin: 8px 0px;
+    width: 175px;
+  }
   #trigger {
     background-color: #f4f4f4;
   }
@@ -48,6 +52,12 @@
     left: 0px;
     bottom: 0px;
     background-color: rgba(255, 255, 255, 0.6)
+  }
+  .layer-sub-container {
+    margin-top: 10px;
+    display: none;
+    float: clear;
+    height: 60px;
   }
 </style>
 </head>
@@ -371,7 +381,7 @@ function addLayer(layer) {
   map.addLayer(layer);
 
   var checked = (layer.getVisible()) ? ' checked' : '';
-  var html = '<a href="#" class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '<button class="btn" title="Actions"><span class="glyphicon glyphicon-chevron-down"></span></button></a>';
+  var html = '<div class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '<a href="#" class="btn" style="float:right; padding:2px;" title="Actions"><span class="glyphicon glyphicon-chevron-down"></span></a></div>';
   var item = $('#layer_list').prepend(html).find('.list-group-item').first();
   item.click(function (event) {
     $('#layer_list .active').removeClass('active');
@@ -385,24 +395,28 @@ function addLayer(layer) {
     if (vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
     else updateVectorTileLayerVisibility();     // should consider zoom level
   });
-  item.find('button').click(function () {
+  item.find('.btn').click(function () {
     var layerId = item.attr('id');
     $('#layer_list .glyphicon-chevron-up').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-    $('#layer_list .button-container').slideUp('fast', function () {
+    $('#layer_list .layer-sub-container').slideUp('fast', function () {
       $(this).remove();
     });
 
-    if ($(this).parent().find('.button-container').length == 0) {
+    if ($(this).parent().find('.layer-sub-container').length == 0) {
       $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
-      var html = '<div class="button-container" style="display: none;">' +
-                 '<div>' +
-                 '<div class="opacity-slider"></div>' +
-                 '<button class="btn" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></button>' +
-                 '</div>' +
-                 '<button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
-                 '<button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
-                 '<button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+      var html = '<div class="layer-sub-container">' +
+                 '  <div class="layer-button-container">' +
+                 '    <button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+                 '    <button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+                 '    <button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+                 '  </div><div>' +
+                 '    <div style="float:left;">' +
+                 '      <div class="opacity-slider"></div>' +
+                 '    </div><div style="float:right;">' +
+                 '      <a href="#" class="btn" data-toggle="button" style="padding:2px;" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
+                 '    </div>' +
+                 '  </div>' +
                  '</div>';
       item.append(html);
       item.find('.opacity-slider').slider({
@@ -416,8 +430,8 @@ function addLayer(layer) {
         },
         value: mapLayers[layerId].getOpacity() * 100
       });
-      item.find('.button-container').slideDown('fast');
-      item.find('.button-container').find('button').first().click(function () {
+      item.find('.layer-sub-container').slideDown('fast');
+      item.find('.layer-sub-container').find('.btn').last().click(function () {
         var blendMode = (mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
         mapLayers[layerId].blendMode = blendMode;
 
