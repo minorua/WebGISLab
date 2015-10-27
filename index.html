@@ -283,7 +283,7 @@ layer = new ol.layer.Vector({
     format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
     projection: 'EPSG:3857',
     tileGrid: ol.tilegrid.createXYZ({
-      minZoom: 15,
+      minZoom: 16,
       maxZoom: 16
     }),
     url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_rdcl/{z}/{x}/{y}.geojson'
@@ -298,9 +298,9 @@ layer = new ol.layer.Vector({
   }
 });
 layer.setVisible(false);
-layer.title = '道路中心線 (Z>=15)';
+layer.title = '道路中心線 (Z>=16)';
 addLayer(layer);
-
+var vectorTileLayers = [layer];
 
 var displayFeatureInfo = function (pixel) {
   var features = [];
@@ -331,6 +331,22 @@ map.on('click', function (evt) {
   displayFeatureInfo(evt.pixel);
 });
 
+function resolutionChanged(evt) {
+  // show/hide vector tile layer internally
+  var z = map.getView().getZoom();
+  console.log(map.getView().getZoom());
+
+  // zoom level range limit for vector tile layers
+  // tile gridのズームレベル制限が効いてないので
+  vectorTileLayers.forEach(function (layer) {
+    var visible = (z >= 16 && $('#' + layer.id + ' :checkbox').is(':checked'));
+    layer.setVisible(visible);
+  });
+}
+
+map.getView().on('change:resolution', resolutionChanged);
+resolutionChanged();    //
+
 function addLayer(layer) {
   if (layer.id === undefined) layer.id = getNextLayerId();
   if (layer.title === undefined) layer.title = 'no title';
@@ -357,7 +373,9 @@ function addLayer(layer) {
     var visible = $(this).is(':checked');
     var layerId = $(this).parent().attr('id'),
         layer = getLayerById(layerId);
-    layer.setVisible(visible);
+
+    if (vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
+    else resolutionChanged(undefined);
   });
   item.find('button').click(function () {
     var layerId = item.attr('id');
