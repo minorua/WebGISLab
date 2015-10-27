@@ -271,6 +271,37 @@ layer.title = '写真';
 addLayer(layer);
 
 
+// EXPERIMENTAL
+// TODO: Need to limit zoom level range
+layer = new ol.layer.Vector({
+  source: new ol.source.TileVector({
+    attributions: [
+      new ol.Attribution({
+        html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      })
+    ],
+    format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
+    projection: 'EPSG:3857',
+    tileGrid: ol.tilegrid.createXYZ({
+      minZoom: 15,
+      maxZoom: 16
+    }),
+    url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_rdcl/{z}/{x}/{y}.geojson'
+  }),
+  style: function(feature, resolution) {
+    return [new ol.style.Style({
+      stroke: new ol.style.Stroke({
+        color: 'orange', 
+        width: 4
+      })
+    })];
+  }
+});
+layer.setVisible(false);
+layer.title = '道路中心線 (Z>=15)';
+addLayer(layer);
+
+
 var displayFeatureInfo = function (pixel) {
   var features = [];
   map.forEachFeatureAtPixel(pixel, function (feature, layer) {
