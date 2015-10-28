@@ -17,7 +17,7 @@
   body {
     margin: 0
   }
-  html, body, #map {
+  html, body {
     height: 100%;
     width: 100%;
   }
@@ -28,22 +28,14 @@
     width: 100%;
     height: auto;
   }
-  #slider {
-    background-color: rgba(255, 255, 255, 0.9);
+  #info {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, 0.6)
   }
-  #layer_list {
-    list-style-type: none;
-    margin: 0;
-    padding: 5px;
-    width: 100%;
-  }
-  a.btn {
-    color: gray;
-  }
-  .opacity-slider {
-    margin: 8px 0px;
-    width: 175px;
-  }
+
+  /* nav bar */
   #trigger {
     background-color: #f4f4f4;
     float: left;
@@ -56,17 +48,29 @@
   #search {
     width: 120px;
   }
-  #info {
-    position: absolute;
-    left: 0px;
-    bottom: 0px;
-    background-color: rgba(255, 255, 255, 0.6)
+
+  /* layer list panel */
+  #slider {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  #layer_list {
+    list-style-type: none;
+    margin: 0;
+    padding: 5px;
+    width: 100%;
+  }
+  a.btn {
+    color: gray;
   }
   .layer-sub-container {
     margin-top: 10px;
     display: none;
     float: clear;
     height: 60px;
+  }
+  .opacity-slider {
+    margin: 8px 0px;
+    width: 175px;
   }
 </style>
 </head>
