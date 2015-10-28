@@ -268,7 +268,12 @@ function addLayer(layer) {
   map.addLayer(layer);
 
   var checked = (layer.getVisible()) ? ' checked' : '';
-  var html = '<div class="list-group-item" id="' + layer.id + '"><input type="checkbox"' + checked + '>' + layer.title + '<a href="#" class="btn" style="float:right; padding:2px;" title="Actions"><span class="glyphicon glyphicon-chevron-down"></span></a></div>';
+  var html = '<div class="list-group-item" id="' + layer.id + '">' +
+             '  <input type="checkbox"' + checked + '>' + layer.title +
+             '  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
+             '    <span class="glyphicon glyphicon-chevron-down"></span>' +
+             '  </a>' +
+             '</div>';
   var item = $('#layer_list').prepend(html).find('.list-group-item').first();
   item.click(function (event) {
     $('#layer_list .active').removeClass('active');
