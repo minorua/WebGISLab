@@ -518,8 +518,12 @@ var loadDefaultLayers = function () {
           html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
         })
       ],
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
-      projection: 'EPSG:3857'
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 5,
+        maxZoom: 15
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
     }),
     maxResolution: resolutionFromZoomLevel(5 - 0.1)
   });
@@ -534,8 +538,12 @@ var loadDefaultLayers = function () {
           html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
         })
       ],
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-      projection: 'EPSG:3857'
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 2,
+        maxZoom: 18
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'
     })
   });
   layer.setVisible(false);
