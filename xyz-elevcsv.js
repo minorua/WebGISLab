@@ -35,6 +35,11 @@ ol.source.XYZElevCSV = function (options) {
             p = (val - c0[0]) / (c1[0] - c0[0]);
 
         lastColorIndex = i - 1;
+
+        // discrete
+        return [c1[1], c1[2], c1[3]];
+
+        // linear interpolation
         return [
           (c1[1] - c0[1]) * p + c0[1],
           (c1[2] - c0[2]) * p + c0[2],
