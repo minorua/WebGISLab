@@ -10,26 +10,32 @@ olapp - Application
 .core        - Core module.
 .dataSources - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.
 .gui         - GUI module.
-.map         - An object of ol.Map. Initialized in core.init().
+.map         - An object of ol.Map. Initialized in olapp.init().
+.project     - Project and layer management module.
 .tools       - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
+
+.init()      - Initialize application.
 */
 var olapp = {
+  core: {},
   dataSources: {},
+  gui: {},
+  project: {},
   tools: {}
 };
 
 
-// olapp.core
 (function () {
-  var core = {};
-  olapp.core = core;
+  var core = olapp.core,
+      project = olapp.project,
+      gui = olapp.gui,
+      tools = olapp.tools;
 
-  core.mapLayers = {};
-  core.vectorTileLayers = [];
-  core._lastId = -1;
+  var map;
 
-  core.init = function () {
-    olapp.map = new ol.Map({
+  // init()
+  olapp.init = function () {
+    map = new ol.Map({
       controls: ol.control.defaults({
         attributionOptions: ({
           collapsible: false
@@ -44,10 +50,41 @@ var olapp = {
         zoom: 5
       })
     });
+    olapp.map = map;
+
+    gui.init(map);
   };
 
-  core.addLayer = function (layer) {
-    if (layer.id === undefined) layer.id = core.getNextLayerId();
+
+  // olapp.core
+  core.styleFunction = function (feature, resolution) {
+    var featureStyleFunction = feature.getStyleFunction();
+    if (featureStyleFunction) {
+      return featureStyleFunction.call(feature, resolution);
+    } else {
+      return olapp.defaultStyle[feature.getGeometry().getType()];
+    }
+  };
+
+  // Zoom level range limit for vector tile layer rendering.
+  core.updateVectorTileLayerVisibility = function () {
+    // ol: Layer rendering (data fetching) isn't affected by zoom level range of tile grid?
+    var z = map.getView().getZoom();
+    project.vectorTileLayers.forEach(function (layer) {
+      var zmin = 16;    // TODO: get from layer.tileGrid
+      var visible = (z >= zmin && $('#' + layer.id + ' :checkbox').is(':checked'));
+      layer.setVisible(visible);
+    });
+  };
+
+
+  // olapp.project
+  project.mapLayers = {};
+  project.vectorTileLayers = [];
+  project._lastId = -1;
+
+  project.addLayer = function (layer) {
+    if (layer.id === undefined) layer.id = project.getNextLayerId();
     if (layer.title === undefined) layer.title = 'no title';
     if (layer.blendMode === undefined) layer.blendMode = 'source-over';
 
@@ -58,34 +95,25 @@ var olapp = {
       evt.context.globalCompositeOperation = 'source-over';
     });
 
-    core.mapLayers[layer.id] = layer;
-    olapp.map.addLayer(layer);
-    olapp.gui.addLayer(layer);
+    project.mapLayers[layer.id] = layer;
+    map.addLayer(layer);
+    gui.addLayer(layer);
   };
 
-  core.removeLayer = function (id) {
+  project.removeLayer = function (id) {
     // TODO
   };
 
-  core.getLayerById = function (id) {
-    return (core.mapLayers[id] !== undefined) ? core.mapLayers[id] : null;
+  project.getLayerById = function (id) {
+    return (project.mapLayers[id] !== undefined) ? project.mapLayers[id] : null;
   };
 
-  core.getNextLayerId = function () {
-    core._lastId++;
-    return 'L' + core._lastId;
+  project.getNextLayerId = function () {
+    project._lastId++;
+    return 'L' + project._lastId;
   };
 
-  core.styleFunction = function (feature, resolution) {
-    var featureStyleFunction = feature.getStyleFunction();
-    if (featureStyleFunction) {
-      return featureStyleFunction.call(feature, resolution);
-    } else {
-      return olapp.defaultStyle[feature.getGeometry().getType()];
-    }
-  };
-
-  core.loadLayerFromFile = function (file) {
+  project.loadLayerFromFile = function (file) {
     var ext2formatConstructors = {
       'gpx': [ol.format.GPX],
       'kml': [ol.format.KML],
@@ -104,12 +132,12 @@ var olapp = {
 
     var reader = new FileReader();
     reader.onload = function (event) {
-      var layer = core._loadText(reader.result, formatConstructors);
+      var layer = project._loadText(reader.result, formatConstructors);
 
       if (layer) {
         layer.title = file.name;
-        core.addLayer(layer);
-        olapp.map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (olapp.map.getSize()));
+        project.addLayer(layer);
+        map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
       }
       else {
         alert('Unknown format file: ' + file.name);
@@ -118,7 +146,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  core._loadText = function (text, formatConstructors) {
+  project._loadText = function (text, formatConstructors) {
     var transform = ol.proj.getTransform('EPSG:4326', 'EPSG:3857');
 
     for (var i = 0; i < formatConstructors.length; i++) {
@@ -151,29 +179,12 @@ var olapp = {
   }
 
   // Load project file
-  core.loadProject = function (project) {
+  project.loadProject = function (project) {
     // TODO
   };
 
-  // Zoom level range limit for vector tile layer rendering.
-  core.updateVectorTileLayerVisibility = function () {
-    // ol: Layer rendering (data fetching) isn't affected by zoom level range of tile grid?
-    var z = olapp.map.getView().getZoom();
-    core.vectorTileLayers.forEach(function (layer) {
-      var zmin = 16;    // TODO: get from layer.tileGrid
-      var visible = (z >= zmin && $('#' + layer.id + ' :checkbox').is(':checked'));
-      layer.setVisible(visible);
-    });
-  };
 
-})();
-
-
-// olapp.gui
-(function () {
-  var gui = {};
-  olapp.gui = gui;
-
+  // olapp.gui
   gui.init = function (map) {
     // layer list panel
     $('#slider').slideReveal({
@@ -208,7 +219,7 @@ var olapp = {
       var z = map.getView().getZoom();
       console.log('z: ' + z);
 
-      olapp.core.updateVectorTileLayerVisibility();
+      core.updateVectorTileLayerVisibility();
     });
 
     // Accept file drop
@@ -222,14 +233,14 @@ var olapp = {
 
       var files = e.originalEvent.dataTransfer.files;
       for (var i = 0; i < files.length; i++) {
-        olapp.core.loadLayerFromFile(files[i]);
+        project.loadLayerFromFile(files[i]);
       }
     });
 
     // search
     $('form[role="search"]').submit(function (event) {
       var q = $('#search').val();
-      if (q) olapp.tools.geocoding.Nominatim.search(q);
+      if (q) tools.geocoding.Nominatim.search(q);
       event.preventDefault();
     });
   };
@@ -251,10 +262,10 @@ var olapp = {
     item.find(':checkbox').change(function () {
       var visible = $(this).is(':checked');
       var layerId = $(this).parent().attr('id'),
-          layer = olapp.core.getLayerById(layerId);
+          layer = project.getLayerById(layerId);
 
-      if (olapp.core.vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
-      else olapp.core.updateVectorTileLayerVisibility();     // should consider zoom level
+      if (project.vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
+      else core.updateVectorTileLayerVisibility();     // should consider zoom level
     });
     item.find('.btn').click(function (e) {
       e.stopPropagation();
@@ -283,34 +294,34 @@ var olapp = {
                    '</div>';
         item.append(html);
 
-        if (olapp.core.mapLayers[layerId].blendMode == 'multiply') {
+        if (project.mapLayers[layerId].blendMode == 'multiply') {
           item.find('.btn-blendmode span').addClass('active');
         }
 
         item.find('.opacity-slider').slider({
           change: function (event, ui) {
             var opacity = ui.value / 100;
-            olapp.core.mapLayers[layerId].setOpacity(opacity);
+            project.mapLayers[layerId].setOpacity(opacity);
           },
           slide: function (event, ui) {
             var opacity = ui.value / 100;
-            olapp.core.mapLayers[layerId].setOpacity(opacity);
+            project.mapLayers[layerId].setOpacity(opacity);
           },
-          value: olapp.core.mapLayers[layerId].getOpacity() * 100
+          value: project.mapLayers[layerId].getOpacity() * 100
         });
         item.find('.layer-sub-container').slideDown('fast');
         item.find('.layer-sub-container').find('.btn-blendmode').click(function (e) {
           e.stopPropagation();
 
-          var blendMode = (olapp.core.mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
-          olapp.core.mapLayers[layerId].blendMode = blendMode;
+          var blendMode = (project.mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
+          project.mapLayers[layerId].blendMode = blendMode;
 
           var target = $(this);
           if (target.prop('tagName') == 'A') target = target.children();
           if (blendMode == 'multiply') target.addClass('active');
           else target.removeClass('active');
 
-          olapp.map.render();
+          map.render();
         });
       }
     });
@@ -322,17 +333,17 @@ var olapp = {
   };
 
   gui.updateLayerOrder = function () {
-    var layers = olapp.map.getLayers();
+    var layers = map.getLayers();
     layers.clear();
     $('#layer_list .list-group-item').each(function (index) {
       var id = $(this).attr('id');
-      layers.insertAt(0, olapp.core.mapLayers[id]);
+      layers.insertAt(0, project.mapLayers[id]);
     });
   };
 
   gui.displayFeatureInfo = function (pixel) {
     var features = [];
-    olapp.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+    map.forEachFeatureAtPixel(pixel, function (feature, layer) {
       features.push(feature);
     });
     if (features.length > 0) {
@@ -472,8 +483,8 @@ olapp.tools.geocoding.Nominatim = {
           if(confirm('Jump to ' + dispName + ' (' + lon + ', ' + lat + ') ?\n  Search result provided by Nominatim.')) {
             // TODO: callback(lon, lat);
             var target = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
-            olapp.map.getView().setCenter(target);
-            olapp.map.getView().setResolution(4.7773);    // zoom level 15
+            map.getView().setCenter(target);
+            map.getView().setResolution(4.7773);    // zoom level 15
           }
         }
         else {
@@ -486,7 +497,9 @@ olapp.tools.geocoding.Nominatim = {
 };
 
 
-var loadDefaultProject = function () {
+var loadDefaultLayers = function () {
+  var project = olapp.project;
+
   // GSI tiles
   // http://maps.gsi.go.jp/development/
   var layer = new ol.layer.Tile({
@@ -501,7 +514,7 @@ var loadDefaultProject = function () {
     })
   });
   layer.title = '地理院地図 (標準地図)';
-  olapp.core.addLayer(layer);
+  project.addLayer(layer);
 
   layer = new ol.layer.Tile({
     source: new ol.source.XYZ({
@@ -516,7 +529,7 @@ var loadDefaultProject = function () {
   });
   layer.setVisible(false);
   layer.title = '色別標高図';
-  olapp.core.addLayer(layer);
+  project.addLayer(layer);
 
   layer = new ol.layer.Tile({
     source: new ol.source.XYZ({
@@ -531,7 +544,7 @@ var loadDefaultProject = function () {
   });
   layer.setVisible(false);
   layer.title = '写真';
-  olapp.core.addLayer(layer);
+  project.addLayer(layer);
 
   // EXPERIMENTAL vector tile
   // https://github.com/gsi-cyberjapan/vector-tile-experiment
@@ -561,15 +574,13 @@ var loadDefaultProject = function () {
   });
   layer.setVisible(false);
   layer.title = '道路中心線 (z>=16)';
-  olapp.core.addLayer(layer);
-  olapp.core.vectorTileLayers.push(layer);  // TODO: do in core.addLayer
+  project.addLayer(layer);
+  project.vectorTileLayers.push(layer);  // TODO: do in project.addLayer
   olapp.core.updateVectorTileLayerVisibility();
 };
 
 // Initialize olapp application
 $(function () {
-  olapp.core.init();
-  olapp.gui.init(olapp.map);
-
-  loadDefaultProject();
+  olapp.init();
+  loadDefaultLayers();
 });
