@@ -256,7 +256,9 @@ var olapp = {
       if (olapp.core.vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
       else olapp.core.updateVectorTileLayerVisibility();     // should consider zoom level
     });
-    item.find('.btn').click(function () {
+    item.find('.btn').click(function (e) {
+      e.stopPropagation();
+
       var layerId = item.attr('id');
       $('#layer_list .glyphicon-chevron-up').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
       $('#layer_list .layer-sub-container').slideUp('fast', function () {
@@ -275,11 +277,16 @@ var olapp = {
                    '    <div style="float:left;">' +
                    '      <div class="opacity-slider"></div>' +
                    '    </div><div style="float:right;">' +
-                   '      <a href="#" class="btn" data-toggle="button" style="padding:2px;" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
+                   '      <a href="#" class="btn btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
                    '    </div>' +
                    '  </div>' +
                    '</div>';
         item.append(html);
+
+        if (olapp.core.mapLayers[layerId].blendMode == 'multiply') {
+          item.find('.btn-blendmode span').addClass('active');
+        }
+
         item.find('.opacity-slider').slider({
           change: function (event, ui) {
             var opacity = ui.value / 100;
@@ -292,12 +299,16 @@ var olapp = {
           value: olapp.core.mapLayers[layerId].getOpacity() * 100
         });
         item.find('.layer-sub-container').slideDown('fast');
-        item.find('.layer-sub-container').find('.btn').last().click(function () {
+        item.find('.layer-sub-container').find('.btn-blendmode').click(function (e) {
+          e.stopPropagation();
+
           var blendMode = (olapp.core.mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
           olapp.core.mapLayers[layerId].blendMode = blendMode;
 
-          $(this).removeClass('active');
-          if (blendMode == 'multiply') $(this).addClass('active');
+          var target = $(this);
+          if (target.prop('tagName') == 'A') target = target.children();
+          if (blendMode == 'multiply') target.addClass('active');
+          else target.removeClass('active');
 
           olapp.map.render();
         });
