@@ -520,7 +520,8 @@ var loadDefaultLayers = function () {
       ],
       url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png',
       projection: 'EPSG:3857'
-    })
+    }),
+    maxResolution: resolutionFromZoomLevel(5 - 0.1)
   });
   layer.setVisible(false);
   layer.title = '色別標高図';
