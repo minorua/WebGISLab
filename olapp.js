@@ -580,6 +580,26 @@ var loadDefaultLayers = function () {
   layer.setVisible(false);
   layer.title = '道路中心線 (z>=16)';
   project.addLayer(layer);
+
+  // EXPERIMENTAL GSI elevation tile
+  layer = new ol.layer.Tile({
+    source: new ol.source.XYZElevCSV({
+      attributions: [
+        new ol.Attribution({
+          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+        })
+      ],
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 0,
+        maxZoom: 14
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
+    })
+  });
+  layer.setVisible(false);
+  layer.title = '段彩図 (標高タイル)';
+  project.addLayer(layer);
 };
 
 // Initialize olapp application
