@@ -22,21 +22,27 @@ ol.source.XYZElevCSV = function (options) {
     [3800, 250, 250, 250]
   ];
   var colorMapLength = colorMap.length;
+  var lastColorIndex = 0;
 
+  // Get color for passed elevation value.
   var pixelColor = function (val) {
-
-    for (var i = 1; i < colorMapLength; i++) {
+    // Start look-up from last color index - 1.
+    // For quick look-up. Not completely accurate.
+    for (var i = Math.max(1, --lastColorIndex); i < colorMapLength; i++) {
       if (val < colorMap[i][0]) {
         var c0 = colorMap[i - 1],
             c1 = colorMap[i],
-            n = (val - c0[0]) / (c1[0] - c0[0]);
+            p = (val - c0[0]) / (c1[0] - c0[0]);
+
+        lastColorIndex = i - 1;
         return [
-          n * (c1[1] - c0[1]) + c0[1],
-          n * (c1[2] - c0[2]) + c0[2],
-          n * (c1[3] - c0[3]) + c0[3]
+          (c1[1] - c0[1]) * p + c0[1],
+          (c1[2] - c0[2]) * p + c0[2],
+          (c1[3] - c0[3]) * p + c0[3]
         ];
       }
     }
+    lastColorIndex = 0;
     return [0, 0, 0];
 
     // an old function 1
@@ -59,12 +65,12 @@ ol.source.XYZElevCSV = function (options) {
     var lines = data.split('\n'), x, y, vals, rgb;
     for (y = 0; y < 256; y++) {
       vals = lines[y].split(',');
+      lastColorIndex = 0;
       for (x = 0; x < 256; x++) {
         rgb = pixelColor(parseFloat(vals[x]) || 0);   // 'e' -> 0
         d[0] = rgb[0];
         d[1] = rgb[1];
         d[2] = rgb[2];
-        console.log(rgb);
         context.putImageData(pixel, x, y);
       }
     }
