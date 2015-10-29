@@ -66,21 +66,9 @@ var olapp = {
     }
   };
 
-  // Zoom level range limit for vector tile layer rendering.
-  core.updateVectorTileLayerVisibility = function () {
-    // ol: Layer rendering (data fetching) isn't affected by zoom level range of tile grid?
-    var z = map.getView().getZoom();
-    project.vectorTileLayers.forEach(function (layer) {
-      var zmin = 16;    // TODO: get from layer.tileGrid
-      var visible = (z >= zmin && $('#' + layer.id + ' :checkbox').is(':checked'));
-      layer.setVisible(visible);
-    });
-  };
-
 
   // olapp.project
   project.mapLayers = {};
-  project.vectorTileLayers = [];
   project._lastId = -1;
 
   project.addLayer = function (layer) {
@@ -218,8 +206,6 @@ var olapp = {
     map.getView().on('change:resolution', function (evt) {
       var z = map.getView().getZoom();
       console.log('z: ' + z);
-
-      core.updateVectorTileLayerVisibility();
     });
 
     // Accept file drop
@@ -260,12 +246,9 @@ var olapp = {
       $(event.target).addClass('active');
     });
     item.find(':checkbox').change(function () {
+      var layer = project.getLayerById($(this).parent().attr('id'));
       var visible = $(this).is(':checked');
-      var layerId = $(this).parent().attr('id'),
-          layer = project.getLayerById(layerId);
-
-      if (project.vectorTileLayers.indexOf(layer) === -1) layer.setVisible(visible);
-      else core.updateVectorTileLayerVisibility();     // should consider zoom level
+      layer.setVisible(visible);
     });
     item.find('.btn').click(function (e) {
       e.stopPropagation();
@@ -459,6 +442,17 @@ olapp.DataSource.GSITiles.prototype.createLayer = function (subId) {};
 olapp.dataSources['GSITiles'] = olapp.DataSource.GSITiles;    // register this data source
 
 
+// projection
+olapp.tools.projection = {};
+
+// Get resolution from general tile zoom level
+olapp.tools.projection.resolutionFromZoomLevel = function (zoom) {
+  var TILE_SIZE = 256,
+      TSIZE1 = 20037508.342789244;
+  return TSIZE1 / Math.pow(2, zoom - 1) / TILE_SIZE;
+};
+
+
 // geocoding
 olapp.tools.geocoding = {};
 
@@ -484,7 +478,7 @@ olapp.tools.geocoding.Nominatim = {
             // TODO: callback(lon, lat);
             var target = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
             map.getView().setCenter(target);
-            map.getView().setResolution(4.7773);    // zoom level 15
+            map.getView().setResolution(olapp.tools.projection.resolutionFromZoomLevel(15));
           }
         }
         else {
@@ -499,6 +493,7 @@ olapp.tools.geocoding.Nominatim = {
 
 var loadDefaultLayers = function () {
   var project = olapp.project;
+  var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
   // GSI tiles
   // http://maps.gsi.go.jp/development/
@@ -570,13 +565,12 @@ var loadDefaultLayers = function () {
           width: 4
         })
       })];
-    }
+    },
+    maxResolution: resolutionFromZoomLevel(16 - 0.1)
   });
   layer.setVisible(false);
   layer.title = '道路中心線 (z>=16)';
   project.addLayer(layer);
-  project.vectorTileLayers.push(layer);  // TODO: do in project.addLayer
-  olapp.core.updateVectorTileLayerVisibility();
 };
 
 // Initialize olapp application
