@@ -188,6 +188,7 @@ var olapp = {
 
     // layer list
     $('#layer_list').sortable({
+      axis: 'y',
       stop: function (event, ui) {
         gui.updateLayerOrder();
       }
