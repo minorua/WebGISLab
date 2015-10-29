@@ -178,7 +178,7 @@ var olapp = {
     // layer list panel
     $('#slider').slideReveal({
       push: false,
-      top: 40,    // TODO: const NAVBAR_HEIGHT = 40;
+      top: 50,    // TODO: const NAVBAR_HEIGHT = 50;
       trigger: $('#trigger'),
       hidden: function(slider, trigger){
         // Need to remove pushed style manually when the panel is closed with ESC key.
@@ -226,7 +226,7 @@ var olapp = {
     });
 
     // search
-    $('form').submit(function (event) {
+    $('form[role="search"]').submit(function (event) {
       var q = $('#search').val();
       if (q) olapp.tools.geocoding.Nominatim.search(q);
       event.preventDefault();

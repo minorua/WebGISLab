@@ -37,6 +37,9 @@
   }
 
   /* nav bar */
+  nav .container {
+    width: 100%;
+  }
   #trigger {
     background-color: #f4f4f4;
     float: left;
@@ -53,6 +56,7 @@
   /* layer list panel */
   #slider {
     background-color: rgba(255, 255, 255, 0.9);
+    padding-top: 5px;
   }
   #layer_list {
     list-style-type: none;
@@ -77,7 +81,7 @@
 </head>
 <body>
 <nav class="navbar navbar-fixed-top navbar-default">
-  <div class="container" style="width: 100%;">
+  <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
@@ -125,6 +129,12 @@
             </div>
           </form>
         </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools<span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Measure...</a></li>
+          </ul>
+        </li>
         <li><a href="#">About</a></li>
       </ul>
     </div>
@@ -133,7 +143,6 @@
 
 <div id="map"></div>
 <div id="slider">
-  <br/>
   <div id="layer_list" class="list-group"></div>
 </div>
 <div id="info"></div>
