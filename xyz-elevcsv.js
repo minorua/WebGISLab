@@ -9,7 +9,37 @@ ol.source.XYZElevCSV
 ol.source.XYZElevCSV = function (options) {
   ol.source.XYZ.call(this, options);
 
+  var colorMap = [
+    [ -50,   0,   0, 205],
+    [   0,   0, 191, 191],
+    [ 0.1,  57, 151, 105],
+    [ 100, 117, 194,  93],
+    [ 200, 230, 230, 128],
+    [ 500, 202, 158,  75],
+    [1000, 214, 187,  98],
+    [2000, 185, 154, 100],
+    [3000, 220, 220, 220],
+    [3800, 250, 250, 250]
+  ];
+  var colorMapLength = colorMap.length;
+
   var pixelColor = function (val) {
+
+    for (var i = 1; i < colorMapLength; i++) {
+      if (val < colorMap[i][0]) {
+        var c0 = colorMap[i - 1],
+            c1 = colorMap[i],
+            n = (val - c0[0]) / (c1[0] - c0[0]);
+        return [
+          n * (c1[1] - c0[1]) + c0[1],
+          n * (c1[2] - c0[2]) + c0[2],
+          n * (c1[3] - c0[3]) + c0[3]
+        ];
+      }
+    }
+    return [0, 0, 0];
+
+    // an old function 1
     return [
       Math.min(parseInt(255 * val / 2000), 255),        // red
       Math.min(255 - parseInt(255 * val / 2000), 255),  // green
@@ -34,6 +64,7 @@ ol.source.XYZElevCSV = function (options) {
         d[0] = rgb[0];
         d[1] = rgb[1];
         d[2] = rgb[2];
+        console.log(rgb);
         context.putImageData(pixel, x, y);
       }
     }
