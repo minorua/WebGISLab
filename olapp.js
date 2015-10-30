@@ -550,7 +550,7 @@ var loadDefaultLayers = function () {
   layer.title = '写真';
   project.addLayer(layer);
 
-  // EXPERIMENTAL vector tile
+  // EXPERIMENTAL vector tile - experimental_rdcl
   // https://github.com/gsi-cyberjapan/vector-tile-experiment
   layer = new ol.layer.Vector({
     source: new ol.source.TileVector({
@@ -579,6 +579,30 @@ var loadDefaultLayers = function () {
   });
   layer.setVisible(false);
   layer.title = '道路中心線 (z>=16)';
+  project.addLayer(layer);
+
+  // EXPERIMENTAL vector tile - experimental_fgd
+  // https://github.com/gsi-cyberjapan/experimental_fgd
+  layer = new ol.layer.Vector({
+    source: new ol.source.TileVector({
+      attributions: [
+        new ol.Attribution({
+          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+        })
+      ],
+      format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 18,
+        maxZoom: 18
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_fgd/{z}/{x}/{y}.geojson'
+    }),
+    style: olapp.core.styleFunction,
+    maxResolution: resolutionFromZoomLevel(18 - 0.1)
+  });
+  layer.setVisible(false);
+  layer.title = '基盤地図情報（基本項目）(z>=18)';
   project.addLayer(layer);
 
   // EXPERIMENTAL GSI elevation tile
