@@ -325,20 +325,20 @@ var olapp = {
   };
 
   gui.displayFeatureInfo = function (pixel) {
+    var html = '';
     var features = [];
     map.forEachFeatureAtPixel(pixel, function (feature, layer) {
       features.push(feature);
     });
     if (features.length > 0) {
       var info = [];
-      var i, ii;
-      for (i = 0, ii = features.length; i < ii; ++i) {
-        info.push(features[i].get('name'));
+      var attrs = features[0].values_;
+      for (var name in attrs) {
+        if (typeof attrs[name] != 'object') html += name + ': ' + attrs[name] + '<br>';
       }
-      document.getElementById('info').innerHTML = info.join(', ') || '&nbsp';
-    } else {
-      document.getElementById('info').innerHTML = '&nbsp;';
+      if (features.length > 1) html += ' and other ' + (features.length - 1) + ' feature(s)';
     }
+    $('#info').html(html || '&nbsp;');
   };
 
 })();
