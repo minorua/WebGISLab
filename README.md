@@ -49,7 +49,7 @@
 - プロジェクトファイル
     - 内容はJavaScriptのコード(拡張子はjs)
     - JSON形式とカスタム形式
-    - olapp.project.load(json data or custom function)
+    - olapp.project.load(json data or custom function or file)
     - JSON形式
         - `メニュー - プロジェクトの保存(ダウンロード)` での保存形式
         - 追加されたレイヤの情報

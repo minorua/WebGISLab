@@ -78,8 +78,21 @@ var olapp = {
 
 
   // olapp.project
-  project.mapLayers = {};
-  project._lastId = -1;
+
+  // Initialize project
+  project.init = function () {
+    project.mapLayers = {};
+    project._lastId = -1;
+  };
+
+  project.init();
+
+  project.clear = function () {
+    project.init();
+
+    map.getLayers().clear();
+    gui.clearLayerList();
+  };
 
   project.addLayer = function (layer) {
     if (layer.id === undefined) layer.id = project.getNextLayerId();
@@ -174,12 +187,23 @@ var olapp = {
       return layer;
     }
     return null;
-  }
+  };
 
   // Load a project
   project.load = function (prj) {
+    // Clear the current project
+    project.clear();
+
     if (typeof prj == 'function') {
       prj(project);
+    }
+    else if (prj instanceof File) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        eval(reader.result);
+        // TODO: status message
+      }
+      reader.readAsText(prj, 'UTF-8');
     }
     else {
       // TODO: load project in JSON format
@@ -233,8 +257,13 @@ var olapp = {
       e.preventDefault();
 
       var files = e.originalEvent.dataTransfer.files;
-      for (var i = 0; i < files.length; i++) {
-        project.loadLayerFromFile(files[i]);
+      if (files.length == 1 && files[0].name.split('.').pop().toLowerCase() == 'js') {
+        project.load(files[0]);
+      }
+      else {
+        for (var i = 0; i < files.length; i++) {
+          project.loadLayerFromFile(files[i]);
+        }
       }
     });
 
@@ -328,6 +357,10 @@ var olapp = {
   // Remove a layer from layer list.
   gui.removeLayer = function (id) {
     // TODO
+  };
+
+  gui.clearLayerList = function () {
+    $('#layer_list').html('');
   };
 
   gui.updateLayerOrder = function () {
