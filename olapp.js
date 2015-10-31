@@ -66,6 +66,16 @@ var olapp = {
     }
   };
 
+  core.urlParams = function () {
+    var p, vars = {};
+    var params = window.location.search.substring(1).split('&').concat(window.location.hash.substring(1).split('&'));
+    params.forEach(function (param) {
+      p = param.split('=');
+      vars[p[0]] = p[1];
+    });
+    return vars;
+  };
+
 
   // olapp.project
   project.mapLayers = {};
@@ -166,9 +176,14 @@ var olapp = {
     return null;
   }
 
-  // Load project file
-  project.loadProject = function (project) {
-    // TODO
+  // Load a project
+  project.load = function (prj) {
+    if (typeof prj == 'function') {
+      prj(project);
+    }
+    else {
+      // TODO: load project in JSON format
+    }
   };
 
 
@@ -491,8 +506,7 @@ olapp.tools.geocoding.Nominatim = {
 };
 
 
-var loadDefaultLayers = function () {
-  var project = olapp.project;
+olapp.defaultProject = function (project) {
   var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
   // GSI tiles
@@ -504,8 +518,12 @@ var loadDefaultLayers = function () {
           html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
         })
       ],
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-      projection: 'EPSG:3857'
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 2,
+        maxZoom: 18
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'
     })
   });
   layer.title = '地理院地図 (標準地図)';
@@ -549,85 +567,36 @@ var loadDefaultLayers = function () {
   layer.setVisible(false);
   layer.title = '写真';
   project.addLayer(layer);
-
-  // EXPERIMENTAL vector tile - experimental_rdcl
-  // https://github.com/gsi-cyberjapan/vector-tile-experiment
-  layer = new ol.layer.Vector({
-    source: new ol.source.TileVector({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 16,
-        maxZoom: 16
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_rdcl/{z}/{x}/{y}.geojson'
-    }),
-    style: function(feature, resolution) {
-      return [new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: 'orange', 
-          width: 4
-        })
-      })];
-    },
-    maxResolution: resolutionFromZoomLevel(16 - 0.1)
-  });
-  layer.setVisible(false);
-  layer.title = '道路中心線 (z>=16)';
-  project.addLayer(layer);
-
-  // EXPERIMENTAL vector tile - experimental_fgd
-  // https://github.com/gsi-cyberjapan/experimental_fgd
-  layer = new ol.layer.Vector({
-    source: new ol.source.TileVector({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 18,
-        maxZoom: 18
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_fgd/{z}/{x}/{y}.geojson'
-    }),
-    style: olapp.core.styleFunction,
-    maxResolution: resolutionFromZoomLevel(18 - 0.1)
-  });
-  layer.setVisible(false);
-  layer.title = '基盤地図情報（基本項目）(z>=18)';
-  project.addLayer(layer);
-
-  // EXPERIMENTAL GSI elevation tile
-  layer = new ol.layer.Tile({
-    source: new ol.source.XYZElevCSV({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 0,
-        maxZoom: 14
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
-    })
-  });
-  layer.setVisible(false);
-  layer.title = '段彩図 (標高タイル)';
-  project.addLayer(layer);
 };
 
 // Initialize olapp application
 $(function () {
   olapp.init();
-  loadDefaultLayers();
+
+  // If project parameter is specified in URL, load the file
+  // Otherwise, load default project.
+  var projectName = olapp.core.urlParams()['project'];
+  if (projectName) {
+    // Check that the project name is safe.
+    if (projectName.indexOf('..') !== -1) {
+      alert('Specified project name is wrong.');
+    }
+    else {
+      // load the project
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = 'projects/' + projectName + '.js';
+      document.getElementsByTagName('head')[0].appendChild(s);
+    }
+
+/*
+    // Not works with file://
+    $.getScript(project, function () {
+      olapp.gui.status("Have been loaded '" + project + "'");
+    });
+*/
+  }
+  else {
+    olapp.project.load(olapp.defaultProject);
+  }
 });
