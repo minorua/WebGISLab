@@ -91,6 +91,51 @@ olapp.project.load(function (project) {
   project.addLayer(layer);
 
   // EXPERIMENTAL vector tile - experimental_fgd
+  var styleMap = {
+    'Cstline':  {c: "#33f", w: 2},   // #00f, 2
+    'WStrL':    {c: "#88f", w: 1},   // #77f, 1
+    'WL':       {c: "#9cf", w: 1},   // #00f, 2
+    'RdEdg':    {c: "#888", w: 1},   // #777, 2
+    'RdCompt':  {c: "#aaa", w: 1},   // #aaa, 1
+    'RailCL':   {c: "#777", w: 3},   // #7f7, 2
+    'SBBdry':   {c: "#fbb", w: 2},   // #fbb, 2 + //TODO: dashArray:"5,5"
+    'CommBdry': {c: "#f77", w: 2},   // #f77, 2 + //TODO: dashArray:"10,10"
+    'AdmBdry':  {c: "#f77", w: 4}    // #f77, 4 + //TODO: dashArray:"10,10"
+  };
+
+  var featureStyleFunction = function (feature, resolution) {
+    if (feature.values_['vis'] == '非表示') return [];
+
+    var geomType = feature.getGeometry().getType();
+    if (geomType == 'LineString') {
+      var className = feature.values_['class'],
+          s = styleMap[className];
+      if (s === undefined) {
+        if (className == 'Cntr') {
+          s = {c: "#b95", w: 1};     // #ca5, 2
+          if (feature.values_['alti'] % 50 == 0) s.w = 2;
+        }
+        if (className == 'BldL') {
+          s = {c: '#e72'};           // #f72, opacity:0.5,lineCap:"butt"
+          s.w = (feature.values_['type'] == '堅ろう建物') ? 2 : 1;
+        }
+      }
+
+      if (s !== undefined) {
+        return [new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: s.c,
+              width: s.w
+              // + opacity: 0.5, lineCap: "butt"
+            })
+          })];
+      }
+    }
+
+    // TODO: Point style is not implemented yet.
+    return olapp.defaultStyle[geomType];
+  };
+
   layer = new ol.layer.Vector({
     source: new ol.source.TileVector({
       attributions: [
@@ -106,7 +151,7 @@ olapp.project.load(function (project) {
       }),
       url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_fgd/{z}/{x}/{y}.geojson'
     }),
-    style: olapp.core.styleFunction,
+    style: featureStyleFunction,
     maxResolution: resolutionFromZoomLevel(18 - 0.1)
   });
   layer.setVisible(false);
