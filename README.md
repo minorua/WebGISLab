@@ -70,6 +70,39 @@
 - ローカルプロジェクトファイルのドラッグ&ドロップによる読み込み
 
 
+## Design for plugin
+
+- 必要な機能を必要な時にロードする
+    - プロジェクトファイルまたはGUIから
+- プラグインが可能なこと
+    - メニューアイテムの追加
+    - ダイアログの表示
+    - データソースの追加
+
+- プラグインのコード
+```javascript
+(function () {
+  var myplugin = {};
+
+  ...
+
+  olapp.plugin.addPlugin(myplugin);
+})();
+```
+
+- プロジェクトファイルのコード
+```javascript
+olapp.project.load(function (project) {
+  olapp.plugin.loadPlugins(['XYZElevCSV'], function () {
+    var layer = new ol.layer.Tile({
+      source: new ol.source.XYZElevCSV({
+      ....
+    project.addLayer(layer);
+  });
+});
+```
+
+
 ## TODO
 
 https://github.com/minorua/WebGISLab/issues/1

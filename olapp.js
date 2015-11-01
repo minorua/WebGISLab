@@ -11,6 +11,7 @@ olapp - Application
 .dataSources - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.
 .gui         - GUI module.
 .map         - An object of ol.Map. Initialized in olapp.init().
+.plugin      - Plugin module.
 .project     - Project and layer management module.
 .tools       - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
@@ -20,6 +21,7 @@ var olapp = {
   core: {},
   dataSources: {},
   gui: {},
+  plugin: {},
   project: {},
   tools: {}
 };
@@ -29,6 +31,7 @@ var olapp = {
   var core = olapp.core,
       project = olapp.project,
       gui = olapp.gui,
+      plugin = olapp.plugin,
       tools = olapp.tools;
 
   var map;
@@ -387,6 +390,44 @@ var olapp = {
       if (features.length > 1) html += ' and other ' + (features.length - 1) + ' feature(s)';
     }
     $('#info').html(html || '&nbsp;');
+  };
+
+
+  // olapp.plugin
+  plugin.plugins = {};
+  plugin.loadingPlugins = [];
+  plugin.loadingPluginSets = [];
+
+  // Add a plugin to the application (called from end of a plugin code)
+  plugin.addPlugin = function (pluginName, module) {
+    // register and initialize the plugin
+    plugin.plugins[pluginName] = module;
+    module.init();
+
+    // call callback function of loadPlugin(s)
+    plugin.loadingPlugins.forEach(function ());
+    plugin.loadingPluginSets.forEach(function ());
+  };
+
+  // Load a plugin (called from project/gui)
+  plugin.loadPlugin = function (pluginName, callback) {
+    // add script
+
+    plugin.loadingPlugins.push({
+      plugin: pluginName,
+      callback: callback
+    });
+  };
+
+  // Load plugins
+  // callback is called once when all the plugins have been loaded.
+  plugin.loadPlugins = function (pluginNames, callback) {
+    // add scripts
+
+    plugin.loadingPluginSets.push({
+      plugins: pluginNames,
+      callback: callback
+    });
   };
 
 })();
