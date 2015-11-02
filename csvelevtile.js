@@ -64,9 +64,9 @@
 
           // linear interpolation
           return [
-            Math.Min(255, (c1[1] - c0[1]) * p + c0[1]),
-            Math.Min(255, (c1[2] - c0[2]) * p + c0[2]),
-            Math.Min(255, (c1[3] - c0[3]) * p + c0[3])
+            Math.min(255, (c1[1] - c0[1]) * p + c0[1]),
+            Math.min(255, (c1[2] - c0[2]) * p + c0[2]),
+            Math.min(255, (c1[3] - c0[3]) * p + c0[3])
           ];
         }
       }
