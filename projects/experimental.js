@@ -198,4 +198,28 @@ olapp.project.load(function (project) {
   layer.setVisible(false);
   layer.title = '傾斜区分図 (標高タイル)';
   project.addLayer(layer);
+
+  // Seamless Digital Geological Map of Japan (1:200,000)
+  var url = 'https://gbank.gsj.jp/seamless/tilemap/detailed/WMTSCapabilities.xml';
+  $.ajax(url).then(function(response) {
+    var parser = new ol.format.WMTSCapabilities();
+    var result = parser.read(response);
+    var options = ol.source.WMTS.optionsFromCapabilities(result, {
+      layer: 'g',
+      matrixSet: 'g_set',
+      requestEncoding: 'REST'
+    });
+    var layer = new ol.layer.Tile({
+      opacity: 1,
+      source: new ol.source.WMTS(options)
+    });
+    layer.getSource().setAttributions([
+      new ol.Attribution({
+        html: "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>"
+      })
+    ]);
+    layer.setVisible(false);
+    layer.title = 'シームレス地質図 (詳細版)';
+    project.addLayer(layer);
+  });
 });
