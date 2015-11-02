@@ -5,7 +5,7 @@
 // https://github.com/minorua/WebGISLab
 
 /*
-olapp - Application
+olapp - An OpenLayers application
 
 .core        - Core module.
 .dataSources - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.

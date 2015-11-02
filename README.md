@@ -10,6 +10,7 @@
     - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
     - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図
 
+
 ## Requirements
 
 次の機能・特徴が欲しい
@@ -17,19 +18,28 @@
     - チェックボックスで表示・非表示切り替え
     - レイヤ順の並べ替え
     - 透過性の調整と混合
+    - レイヤ情報表示
     - レイヤ領域へのズーム
     - レイヤの削除
 - 属性テーブル
     - 地物へのズーム
 - ラスタタイル(ベース地図)の追加
+    - WMTSレイヤ
+        - 20万分の1日本シームレス地質図 https://gbank.gsj.jp/seamless/
+    - レイヤ情報
 - ベクトルタイルの追加
-- WMTS対応
-    - 20万分の1日本シームレス地質図 https://gbank.gsj.jp/seamless/
-- ベクトルレイヤのスタイル
-    - 用意された外部スタイルファイル(関数)の適用
+    - スタイル設定
+        - 用意された外部スタイルファイル(関数)の適用
+- 地理院標高タイルの利用
+    - 段彩図、傾斜区分図レイヤの追加
+        - 凡例
+    - 地形断面図作成
+        - キャンバス上の色で着色
 - 帰属 (attribution)
+    - 表示を重複させない
     - ズームレベルに応じた表示
 - ジオコーディング (Nominatim/国土数値情報公共施設データ等)
+    - 5件程度の結果を一覧表示する
 - ローカルのKMLファイルの読み込み (ドラッグ&ドロップで)
 - 読み込まれたデータのHTML5 ローカルストレージへの保存
 - プロジェクトの保存と読み込み
@@ -38,10 +48,6 @@
 - 3Dビューアの起動 (Cesium)
     - ローカルストレージデータの共有
 - 距離・面積の計測ツール
-- 地理院標高タイルを用いた傾斜区分図レイヤの追加
-    - 凡例
-- 地理院標高タイルを用いた地形断面図作成
-    - キャンバス上の色で着色
 - 軽量なコアアプリケーションと機能追加の容易性
     - プラグイン管理
 - タッチデバイス対応
@@ -71,16 +77,16 @@
 - ローカルプロジェクトファイルのドラッグ&ドロップによる読み込み
 
 
-## Design for plugin
+## Design for Plugin
 
 - 必要な機能を必要な時にロードする
     - プロジェクトファイルまたはGUIから
-- プラグインが可能なこと
+- プラグインができることの例
     - メニューアイテムの追加
     - ダイアログの表示
     - データソースの追加
 
-- プラグインのコード
+プラグインのコード
 ```javascript
 (function () {
   var myplugin = {};
@@ -91,7 +97,7 @@
 })();
 ```
 
-- プロジェクトファイルのコード
+プロジェクトファイルのコード
 ```javascript
 olapp.project.load(function (project) {
   olapp.plugin.loadPlugins(['XYZElevCSV'], function () {
@@ -102,6 +108,11 @@ olapp.project.load(function (project) {
   });
 });
 ```
+
+
+## Test
+
+http://minorua.github.io/WebGISLab/test.html
 
 
 ## TODO
