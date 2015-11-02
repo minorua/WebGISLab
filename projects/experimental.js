@@ -160,7 +160,7 @@ olapp.project.load(function (project) {
 
   // EXPERIMENTAL GSI elevation tile
   layer = new ol.layer.Tile({
-    source: new ol.source.ElevCSVTile({
+    source: new ol.source.CSVElevTile({
       attributions: [
         new ol.Attribution({
           html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
@@ -180,7 +180,7 @@ olapp.project.load(function (project) {
   project.addLayer(layer);
 
   layer = new ol.layer.Tile({
-    source: new ol.source.ElevCSVTile({
+    source: new ol.source.CSVElevTile({
       attributions: [
         new ol.Attribution({
           html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"

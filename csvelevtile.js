@@ -1,4 +1,4 @@
-// xyz-elevcsv.js
+// csvelevtile.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
 
@@ -28,7 +28,7 @@
   };
 
   /*
-  ol.source.ElevCSVTile
+  ol.source.CSVElevTile
     inherits from ol.source.XYZ
 
   options
@@ -36,7 +36,7 @@
     colorMap: Optional. A color map.
     colorInterpolation: 'discrete' or 'linear'. Default is 'discrete'.
   */
-  ol.source.ElevCSVTile = function (options) {
+  ol.source.CSVElevTile = function (options) {
     ol.source.XYZ.call(this, options);
 
     var mode = options.mode;
@@ -302,6 +302,6 @@
     });
   };
 
-  ol.source.ElevCSVTile.prototype = Object.create(ol.source.XYZ.prototype);
-  ol.source.ElevCSVTile.prototype.constructor = ol.source.ElevCSVTile;
+  ol.source.CSVElevTile.prototype = Object.create(ol.source.XYZ.prototype);
+  ol.source.CSVElevTile.prototype.constructor = ol.source.CSVElevTile;
 })();
