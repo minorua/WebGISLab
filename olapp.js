@@ -405,8 +405,8 @@ var olapp = {
     module.init();
 
     // call callback function of loadPlugin(s)
-    plugin.loadingPlugins.forEach(function ());
-    plugin.loadingPluginSets.forEach(function ());
+    plugin.loadingPlugins.forEach(function () {});
+    plugin.loadingPluginSets.forEach(function () {});
   };
 
   // Load a plugin (called from project/gui)
