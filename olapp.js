@@ -193,12 +193,26 @@ var olapp = {
   };
 
   // Load a project
+  //   prj: function, string (URL), File or Object (JSON).
   project.load = function (prj) {
     // Clear the current project
     project.clear();
 
     if (typeof prj == 'function') {
       prj(project);
+    }
+    else if (typeof prj == 'string') {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = prj;
+      document.getElementsByTagName('head')[0].appendChild(s);
+/*
+      // Not works with file://
+      $('head').append(s);
+      $.getScript(project, function () {
+        olapp.gui.status("Have been loaded '" + project + "'");
+      });
+*/
     }
     else if (prj instanceof File) {
       var reader = new FileReader();
@@ -657,18 +671,8 @@ $(function () {
     }
     else {
       // load the project
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = 'projects/' + projectName + '.js';
-      document.getElementsByTagName('head')[0].appendChild(s);
+      olapp.project.load('projects/' + projectName + '.js');
     }
-
-/*
-    // Not works with file://
-    $.getScript(project, function () {
-      olapp.gui.status("Have been loaded '" + project + "'");
-    });
-*/
   }
   else {
     olapp.project.load(olapp.defaultProject);
