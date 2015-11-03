@@ -196,12 +196,20 @@ var olapp = {
   //   prj: Function, string (URL), File or Object (JSON).
   //   callback: Callback function. If specified, called when the code to load a project has been executed.
   project._loadCallback = null;
+  project._scriptElement = null;
   project.load = function (prj, callback) {
     if (typeof prj == 'string') {
+      // Remove project script element if exists
+      var head = document.getElementsByTagName('head')[0];
+      if (project._scriptElement) head.removeChild(project._scriptElement);
+      project._scriptElement = null;
+
       var s = document.createElement('script');
       s.type = 'text/javascript';
       s.src = prj;
-      document.getElementsByTagName('head')[0].appendChild(s);
+      head.appendChild(s);
+      project._scriptElement = s;
+
       /* Not works with file://
       $('head').append(s);
       $.getScript(project, function () {
