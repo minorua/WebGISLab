@@ -428,37 +428,53 @@ var olapp = {
 
   // olapp.plugin
   plugin.plugins = {};
-  plugin.loadingPlugins = [];
-  plugin.loadingPluginSets = [];
+  plugin._loadingPluginSets = [];
 
-  // Add a plugin to the application (called from end of a plugin code)
-  plugin.addPlugin = function (pluginName, module) {
-    // register and initialize the plugin
-    plugin.plugins[pluginName] = module;
-    module.init();
+  // Add a plugin to the application
+  // addPlugin() is called from end of a plugin code, whereas loadPlugin() is called from project/gui.
+  plugin.addPlugin = function (pluginPath, module) {
+    // Register and initialize the plugin
+    plugin.plugins[pluginPath] = module;
+    if (module.init !== undefined) module.init();
 
-    // call callback function of loadPlugin(s)
-    plugin.loadingPlugins.forEach(function () {});
-    plugin.loadingPluginSets.forEach(function () {});
+    // Call callback function
+    plugin._loadingPluginSets.forEach(function (pluginSet) {
+      var index = pluginSet.plugins.indexOf(pluginPath);
+      if (index !== -1) {
+        pluginSet.plugins.splice(index, 1);
+        if (pluginSet.plugins.length == 0 && pluginSet.callback) pluginSet.callback();
+      }
+    });
+
+    // Remove completely loaded plugin set from the array
+    for (var i = plugin._loadingPluginSets.length - 1; i >= 0; i--) {
+      if (plugin._loadingPluginSets[i].plugins.length == 0) plugin._loadingPluginSets.splice(i, 1);
+    }
   };
 
-  // Load a plugin (called from project/gui)
-  plugin.loadPlugin = function (pluginName, callback) {
-    // add script
-
-    plugin.loadingPlugins.push({
-      plugin: pluginName,
-      callback: callback
-    });
+  // Load a plugin
+  plugin.loadPlugin = function (pluginPath, callback) {
+    plugin.loadPlugins([pluginPath], callback);
   };
 
   // Load plugins
   // callback is called once when all the plugins have been loaded.
-  plugin.loadPlugins = function (pluginNames, callback) {
+  plugin.loadPlugins = function (pluginPaths, callback) {
     // add scripts
+    var head = document.getElementsByTagName('head')[0];
+    var loadingPlugins = [];
+    pluginPaths.forEach(function (pluginPath) {
+      if (pluginPath in plugin.plugins) return;   // already loaded
 
-    plugin.loadingPluginSets.push({
-      plugins: pluginNames,
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = 'plugins/' + pluginPath;
+      head.appendChild(s);
+      loadingPlugins.push(pluginPath);
+    });
+
+    plugin._loadingPluginSets.push({
+      plugins: loadingPlugins,
       callback: callback
     });
   };
@@ -614,6 +630,8 @@ olapp.tools.geocoding.Nominatim = {
 
 
 olapp.defaultProject = function (project) {
+  olapp.plugin.loadPlugin('source/csvelevtile.js', function () {
+
   var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
   // GSI tiles
@@ -674,6 +692,8 @@ olapp.defaultProject = function (project) {
   layer.setVisible(false);
   layer.title = '写真';
   project.addLayer(layer);
+
+  });
 };
 
 // Initialize olapp application

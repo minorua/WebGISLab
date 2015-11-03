@@ -1,4 +1,6 @@
 olapp.project.load(function (project) {
+  olapp.plugin.loadPlugin('source/csvelevtile.js', function () {
+
   var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
   // GSI tiles
@@ -221,4 +223,6 @@ olapp.project.load(function (project) {
   layer.setVisible(false);
   layer.title = '基盤地図情報（基本項目）(z>=18)';
   project.addLayer(layer);
+
+  });
 });

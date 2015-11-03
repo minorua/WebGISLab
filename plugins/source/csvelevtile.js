@@ -3,6 +3,13 @@
 // https://github.com/minorua/WebGISLab
 
 (function () {
+  var plugin = {
+    name: 'CSVElevTile',
+    path: 'source/csvelevtile.js',
+    type: 'source',
+    description: 'Adds ol.source.CSVElevTile.'
+  };
+
   var defaultColorMap = {
     'relief': [
       [ -50,   0,   0, 205],
@@ -304,4 +311,6 @@
 
   ol.source.CSVElevTile.prototype = Object.create(ol.source.XYZ.prototype);
   ol.source.CSVElevTile.prototype.constructor = ol.source.CSVElevTile;
+
+  if (typeof olapp !== 'undefined') olapp.plugin.addPlugin(plugin.path, plugin);
 })();
