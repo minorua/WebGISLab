@@ -193,26 +193,31 @@ var olapp = {
   };
 
   // Load a project
-  //   prj: function, string (URL), File or Object (JSON).
-  project.load = function (prj) {
+  //   prj: Function, string (URL), File or Object (JSON).
+  //   callback: Callback function. If specified, called when the code to load a project has been executed.
+  project._loadCallback = null;
+  project.load = function (prj, callback) {
+    if (typeof prj == 'string') {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = prj;
+      document.getElementsByTagName('head')[0].appendChild(s);
+      /* Not works with file://
+      $('head').append(s);
+      $.getScript(project, function () {
+        olapp.gui.status("Have been loaded '" + project + "'");
+      }); */
+
+      // project.load() will be called from the project file again.
+      project._loadCallback = callback;
+      return;
+    }
+
     // Clear the current project
     project.clear();
 
     if (typeof prj == 'function') {
       prj(project);
-    }
-    else if (typeof prj == 'string') {
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = prj;
-      document.getElementsByTagName('head')[0].appendChild(s);
-/*
-      // Not works with file://
-      $('head').append(s);
-      $.getScript(project, function () {
-        olapp.gui.status("Have been loaded '" + project + "'");
-      });
-*/
     }
     else if (prj instanceof File) {
       var reader = new FileReader();
@@ -225,6 +230,9 @@ var olapp = {
     else {
       // TODO: load project in JSON format
     }
+    if (callback) callback();
+    else if (project._loadCallback) project._loadCallback();
+    project._loadCallback = null;
   };
 
 
@@ -664,7 +672,7 @@ olapp.defaultProject = function (project) {
 $(function () {
   olapp.init();
 
-  // If project parameter is specified in URL, load the file
+  // If project parameter is specified in URL, load the file.
   // Otherwise, load default project.
   var projectName = olapp.core.urlParams()['project'];
   if (projectName) {
