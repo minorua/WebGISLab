@@ -580,8 +580,8 @@ olapp.tools.geocoding.Nominatim = {
           if(confirm('Jump to ' + dispName + ' (' + lon + ', ' + lat + ') ?\n  Search result provided by Nominatim.')) {
             // TODO: callback(lon, lat);
             var target = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
-            map.getView().setCenter(target);
-            map.getView().setResolution(olapp.tools.projection.resolutionFromZoomLevel(15));
+            olapp.map.getView().setCenter(target);
+            olapp.map.getView().setResolution(olapp.tools.projection.resolutionFromZoomLevel(15));
           }
         }
         else {
