@@ -62,7 +62,7 @@
 - プロジェクトファイル
     - 内容はJavaScriptのコード(拡張子はjs)
     - JSON形式とカスタム形式
-    - olapp.project.load(json data or custom function or file)
+    - olapp.project.load(olapp.Project object, json data or file)
     - JSON形式
         - `メニュー - プロジェクトの保存(ダウンロード)` での保存形式
         - 追加されたレイヤの情報
@@ -103,14 +103,17 @@
 
 プロジェクトファイルのコード
 ```javascript
-olapp.project.load(function (project) {
-  olapp.plugin.loadPlugins(['XYZElevCSV'], function () {
+olapp.project.load(new olapp.Project({
+  title: 'New Project',
+  description: '',
+  plugins: ['source/csvelevtile.js'],
+  init: function (project) {
     var layer = new ol.layer.Tile({
       source: new ol.source.XYZElevCSV({
       ....
     project.addLayer(layer);
-  });
-});
+  }
+}));
 ```
 
 

@@ -12,10 +12,13 @@ olapp - An OpenLayers application
 .gui         - GUI module.
 .map         - An object of ol.Map. Initialized in olapp.init().
 .plugin      - Plugin module.
-.project     - Project and layer management module.
+.project     - Project management module.
 .tools       - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
 .init()      - Initialize application.
+
+.Project
+.DataSource.Base
 */
 var olapp = {
   core: {},
@@ -85,7 +88,8 @@ var olapp = {
   // Initialize project
   project.init = function () {
     project.mapLayers = {};
-    project._lastId = -1;
+    project._lastElemId = -1;
+    project._project = null;
   };
 
   project.init();
@@ -97,37 +101,18 @@ var olapp = {
     gui.clearLayerList();
   };
 
-  project.addLayer = function (layer) {
-    if (layer.id === undefined) layer.id = project.getNextLayerId();
-    if (layer.title === undefined) layer.title = 'no title';
-    if (layer.blendMode === undefined) layer.blendMode = 'source-over';
-
-    layer.on('precompose', function (evt) {
-      evt.context.globalCompositeOperation = this.blendMode;
-    });
-    layer.on('postcompose', function (evt) {
-      evt.context.globalCompositeOperation = 'source-over';
-    });
-
-    project.mapLayers[layer.id] = layer;
-    map.addLayer(layer);
-    gui.addLayer(layer);
-  };
-
-  project.removeLayer = function (id) {
-    // TODO
-  };
-
-  project.getLayerById = function (id) {
+  project.getLayerByElemId = function (id) {
     return (project.mapLayers[id] !== undefined) ? project.mapLayers[id] : null;
   };
 
-  project.getNextLayerId = function () {
-    project._lastId++;
-    return 'L' + project._lastId;
+  project.getNextLayerElemId = function () {
+    project._lastElemId++;
+    return 'L' + project._lastElemId;
   };
 
   project.loadLayerFromFile = function (file) {
+    if (!project._project) alert('No project');   // TODO: assert
+
     var ext2formatConstructors = {
       'gpx': [ol.format.GPX],
       'kml': [ol.format.KML],
@@ -150,7 +135,7 @@ var olapp = {
 
       if (layer) {
         layer.title = file.name;
-        project.addLayer(layer);
+        project._project.addLayer(layer);
         map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
       }
       else {
@@ -193,7 +178,7 @@ var olapp = {
   };
 
   // Load a project
-  //   prj: Function, string (URL), File or Object (JSON).
+  //   prj: olapp.Project object, string (URL), File or Object (JSON).
   //   callback: Callback function. If specified, called when the code to load a project has been executed.
   project._loadCallback = null;
   project._scriptElement = null;
@@ -220,13 +205,6 @@ var olapp = {
       project._loadCallback = callback;
       return;
     }
-
-    // Clear the current project
-    project.clear();
-
-    if (typeof prj == 'function') {
-      prj(project);
-    }
     else if (prj instanceof File) {
       var reader = new FileReader();
       reader.onload = function (event) {
@@ -234,10 +212,47 @@ var olapp = {
         // TODO: status message
       }
       reader.readAsText(prj, 'UTF-8');
+      return;
+    }
+
+    // Clear the current project
+    project.clear();
+
+    var addLayers = function (layers) {
+      layers.forEach(function (layer) {
+        layer.elemId = project.getNextLayerElemId();
+
+        project.mapLayers[layer.elemId] = layer;
+        map.addLayer(layer);
+        gui.addLayer(layer);
+      });
+    };
+
+    if (prj instanceof olapp.Project) {
+      project._project = prj;
+      if (prj.init !== undefined) {
+        if (prj.plugins.length > 0) {
+          // Initialize project after plugins are loaded.
+          plugin.loadPlugins(prj.plugins, function () {
+            prj.init(prj);
+            addLayers(prj.mapLayers);
+
+            if (callback) callback();
+            else if (project._loadCallback) project._loadCallback();
+            project._loadCallback = null;
+          });
+          return;
+        }
+        prj.init(prj);
+        addLayers(prj.mapLayers);
+      }
+
+      // TODO: set project title to the gui
     }
     else {
       // TODO: load project in JSON format
     }
+
     if (callback) callback();
     else if (project._loadCallback) project._loadCallback();
     project._loadCallback = null;
@@ -311,7 +326,7 @@ var olapp = {
   // Add a layer to layer list.
   gui.addLayer = function (layer) {
     var checked = (layer.getVisible()) ? ' checked' : '';
-    var html = '<div class="list-group-item" id="' + layer.id + '">' +
+    var html = '<div class="list-group-item" id="' + layer.elemId + '">' +
                '  <input type="checkbox"' + checked + '>' + layer.title +
                '  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
                '    <span class="glyphicon glyphicon-chevron-down"></span>' +
@@ -323,7 +338,7 @@ var olapp = {
       $(event.target).addClass('active');
     });
     item.children(':checkbox').change(function () {
-      var layer = project.getLayerById($(this).parent().attr('id'));
+      var layer = project.getLayerByElemId($(this).parent().attr('id'));
       var visible = $(this).is(':checked');
       layer.setVisible(visible);
     });
@@ -481,6 +496,7 @@ var olapp = {
 
 })();
 
+// TODO: move to below tools
 olapp.defaultStyle = {
   'Point': [new ol.style.Style({
     image: new ol.style.Circle({
@@ -536,6 +552,62 @@ olapp.defaultStyle = {
       width: 1
     })
   })]
+};
+
+
+// olapp.Project
+
+// Constructor
+//   params
+//     - options
+//       title: Title of project.
+//       description: Description of project.
+//       plugins: Array of paths of plugins to load.
+//       init: function (project). A function to initialize project.
+//         - project: project-self.
+olapp.Project = function (options) {
+  // for (var k in options) { this[k] = options[k]; }
+  this.title = options.title || '';
+  this.description = options.description || '';
+  this.plugins = options.plugins || [];
+  this.init = options.init;
+
+  this.mapLayers = [];
+};
+
+olapp.Project.prototype = {
+
+  constructor: olapp.Project,
+
+  addLayer: function (layer) {
+    var project = olapp.project,
+        map = olapp.map,
+        gui = olapp.gui;
+
+    if (layer.title === undefined) layer.title = 'no title';
+    if (layer.blendMode === undefined) layer.blendMode = 'source-over';
+
+    layer.on('precompose', function (evt) {
+      evt.context.globalCompositeOperation = this.blendMode;
+    });
+    layer.on('postcompose', function (evt) {
+      evt.context.globalCompositeOperation = 'source-over';
+    });
+
+    this.mapLayers.push(layer);
+
+    // TODO: custom event - Project.layerAdded
+    // TODO: add event handler to olapp.core. add the layer to map and gui there.
+  },
+
+  removeLayer: function (layer) {
+    // TODO
+  },
+
+  toJSON: function () {
+    // TODO:
+  }
+
 };
 
 
@@ -629,72 +701,75 @@ olapp.tools.geocoding.Nominatim = {
 };
 
 
-olapp.defaultProject = function (project) {
-  olapp.plugin.loadPlugin('source/csvelevtile.js', function () {
+olapp.createDefaultProject = function () {
+  return new olapp.Project({
+    title: 'Default project',
+    description: 'This project is default project, which has GSI tile layers.',
+    init: function (project) {
+      var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
-  var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
-
-  // GSI tiles
-  // http://maps.gsi.go.jp/development/
-  var layer = new ol.layer.Tile({
-    source: new ol.source.XYZ({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      // GSI tiles
+      // http://maps.gsi.go.jp/development/
+      var layer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          attributions: [
+            new ol.Attribution({
+              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+            })
+          ],
+          projection: 'EPSG:3857',
+          tileGrid: ol.tilegrid.createXYZ({
+            minZoom: 2,
+            maxZoom: 18
+          }),
+          url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'
         })
-      ],
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 2,
-        maxZoom: 18
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'
-    })
-  });
-  layer.title = '地理院地図 (標準地図)';
-  project.addLayer(layer);
+      });
+      layer.title = '地理院地図 (標準地図)';
+      project.addLayer(layer);
 
-  layer = new ol.layer.Tile({
-    source: new ol.source.XYZ({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+      layer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          attributions: [
+            new ol.Attribution({
+              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+            })
+          ],
+          projection: 'EPSG:3857',
+          tileGrid: ol.tilegrid.createXYZ({
+            minZoom: 5,
+            maxZoom: 15
+          }),
+          url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
+        }),
+        maxResolution: resolutionFromZoomLevel(5 - 0.1)
+      });
+      layer.setVisible(false);
+      layer.title = '色別標高図';
+      project.addLayer(layer);
+
+      layer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          attributions: [
+            new ol.Attribution({
+              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+            })
+          ],
+          projection: 'EPSG:3857',
+          tileGrid: ol.tilegrid.createXYZ({
+            minZoom: 2,
+            maxZoom: 18
+          }),
+          url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'
         })
-      ],
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 5,
-        maxZoom: 15
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
-    }),
-    maxResolution: resolutionFromZoomLevel(5 - 0.1)
-  });
-  layer.setVisible(false);
-  layer.title = '色別標高図';
-  project.addLayer(layer);
-
-  layer = new ol.layer.Tile({
-    source: new ol.source.XYZ({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 2,
-        maxZoom: 18
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'
-    })
-  });
-  layer.setVisible(false);
-  layer.title = '写真';
-  project.addLayer(layer);
-
+      });
+      layer.setVisible(false);
+      layer.title = '写真';
+      project.addLayer(layer);
+    }
   });
 };
+
 
 // Initialize olapp application
 $(function () {
@@ -714,6 +789,6 @@ $(function () {
     }
   }
   else {
-    olapp.project.load(olapp.defaultProject);
+    olapp.project.load(olapp.createDefaultProject());
   }
 });
