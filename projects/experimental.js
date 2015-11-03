@@ -60,6 +60,70 @@ olapp.project.load(function (project) {
   layer.title = '写真';
   project.addLayer(layer);
 
+  // EXPERIMENTAL GSI elevation tile
+  layer = new ol.layer.Tile({
+    source: new ol.source.CSVElevTile({
+      attributions: [
+        new ol.Attribution({
+          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+        })
+      ],
+      mode: 'relief',
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 0,
+        maxZoom: 14
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
+    })
+  });
+  layer.setVisible(false);
+  layer.title = '段彩図 (標高タイル)';
+  project.addLayer(layer);
+
+  layer = new ol.layer.Tile({
+    source: new ol.source.CSVElevTile({
+      attributions: [
+        new ol.Attribution({
+          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+        })
+      ],
+      mode: 'slope',
+      projection: 'EPSG:3857',
+      tileGrid: ol.tilegrid.createXYZ({
+        minZoom: 0,
+        maxZoom: 14
+      }),
+      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
+    })
+  });
+  layer.setVisible(false);
+  layer.title = '傾斜区分図 (標高タイル)';
+  project.addLayer(layer);
+
+  // Seamless Digital Geological Map of Japan (1:200,000)
+  var gsjlayer = new ol.layer.Tile({});
+  gsjlayer.setVisible(false);
+  gsjlayer.title = 'シームレス地質図 (詳細版)';
+  project.addLayer(gsjlayer);
+
+  var url = 'https://gbank.gsj.jp/seamless/tilemap/detailed/WMTSCapabilities.xml';
+  $.ajax(url).then(function(response) {
+    var parser = new ol.format.WMTSCapabilities();
+    var result = parser.read(response);
+    var options = ol.source.WMTS.optionsFromCapabilities(result, {
+      layer: 'g',
+      matrixSet: 'g_set',
+      requestEncoding: 'REST'
+    });
+    options.attributions = [
+      new ol.Attribution({
+        html: "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>"
+      })
+    ];
+    gsjlayer.setSource(new ol.source.WMTS(options));
+  });
+
   // EXPERIMENTAL vector tile - experimental_rdcl
   layer = new ol.layer.Vector({
     source: new ol.source.TileVector({
@@ -157,69 +221,4 @@ olapp.project.load(function (project) {
   layer.setVisible(false);
   layer.title = '基盤地図情報（基本項目）(z>=18)';
   project.addLayer(layer);
-
-  // EXPERIMENTAL GSI elevation tile
-  layer = new ol.layer.Tile({
-    source: new ol.source.CSVElevTile({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      mode: 'relief',
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 0,
-        maxZoom: 14
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
-    })
-  });
-  layer.setVisible(false);
-  layer.title = '段彩図 (標高タイル)';
-  project.addLayer(layer);
-
-  layer = new ol.layer.Tile({
-    source: new ol.source.CSVElevTile({
-      attributions: [
-        new ol.Attribution({
-          html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-        })
-      ],
-      mode: 'slope',
-      projection: 'EPSG:3857',
-      tileGrid: ol.tilegrid.createXYZ({
-        minZoom: 0,
-        maxZoom: 14
-      }),
-      url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
-    })
-  });
-  layer.setVisible(false);
-  layer.title = '傾斜区分図 (標高タイル)';
-  project.addLayer(layer);
-
-  // Seamless Digital Geological Map of Japan (1:200,000)
-  var url = 'https://gbank.gsj.jp/seamless/tilemap/detailed/WMTSCapabilities.xml';
-  $.ajax(url).then(function(response) {
-    var parser = new ol.format.WMTSCapabilities();
-    var result = parser.read(response);
-    var options = ol.source.WMTS.optionsFromCapabilities(result, {
-      layer: 'g',
-      matrixSet: 'g_set',
-      requestEncoding: 'REST'
-    });
-    var layer = new ol.layer.Tile({
-      opacity: 1,
-      source: new ol.source.WMTS(options)
-    });
-    layer.getSource().setAttributions([
-      new ol.Attribution({
-        html: "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>"
-      })
-    ]);
-    layer.setVisible(false);
-    layer.title = 'シームレス地質図 (詳細版)';
-    project.addLayer(layer);
-  });
 });
