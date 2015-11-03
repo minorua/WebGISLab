@@ -311,7 +311,8 @@ var olapp = {
       var visible = $(this).is(':checked');
       layer.setVisible(visible);
     });
-    item.find('.btn').click(function (e) {
+
+    var switchExpansion = function (e) {
       e.stopPropagation();
 
       var layerId = item.attr('id');
@@ -368,7 +369,9 @@ var olapp = {
           map.render();
         });
       }
-    });
+    };
+    item.find('.btn').click(switchExpansion);
+    item.dblclick(switchExpansion);
   };
 
   // Remove a layer from layer list.
