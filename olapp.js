@@ -306,7 +306,7 @@ var olapp = {
       $('#layer_list .list-group-item.active').removeClass('active');
       $(event.target).addClass('active');
     });
-    item.find(':checkbox').change(function () {
+    item.children(':checkbox').change(function () {
       var layer = project.getLayerById($(this).parent().attr('id'));
       var visible = $(this).is(':checked');
       layer.setVisible(visible);
@@ -370,7 +370,7 @@ var olapp = {
         });
       }
     };
-    item.find('.btn').click(switchExpansion);
+    item.children('.btn').click(switchExpansion);
     item.dblclick(switchExpansion);
   };
 
