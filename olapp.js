@@ -237,24 +237,29 @@ var olapp = {
       // Clear the current project
       core.project.clear();
 
+      // Call this when project has been loaded
+      var projectLoaded = function () {
+        if (callback) callback();
+        else if (core.project._loadCallback) core.project._loadCallback();
+        core.project._loadCallback = null;
+      };
+
       if (prj instanceof olapp.Project) {
         olapp.project = prj;
-        if (prj.init !== undefined) {
-          if (prj.plugins.length > 0) {
-            // Initialize project after plugins are loaded.
-            plugin.loadPlugins(prj.plugins, function () {
-              prj.init(prj);
-              core.project.addLayers(prj.mapLayers);
 
-              if (callback) callback();
-              else if (core.project._loadCallback) core.project._loadCallback();
-              core.project._loadCallback = null;
-            });
-            return;
-          }
-          prj.init(prj);
-          core.project.addLayers(prj.mapLayers);
+        if (prj.plugins.length > 0) {
+          // Load plugins
+          plugin.loadPlugins(prj.plugins, function () {
+            // Initialize project after plugins are loaded.
+            if (prj.init !== undefined) prj.init(prj);
+            core.project.addLayers(prj.mapLayers);
+            projectLoaded();
+          });
+          return;
         }
+
+        if (prj.init !== undefined) prj.init(prj);
+        core.project.addLayers(prj.mapLayers);
 
         // TODO: set project title to the gui
       }
@@ -262,9 +267,7 @@ var olapp = {
         // TODO: load project in JSON format
       }
 
-      if (callback) callback();
-      else if (core.project._loadCallback) core.project._loadCallback();
-      core.project._loadCallback = null;
+      projectLoaded();
     }
 
   };
