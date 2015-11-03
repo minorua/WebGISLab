@@ -7,9 +7,10 @@
     - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
 
 * Experimental project: http://minorua.github.io/WebGISLab/index.html?project=experimental
+    - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
     - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
-    - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図
-
+    - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図, 傾斜区分図
+    - [20万分の1日本シームレス地質図](https://gbank.gsj.jp/seamless/) (WMTS)
 
 ## Requirements
 
@@ -26,6 +27,7 @@
 - ラスタタイル(ベース地図)の追加
     - WMTSレイヤ
         - 20万分の1日本シームレス地質図 https://gbank.gsj.jp/seamless/
+            - FeatureInfoの表示
     - レイヤ情報
 - ベクトルタイルの追加
     - スタイル設定
@@ -35,10 +37,12 @@
         - 凡例
     - 地形断面図作成
         - キャンバス上の色で着色
+- 地物情報の表示
+    - 対象: すべての表示レイヤ/選択レイヤのみ
 - 帰属 (attribution)
     - 表示を重複させない
     - ズームレベルに応じた表示
-- ジオコーディング (Nominatim/国土数値情報公共施設データ等)
+- 地図検索 (Nominatim/国土数値情報公共施設データ等)
     - 5件程度の結果を一覧表示する
 - ローカルのKMLファイルの読み込み (ドラッグ&ドロップで)
 - 読み込まれたデータのHTML5 ローカルストレージへの保存
