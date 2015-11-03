@@ -303,7 +303,7 @@ var olapp = {
                '</div>';
     var item = $('#layer_list').prepend(html).find('.list-group-item').first();
     item.click(function (event) {
-      $('#layer_list .active').removeClass('active');
+      $('#layer_list .list-group-item.active').removeClass('active');
       $(event.target).addClass('active');
     });
     item.find(':checkbox').change(function () {
