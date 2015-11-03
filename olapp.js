@@ -7,15 +7,17 @@
 /*
 olapp - An OpenLayers application
 
-.core        - Core module.
-.dataSources - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.
-.gui         - GUI module.
-.map         - An object of ol.Map. Initialized in olapp.init().
-.plugin      - Plugin module.
-.project     - Project management module.
-.tools       - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
+.core         - Core module.
+.core.project - Project management module.
+.dataSources  - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.
+.gui          - GUI module.
+.map          - An object of ol.Map. Initialized in olapp.init().
+.plugin       - Plugin module.
+.project      - An object of olapp.Project. Current project.
+.tools        - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
-.init()      - Initialize application.
+.init()         - Initialize application.
+.loadProject()  - Load a project.
 
 .Project
 .DataSource.Base
@@ -25,22 +27,30 @@ var olapp = {
   dataSources: {},
   gui: {},
   plugin: {},
-  project: {},
   tools: {}
 };
 
 
 (function () {
   var core = olapp.core,
-      project = olapp.project,
       gui = olapp.gui,
       plugin = olapp.plugin,
       tools = olapp.tools;
 
-  var map;
+  var map, mapLayers;
 
   // init()
   olapp.init = function () {
+    core.init();
+  };
+
+  // loadProject()
+  olapp.loadProject = function (project, callback) {
+    core.project.load(project, callback);
+  };
+
+  // olapp.core
+  core.init = function () {
     map = new ol.Map({
       controls: ol.control.defaults({
         attributionOptions: ({
@@ -58,60 +68,12 @@ var olapp = {
     });
     olapp.map = map;
 
+    core.project.init();
     gui.init(map);
   };
 
-
-  // olapp.core
-  core.styleFunction = function (feature, resolution) {
-    var featureStyleFunction = feature.getStyleFunction();
-    if (featureStyleFunction) {
-      return featureStyleFunction.call(feature, resolution);
-    } else {
-      return olapp.defaultStyle[feature.getGeometry().getType()];
-    }
-  };
-
-  core.urlParams = function () {
-    var p, vars = {};
-    var params = window.location.search.substring(1).split('&').concat(window.location.hash.substring(1).split('&'));
-    params.forEach(function (param) {
-      p = param.split('=');
-      vars[p[0]] = p[1];
-    });
-    return vars;
-  };
-
-
-  // olapp.project
-
-  // Initialize project
-  project.init = function () {
-    project.mapLayers = {};
-    project._lastElemId = -1;
-    project._project = null;
-  };
-
-  project.init();
-
-  project.clear = function () {
-    project.init();
-
-    map.getLayers().clear();
-    gui.clearLayerList();
-  };
-
-  project.getLayerByElemId = function (id) {
-    return (project.mapLayers[id] !== undefined) ? project.mapLayers[id] : null;
-  };
-
-  project.getNextLayerElemId = function () {
-    project._lastElemId++;
-    return 'L' + project._lastElemId;
-  };
-
-  project.loadLayerFromFile = function (file) {
-    if (!project._project) alert('No project');   // TODO: assert
+  core.loadLayerFromFile = function (file) {
+    if (!olapp.project) alert('No project');   // TODO: assert
 
     var ext2formatConstructors = {
       'gpx': [ol.format.GPX],
@@ -131,11 +93,11 @@ var olapp = {
 
     var reader = new FileReader();
     reader.onload = function (event) {
-      var layer = project._loadText(reader.result, formatConstructors);
+      var layer = core._loadText(reader.result, formatConstructors);
 
       if (layer) {
         layer.title = file.name;
-        project._project.addLayer(layer);
+        olapp.project.addLayer(layer);
         map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
       }
       else {
@@ -145,7 +107,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  project._loadText = function (text, formatConstructors) {
+  core._loadText = function (text, formatConstructors) {
     var transform = ol.proj.getTransform('EPSG:4326', 'EPSG:3857');
 
     for (var i = 0; i < formatConstructors.length; i++) {
@@ -177,85 +139,134 @@ var olapp = {
     return null;
   };
 
-  // Load a project
-  //   prj: olapp.Project object, string (URL), File or Object (JSON).
-  //   callback: Callback function. If specified, called when the code to load a project has been executed.
-  project._loadCallback = null;
-  project._scriptElement = null;
-  project.load = function (prj, callback) {
-    if (typeof prj == 'string') {
-      // Remove project script element if exists
-      var head = document.getElementsByTagName('head')[0];
-      if (project._scriptElement) head.removeChild(project._scriptElement);
-      project._scriptElement = null;
-
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = prj;
-      head.appendChild(s);
-      project._scriptElement = s;
-
-      /* Not works with file://
-      $('head').append(s);
-      $.getScript(project, function () {
-        olapp.gui.status("Have been loaded '" + project + "'");
-      }); */
-
-      // project.load() will be called from the project file again.
-      project._loadCallback = callback;
-      return;
+  core.styleFunction = function (feature, resolution) {
+    var featureStyleFunction = feature.getStyleFunction();
+    if (featureStyleFunction) {
+      return featureStyleFunction.call(feature, resolution);
+    } else {
+      return olapp.defaultStyle[feature.getGeometry().getType()];
     }
-    else if (prj instanceof File) {
-      var reader = new FileReader();
-      reader.onload = function (event) {
-        eval(reader.result);
-        // TODO: status message
-      }
-      reader.readAsText(prj, 'UTF-8');
-      return;
-    }
+  };
 
-    // Clear the current project
-    project.clear();
+  core.urlParams = function () {
+    var p, vars = {};
+    var params = window.location.search.substring(1).split('&').concat(window.location.hash.substring(1).split('&'));
+    params.forEach(function (param) {
+      p = param.split('=');
+      vars[p[0]] = p[1];
+    });
+    return vars;
+  };
 
-    var addLayers = function (layers) {
+
+  // olapp.core.project - Project management module
+  core.project = {
+
+    init: function () {
+      olapp.project = null;
+      core.project._lastElemId = -1;
+      mapLayers = {};
+    },
+
+    addLayer: function (layer) {
+      layer.elemId = this.getNextLayerElemId();
+
+      mapLayers[layer.elemId] = layer;
+      map.addLayer(layer);
+      gui.addLayer(layer);
+    },
+
+    addLayers: function (layers) {
       layers.forEach(function (layer) {
-        layer.elemId = project.getNextLayerElemId();
-
-        project.mapLayers[layer.elemId] = layer;
-        map.addLayer(layer);
-        gui.addLayer(layer);
+        core.project.addLayer(layer);
       });
-    };
+    },
 
-    if (prj instanceof olapp.Project) {
-      project._project = prj;
-      if (prj.init !== undefined) {
-        if (prj.plugins.length > 0) {
-          // Initialize project after plugins are loaded.
-          plugin.loadPlugins(prj.plugins, function () {
-            prj.init(prj);
-            addLayers(prj.mapLayers);
+    clear: function () {
+      core.project.init();
 
-            if (callback) callback();
-            else if (project._loadCallback) project._loadCallback();
-            project._loadCallback = null;
-          });
-          return;
+      map.getLayers().clear();
+      gui.clearLayerList();
+    },
+
+    getNextLayerElemId: function () {
+      core.project._lastElemId++;
+      return 'L' + core.project._lastElemId;
+    },
+
+    _loadCallback: null,
+
+    _scriptElement: null,
+
+    // Load a project
+    //   prj: olapp.Project object, string (URL), File or Object (JSON).
+    //   callback: Callback function. If specified, called when the code to load a project has been executed.
+    load: function (prj, callback) {
+      if (typeof prj == 'string') {
+        // Remove project script element if exists
+        var head = document.getElementsByTagName('head')[0];
+        if (core.project._scriptElement) head.removeChild(core.project._scriptElement);
+        core.project._scriptElement = null;
+
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = prj;
+        head.appendChild(s);
+        core.project._scriptElement = s;
+
+        /* Not works with file://
+        $('head').append(s);
+        $.getScript(prj, function () {
+          olapp.gui.status("Have been loaded '" + prj + "'");
+        }); */
+
+        // olapp.loadProject() will be called from the project file again.
+        core.project._loadCallback = callback;
+        return;
+      }
+      else if (prj instanceof File) {
+        var reader = new FileReader();
+        reader.onload = function (event) {
+          eval(reader.result);
+          // TODO: status message
         }
-        prj.init(prj);
-        addLayers(prj.mapLayers);
+        reader.readAsText(prj, 'UTF-8');
+        return;
       }
 
-      // TODO: set project title to the gui
-    }
-    else {
-      // TODO: load project in JSON format
+      // Clear the current project
+      core.project.clear();
+
+      if (prj instanceof olapp.Project) {
+        olapp.project = prj;
+        if (prj.init !== undefined) {
+          if (prj.plugins.length > 0) {
+            // Initialize project after plugins are loaded.
+            plugin.loadPlugins(prj.plugins, function () {
+              prj.init(prj);
+              core.project.addLayers(prj.mapLayers);
+
+              if (callback) callback();
+              else if (core.project._loadCallback) core.project._loadCallback();
+              core.project._loadCallback = null;
+            });
+            return;
+          }
+          prj.init(prj);
+          core.project.addLayers(prj.mapLayers);
+        }
+
+        // TODO: set project title to the gui
+      }
+      else {
+        // TODO: load project in JSON format
+      }
+
+      if (callback) callback();
+      else if (core.project._loadCallback) core.project._loadCallback();
+      core.project._loadCallback = null;
     }
 
-    if (callback) callback();
-    else if (project._loadCallback) project._loadCallback();
-    project._loadCallback = null;
   };
 
 
@@ -306,11 +317,11 @@ var olapp = {
 
       var files = e.originalEvent.dataTransfer.files;
       if (files.length == 1 && files[0].name.split('.').pop().toLowerCase() == 'js') {
-        project.load(files[0]);
+        core.project.load(files[0]);
       }
       else {
         for (var i = 0; i < files.length; i++) {
-          project.loadLayerFromFile(files[i]);
+          core.loadLayerFromFile(files[i]);
         }
       }
     });
@@ -338,7 +349,7 @@ var olapp = {
       $(event.target).addClass('active');
     });
     item.children(':checkbox').change(function () {
-      var layer = project.getLayerByElemId($(this).parent().attr('id'));
+      var layer = mapLayers[$(this).parent().attr('id')];
       var visible = $(this).is(':checked');
       layer.setVisible(visible);
     });
@@ -370,27 +381,27 @@ var olapp = {
                    '</div>';
         item.append(html);
 
-        if (project.mapLayers[layerId].blendMode == 'multiply') {
+        if (mapLayers[layerId].blendMode == 'multiply') {
           item.find('.btn-blendmode span').addClass('active');
         }
 
         item.find('.opacity-slider').slider({
           change: function (event, ui) {
             var opacity = ui.value / 100;
-            project.mapLayers[layerId].setOpacity(opacity);
+            mapLayers[layerId].setOpacity(opacity);
           },
           slide: function (event, ui) {
             var opacity = ui.value / 100;
-            project.mapLayers[layerId].setOpacity(opacity);
+            mapLayers[layerId].setOpacity(opacity);
           },
-          value: project.mapLayers[layerId].getOpacity() * 100
+          value: mapLayers[layerId].getOpacity() * 100
         });
         item.find('.layer-sub-container').slideDown('fast');
         item.find('.layer-sub-container').find('.btn-blendmode').click(function (e) {
           e.stopPropagation();
 
-          var blendMode = (project.mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
-          project.mapLayers[layerId].blendMode = blendMode;
+          var blendMode = (mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
+          mapLayers[layerId].blendMode = blendMode;
 
           var target = $(this);
           if (target.prop('tagName') == 'A') target = target.children();
@@ -419,7 +430,7 @@ var olapp = {
     layers.clear();
     $('#layer_list .list-group-item').each(function (index) {
       var id = $(this).attr('id');
-      layers.insertAt(0, project.mapLayers[id]);
+      layers.insertAt(0, mapLayers[id]);
     });
   };
 
@@ -580,10 +591,6 @@ olapp.Project.prototype = {
   constructor: olapp.Project,
 
   addLayer: function (layer) {
-    var project = olapp.project,
-        map = olapp.map,
-        gui = olapp.gui;
-
     if (layer.title === undefined) layer.title = 'no title';
     if (layer.blendMode === undefined) layer.blendMode = 'source-over';
 
@@ -785,10 +792,10 @@ $(function () {
     }
     else {
       // load the project
-      olapp.project.load('projects/' + projectName + '.js');
+      olapp.loadProject('projects/' + projectName + '.js');
     }
   }
   else {
-    olapp.project.load(olapp.createDefaultProject());
+    olapp.loadProject(olapp.createDefaultProject());
   }
 });

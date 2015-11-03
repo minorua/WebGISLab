@@ -103,7 +103,7 @@
 
 プロジェクトファイルのコード
 ```javascript
-olapp.project.load(new olapp.Project({
+olapp.loadProject(new olapp.Project({
   title: 'New Project',
   description: '',
   plugins: ['source/csvelevtile.js'],
