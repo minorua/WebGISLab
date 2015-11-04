@@ -69,12 +69,10 @@
 olapp.loadProject(new olapp.Project({
   title: 'New Project',
   description: '',
-  plugins: ['source/csvelevtile.js'],
+  plugins: ['source/gsielevtile.js'],
   init: function (project) {
-    var layer = new ol.layer.Tile({
-      source: new ol.source.XYZElevCSV({
-      ....
-    project.addLayer(layer);
+    var gsitiles = new olapp.source.GSITiles;
+    project.addLayer(gsitiles.createLayer('std'));
   }
 }));
 ```

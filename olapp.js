@@ -9,22 +9,22 @@ olapp - An OpenLayers application
 
 .core         - Core module.
 .core.project - Project management module.
-.dataSources  - An object. Key is a data source ID and value is a subclass based on olapp.DataSource.Base.
 .gui          - GUI module.
 .map          - An object of ol.Map. Initialized in olapp.init().
 .plugin       - Plugin module.
 .project      - An object of olapp.Project. Current project.
+.source       - An object. Key is a data source ID and value is a subclass based on olapp.Source.Base.
 .tools        - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
 .init()         - Initialize application.
 .loadProject()  - Load a project.
 
 .Project
-.DataSource.Base
+.Source.Base
 */
 var olapp = {
   core: {},
-  dataSources: {},
+  source: {},
   gui: {},
   plugin: {},
   tools: {}
@@ -621,45 +621,26 @@ olapp.Project.prototype = {
 };
 
 
-// olapp.DataSource
-olapp.DataSource = {};
+// olapp.Source
+olapp.Source = {};
 
 /*
-olapp.DataSource.Base
+olapp.Source.Base
 
 .list()             - Get layer list in HTML.
 .createLayer(subId) - Create a layer from a sub-source identified by id.
 */
-olapp.DataSource.Base = function () {};
+olapp.Source.Base = function () {};
 
-olapp.DataSource.Base.prototype = {
+olapp.Source.Base.prototype = {
 
-  constructor: olapp.DataSource.Base,
+  constructor: olapp.Source.Base,
 
   list: function () {},
 
   createLayer: function (subId) {}
 
 };
-
-
-/*
-olapp.DataSource.GSITiles
-  inherits from olapp.DataSource.Base
-  TODO: move to tiles_jp.js
-*/
-olapp.DataSource.GSITiles = function () {
-  olapp.DataSource.Base.call(this);
-};
-
-olapp.DataSource.GSITiles.prototype = Object.create(olapp.DataSource.Base.prototype);
-olapp.DataSource.GSITiles.prototype.constructor = olapp.DataSource.Base;
-
-olapp.DataSource.GSITiles.prototype.list = function () {};
-
-olapp.DataSource.GSITiles.prototype.createLayer = function (subId) {};
-
-olapp.dataSources['GSITiles'] = olapp.DataSource.GSITiles;    // register this data source
 
 
 // projection
@@ -715,66 +696,21 @@ olapp.createDefaultProject = function () {
   return new olapp.Project({
     title: 'Default project',
     description: 'This project is default project, which has GSI tile layers.',
+    plugins: ['source/gsitiles.js'],
     init: function (project) {
       var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
-      // GSI tiles
-      // http://maps.gsi.go.jp/development/
-      var layer = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-          attributions: [
-            new ol.Attribution({
-              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-            })
-          ],
-          projection: 'EPSG:3857',
-          tileGrid: ol.tilegrid.createXYZ({
-            minZoom: 2,
-            maxZoom: 18
-          }),
-          url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'
-        })
-      });
-      layer.title = '地理院地図 (標準地図)';
+      // GSI Tiles (source/gsitiles.js)
+      var gsitiles = new olapp.source.GSITiles, layer;
+      layer = gsitiles.createLayer('std');      // 標準地図
       project.addLayer(layer);
 
-      layer = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-          attributions: [
-            new ol.Attribution({
-              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-            })
-          ],
-          projection: 'EPSG:3857',
-          tileGrid: ol.tilegrid.createXYZ({
-            minZoom: 5,
-            maxZoom: 15
-          }),
-          url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
-        }),
-        maxResolution: resolutionFromZoomLevel(5 - 0.1)
-      });
+      layer = gsitiles.createLayer('relief');   // 色別標高図
       layer.setVisible(false);
-      layer.title = '色別標高図';
       project.addLayer(layer);
 
-      layer = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-          attributions: [
-            new ol.Attribution({
-              html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-            })
-          ],
-          projection: 'EPSG:3857',
-          tileGrid: ol.tilegrid.createXYZ({
-            minZoom: 2,
-            maxZoom: 18
-          }),
-          url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'
-        })
-      });
+      layer = gsitiles.createLayer('ort');      // 写真
       layer.setVisible(false);
-      layer.title = '写真';
       project.addLayer(layer);
     }
   });

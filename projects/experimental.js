@@ -1,109 +1,34 @@
 olapp.loadProject(new olapp.Project({
   title: 'Experimental Project',
   description: '',
-  plugins: ['source/csvelevtile.js'],
+  plugins: ['source/gsitiles.js', 'source/gsielevtile.js'],
   init: function (project) {
     var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
-    // GSI tiles
-    // http://maps.gsi.go.jp/development/
-    var layer = new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        projection: 'EPSG:3857',
-        tileGrid: ol.tilegrid.createXYZ({
-          minZoom: 2,
-          maxZoom: 18
-        }),
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'
-      })
-    });
-    layer.title = '地理院地図 (標準地図)';
+    // GSI Tiles (source/gsitiles.js)
+    var gsitiles = new olapp.source.GSITiles, layer;
+    layer = gsitiles.createLayer('std');      // 標準地図
     project.addLayer(layer);
 
-    layer = new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        projection: 'EPSG:3857',
-        tileGrid: ol.tilegrid.createXYZ({
-          minZoom: 5,
-          maxZoom: 15
-        }),
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
-      }),
-      maxResolution: resolutionFromZoomLevel(5 - 0.1)
-    });
+    layer = gsitiles.createLayer('relief');   // 色別標高図
     layer.setVisible(false);
-    layer.title = '色別標高図';
     project.addLayer(layer);
 
-    layer = new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        projection: 'EPSG:3857',
-        tileGrid: ol.tilegrid.createXYZ({
-          minZoom: 2,
-          maxZoom: 18
-        }),
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg'
-      })
-    });
+    layer = gsitiles.createLayer('ort');      // 写真
     layer.setVisible(false);
-    layer.title = '写真';
     project.addLayer(layer);
 
-    // EXPERIMENTAL GSI elevation tile
-    layer = new ol.layer.Tile({
-      source: new ol.source.CSVElevTile({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        mode: 'relief',
-        projection: 'EPSG:3857',
-        tileGrid: ol.tilegrid.createXYZ({
-          minZoom: 0,
-          maxZoom: 14
-        }),
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
-      })
-    });
+
+    // GSI elevation tile (source/gsielevtile.js)
+    var gsielevtile = new olapp.source.GSIElevTile;
+    layer = gsielevtile.createLayer('relief');      // 段彩図
     layer.setVisible(false);
-    layer.title = '段彩図 (標高タイル)';
     project.addLayer(layer);
 
-    layer = new ol.layer.Tile({
-      source: new ol.source.CSVElevTile({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
-        mode: 'slope',
-        projection: 'EPSG:3857',
-        tileGrid: ol.tilegrid.createXYZ({
-          minZoom: 0,
-          maxZoom: 14
-        }),
-        url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
-      })
-    });
+    layer = gsielevtile.createLayer('slope');      // 傾斜区分図
     layer.setVisible(false);
-    layer.title = '傾斜区分図 (標高タイル)';
     project.addLayer(layer);
+
 
     // Seamless Digital Geological Map of Japan (1:200,000)
     var gsjlayer = new ol.layer.Tile({});

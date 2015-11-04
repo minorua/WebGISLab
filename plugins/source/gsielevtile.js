@@ -1,13 +1,13 @@
-// csvelevtile.js
+// gsielevtile.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
 
 (function () {
   var plugin = {
-    name: 'CSVElevTile',
-    path: 'source/csvelevtile.js',
+    name: 'GSIElevTile',
+    path: 'source/gsielevtile.js',
     type: 'source',
-    description: 'Adds ol.source.CSVElevTile.'
+    description: 'Adds ol.source.GSIElevTile and olapp.source.GSIElevTile.'
   };
 
   var defaultColorMap = {
@@ -35,7 +35,7 @@
   };
 
   /*
-  ol.source.CSVElevTile
+  ol.source.GSIElevTile
     inherits from ol.source.XYZ
 
   options
@@ -43,7 +43,7 @@
     colorMap: Optional. A color map.
     colorInterpolation: 'discrete' or 'linear'. Default is 'discrete'.
   */
-  ol.source.CSVElevTile = function (options) {
+  ol.source.GSIElevTile = function (options) {
     ol.source.XYZ.call(this, options);
 
     var mode = options.mode;
@@ -309,8 +309,74 @@
     });
   };
 
-  ol.source.CSVElevTile.prototype = Object.create(ol.source.XYZ.prototype);
-  ol.source.CSVElevTile.prototype.constructor = ol.source.CSVElevTile;
+  ol.source.GSIElevTile.prototype = Object.create(ol.source.XYZ.prototype);
+  ol.source.GSIElevTile.prototype.constructor = ol.source.GSIElevTile;
 
-  if (typeof olapp !== 'undefined') olapp.plugin.addPlugin(plugin.path, plugin);
+
+  if (typeof olapp !== 'undefined') {
+    var layerIds = ['relief', 'slope'];
+    var layers = {
+      'relief': {
+        name: '段彩図 (標高タイル)',
+        zmin: 0,
+        zmax: 14
+      },
+      'slope': {
+        name: '傾斜区分図 (標高タイル)',
+        zmin: 0,
+        zmax: 14
+      }
+    };
+
+    /*
+    olapp.Source.GSIElevTile
+      inherits from olapp.Source.Base
+    */
+    olapp.Source.GSIElevTile = function () {
+      olapp.Source.Base.call(this);
+    };
+
+    olapp.Source.GSIElevTile.prototype = Object.create(olapp.Source.Base.prototype);
+    olapp.Source.GSIElevTile.prototype.constructor = olapp.Source.Base;
+
+    olapp.Source.GSIElevTile.prototype.list = function () {
+      var listItems = [];
+      layerIds.forEach(function (subId) {
+        listItems.push('<li>' + layers[subId].name  + '</li>');
+      });
+      return listItems;
+    };
+
+    olapp.Source.GSIElevTile.prototype.createLayer = function (subId) {
+      if (layerIds.indexOf(subId) === -1) return null;
+
+      var lyr = layers[subId];
+      var options = {
+        attributions: [
+          new ol.Attribution({
+            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+          })
+        ],
+        mode: subId,
+        projection: 'EPSG:3857',
+        tileGrid: ol.tilegrid.createXYZ({
+          minZoom: lyr.zmin,
+          maxZoom: lyr.zmax
+        }),
+        url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
+      };
+
+      var layer = new ol.layer.Tile({
+        source: new ol.source.GSIElevTile(options)
+      });
+      layer.title = layers[subId].name;
+      return layer;
+    };
+
+    // register this data source
+    olapp.source.GSIElevTile = olapp.Source.GSIElevTile;
+
+    // register this plugin
+    olapp.plugin.addPlugin(plugin.path, plugin);
+  }
 })();
