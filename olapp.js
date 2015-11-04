@@ -233,6 +233,10 @@ var olapp = {
         reader.readAsText(prj, 'UTF-8');
         return;
       }
+      else if (!(prj instanceof olapp.Project)) {
+        // TODO: load project in JSON format
+        // prj = new olapp.Project
+      }
 
       // Clear the current project
       core.project.clear();
@@ -244,29 +248,24 @@ var olapp = {
         core.project._loadCallback = null;
       };
 
-      if (prj instanceof olapp.Project) {
-        olapp.project = prj;
+      // prj is an instance of olapp.Project
+      olapp.project = prj;
 
-        if (prj.plugins.length > 0) {
-          // Load plugins
-          plugin.loadPlugins(prj.plugins, function () {
-            // Initialize project after plugins are loaded.
-            if (prj.init !== undefined) prj.init(prj);
-            core.project.addLayers(prj.mapLayers);
-            projectLoaded();
-          });
-          return;
-        }
-
-        if (prj.init !== undefined) prj.init(prj);
-        core.project.addLayers(prj.mapLayers);
-
-        // TODO: set project title to the gui
-      }
-      else {
-        // TODO: load project in JSON format
+      if (prj.plugins.length > 0) {
+        // Load plugins
+        plugin.loadPlugins(prj.plugins, function () {
+          // Initialize project after plugins are loaded.
+          if (prj.init !== undefined) prj.init(prj);
+          core.project.addLayers(prj.mapLayers);
+          gui.setProjectTitle(prj.title);
+          projectLoaded();
+        });
+        return;
       }
 
+      if (prj.init !== undefined) prj.init(prj);
+      core.project.addLayers(prj.mapLayers);
+      gui.setProjectTitle(prj.title);
       projectLoaded();
     }
 
@@ -275,6 +274,8 @@ var olapp = {
 
   // olapp.gui
   gui.init = function (map) {
+    gui._originalTitle = document.title;
+
     // layer list panel
     $('#slider').slideReveal({
       push: false,
@@ -452,6 +453,10 @@ var olapp = {
       if (features.length > 1) html += ' and other ' + (features.length - 1) + ' feature(s)';
     }
     $('#info').html(html || '&nbsp;');
+  };
+
+  gui.setProjectTitle = function (title) {
+    document.title = gui._originalTitle + (title ? ' - ' + title : '');
   };
 
 
