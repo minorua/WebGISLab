@@ -168,23 +168,19 @@ var olapp = {
       mapLayers = {};
     },
 
+    // Add a layer to current project.
+    // The layer is added also to map and layer list.
     addLayer: function (layer) {
-      layer.elemId = this.getNextLayerElemId();
-
+      // TODO: assert(olapp.project)
+      layer.elemId = core.project.getNextLayerElemId();
       mapLayers[layer.elemId] = layer;
+      olapp.project.mapLayers.push(layer);
       map.addLayer(layer);
       gui.addLayer(layer);
     },
 
-    addLayers: function (layers) {
-      layers.forEach(function (layer) {
-        core.project.addLayer(layer);
-      });
-    },
-
     clear: function () {
       core.project.init();
-
       map.getLayers().clear();
       gui.clearLayerList();
     },
@@ -238,9 +234,6 @@ var olapp = {
         // prj = new olapp.Project
       }
 
-      // Clear the current project
-      core.project.clear();
-
       // Call this when project has been loaded
       var projectLoaded = function () {
         if (callback) callback();
@@ -249,24 +242,36 @@ var olapp = {
       };
 
       // prj is an instance of olapp.Project
-      olapp.project = prj;
-
       if (prj.plugins.length > 0) {
         // Load plugins
         plugin.loadPlugins(prj.plugins, function () {
           // Initialize project after plugins are loaded.
           if (prj.init !== undefined) prj.init(prj);
-          core.project.addLayers(prj.mapLayers);
-          gui.setProjectTitle(prj.title);
+          core.project.setProject(prj);
           projectLoaded();
         });
         return;
       }
 
       if (prj.init !== undefined) prj.init(prj);
-      core.project.addLayers(prj.mapLayers);
-      gui.setProjectTitle(prj.title);
+      core.project.setProject(prj);
       projectLoaded();
+    },
+
+    setProject: function (project) {
+      // Clear the current project
+      core.project.clear();
+
+      olapp.project = project;
+      gui.setProjectTitle(project.title);
+
+      // Add layers to map and layer list
+      project.mapLayers.forEach(function (layer) {
+        layer.elemId = core.project.getNextLayerElemId();
+        mapLayers[layer.elemId] = layer;
+        map.addLayer(layer);
+        gui.addLayer(layer);
+      });
     }
 
   };
@@ -430,6 +435,7 @@ var olapp = {
   };
 
   gui.updateLayerOrder = function () {
+    // TODO: update layer order in project.mapLayers
     var layers = map.getLayers();
     layers.clear();
     $('#layer_list .list-group-item').each(function (index) {
@@ -610,9 +616,6 @@ olapp.Project.prototype = {
     });
 
     this.mapLayers.push(layer);
-
-    // TODO: custom event - Project.layerAdded
-    // TODO: add event handler to olapp.core. add the layer to map and gui there.
   },
 
   removeLayer: function (layer) {
