@@ -44,7 +44,10 @@
     - ズームレベルに応じた表示
 - 地図検索 (Nominatim/国土数値情報公共施設データ等)
     - 5件程度の結果を一覧表示する
-- ローカルのKMLファイルの読み込み (ドラッグ&ドロップで)
+- ローカルファイルの読み込み
+    - KMLファイル
+    - JPGIS形式ファイル
+        - 国土数値情報 (JPGIS 2.1)
 - 読み込まれたデータのHTML5 ローカルストレージへの保存
 - プロジェクトの保存と読み込み
     - ローカルストレージとファイルダウンロード
@@ -60,18 +63,28 @@
 ## Design for Project File
 
 - プロジェクトファイル
-    - 内容はJavaScriptのコード(拡張子はjs)
-    - JSON形式とカスタム形式
-    - olapp.project.load(olapp.Project object, json data or file)
-    - JSON形式
-        - `メニュー - プロジェクトの保存(ダウンロード)` での保存形式
-        - 追加されたレイヤの情報
+    - 内容はJavaScriptのコード(拡張子はjs)。スクリプトの記述によるプロジェクトの構成
+
+```javascript
+olapp.loadProject(new olapp.Project({
+  title: 'New Project',
+  description: '',
+  plugins: ['source/csvelevtile.js'],
+  init: function (project) {
+    var layer = new ol.layer.Tile({
+      source: new ol.source.XYZElevCSV({
+      ....
+    project.addLayer(layer);
+  }
+}));
+```
+
+    - 追加情報
+        - レイヤの追加削除
         - 読み込まれたローカルファイルデータ(データまたは参照)
-        - レイヤに設定されたスタイル(データまたは関数)
-    - カスタム形式
-        - スクリプトの記述によるプロジェクトの構成
-        - プロジェクトの保存は不可能(構成変更やスタイル設定に対応できたらいいが)
-        - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
+            - レイヤに設定されたスタイル(データまたは関数)
+        - スタイル設定
+    - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
 - メニューからの読み込み
     - 読み込み可能な用意されたプロジェクト一覧
     - ローカルストレージに保存されたプロジェクト一覧
@@ -99,21 +112,6 @@
 
   olapp.plugin.addPlugin(myplugin);
 })();
-```
-
-プロジェクトファイルのコード
-```javascript
-olapp.loadProject(new olapp.Project({
-  title: 'New Project',
-  description: '',
-  plugins: ['source/csvelevtile.js'],
-  init: function (project) {
-    var layer = new ol.layer.Tile({
-      source: new ol.source.XYZElevCSV({
-      ....
-    project.addLayer(layer);
-  }
-}));
 ```
 
 
