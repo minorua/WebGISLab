@@ -3,6 +3,7 @@
 目標: デスクトップGISのような操作性のHTML5 WebGISアプリケーション
 
 ## Demos
+
 * Default project: http://minorua.github.io/WebGISLab/index.html
     - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
 
@@ -11,6 +12,7 @@
     - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
     - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図, 傾斜区分図
     - [20万分の1日本シームレス地質図](https://gbank.gsj.jp/seamless/) (WMTS)
+
 
 ## Requirements
 
@@ -69,7 +71,7 @@
 olapp.loadProject(new olapp.Project({
   title: 'New Project',
   description: '',
-  plugins: ['source/gsielevtile.js'],
+  plugins: ['source/gsitiles.js'],
   init: function (project) {
     var gsitiles = new olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));
