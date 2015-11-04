@@ -1,6 +1,7 @@
 // gsielevtile.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
+// Dependencies: jQuery, OpenLayers 3
 
 (function () {
   var plugin = {
@@ -341,23 +342,23 @@
 
     olapp.source.GSIElevTile.prototype.list = function () {
       var listItems = [];
-      layerIds.forEach(function (subId) {
-        listItems.push('<li>' + layers[subId].name  + '</li>');
+      layerIds.forEach(function (id) {
+        listItems.push('<li>' + layers[id].name  + '</li>');
       });
       return listItems;
     };
 
-    olapp.source.GSIElevTile.prototype.createLayer = function (subId) {
-      if (layerIds.indexOf(subId) === -1) return null;
+    olapp.source.GSIElevTile.prototype.createLayer = function (id, layerOptions) {
+      if (layerIds.indexOf(id) === -1) return null;
 
-      var lyr = layers[subId];
+      var lyr = layers[id];
       var options = {
         attributions: [
           new ol.Attribution({
             html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
           })
         ],
-        mode: subId,
+        mode: id,
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({
           minZoom: lyr.zmin,
@@ -366,10 +367,10 @@
         url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
       };
 
-      var layer = new ol.layer.Tile({
+      var layer = new ol.layer.Tile($.extend({
         source: new ol.source.GSIElevTile(options)
-      });
-      layer.title = layers[subId].name;
+      }, layerOptions));
+      layer.title = layers[id].name;
       return layer;
     };
 

@@ -7,28 +7,14 @@ olapp.loadProject(new olapp.Project({
 
     // GSI Tiles (source/gsitiles.js)
     var gsitiles = new olapp.source.GSITiles, layer;
-    layer = gsitiles.createLayer('std');      // 標準地図
-    project.addLayer(layer);
-
-    layer = gsitiles.createLayer('relief');   // 色別標高図
-    layer.setVisible(false);
-    project.addLayer(layer);
-
-    layer = gsitiles.createLayer('ort');      // 写真
-    layer.setVisible(false);
-    project.addLayer(layer);
-
+    project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
+    project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
+    project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
 
     // GSI elevation tile (source/gsielevtile.js)
     var gsielevtile = new olapp.source.GSIElevTile;
-    layer = gsielevtile.createLayer('relief');      // 段彩図
-    layer.setVisible(false);
-    project.addLayer(layer);
-
-    layer = gsielevtile.createLayer('slope');      // 傾斜区分図
-    layer.setVisible(false);
-    project.addLayer(layer);
-
+    project.addLayer(gsielevtile.createLayer('relief', {visible: false}));  // 段彩図
+    project.addLayer(gsielevtile.createLayer('slope', {visible: false}));   // 傾斜区分図
 
     // Seamless Digital Geological Map of Japan (1:200,000)
     var gsjlayer = new ol.layer.Tile({});

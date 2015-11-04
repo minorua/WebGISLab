@@ -638,7 +638,7 @@ olapp.source.Base.prototype = {
 
   list: function () {},
 
-  createLayer: function (subId) {}
+  createLayer: function (id, layerOptions) {}
 
 };
 
@@ -702,16 +702,9 @@ olapp.createDefaultProject = function () {
 
       // GSI Tiles (source/gsitiles.js)
       var gsitiles = new olapp.source.GSITiles, layer;
-      layer = gsitiles.createLayer('std');      // 標準地図
-      project.addLayer(layer);
-
-      layer = gsitiles.createLayer('relief');   // 色別標高図
-      layer.setVisible(false);
-      project.addLayer(layer);
-
-      layer = gsitiles.createLayer('ort');      // 写真
-      layer.setVisible(false);
-      project.addLayer(layer);
+      project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
+      project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
+      project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
     }
   });
 };

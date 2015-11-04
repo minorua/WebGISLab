@@ -1,6 +1,7 @@
 // gsitiles.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
+// Dependencies: jQuery, OpenLayers 3
 
 (function () {
   var plugin = {
@@ -9,6 +10,7 @@
     type: 'source',
     description: 'Adds olapp.source.GSITiles'
   };
+  // GSI Tiles
   // http://maps.gsi.go.jp/development/
   var layerIds = ['std', 'pale', 'blank', 'english', 'relief', 'ort', 'gazo1', 'gazo2', 'gazo3', 'gazo4', 'ort_old10', 'ort_USA10', 'airphoto'];
   var layers = {
@@ -111,17 +113,17 @@
 
   olapp.source.GSITiles.prototype.list = function () {
     var listItems = [];
-    layerIds.forEach(function (subId) {
-      listItems.push('<li>' + layers[subId].name  + '</li>');
+    layerIds.forEach(function (id) {
+      listItems.push('<li>' + layers[id].name  + '</li>');
     });
     return listItems;
   };
 
-  olapp.source.GSITiles.prototype.createLayer = function (subId) {
-    if (layerIds.indexOf(subId) === -1) return null;
+  olapp.source.GSITiles.prototype.createLayer = function (id, layerOptions) {
+    if (layerIds.indexOf(id) === -1) return null;
 
-    var lyr = layers[subId],
-        url = 'http://cyberjapandata.gsi.go.jp/xyz/' + subId + '/{z}/{x}/{y}.' + lyr.format;
+    var lyr = layers[id],
+        url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format;
 
     var options = {
       attributions: attributions,
@@ -134,10 +136,10 @@
     };
     if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
 
-    var layer = new ol.layer.Tile({
+    var layer = new ol.layer.Tile($.extend({
       source: new ol.source.XYZ(options)
-    });
-    layer.title = layers[subId].name;
+    }, layerOptions));
+    layer.title = layers[id].name;
     return layer;
   };
 
