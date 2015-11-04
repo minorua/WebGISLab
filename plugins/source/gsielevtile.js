@@ -329,17 +329,17 @@
     };
 
     /*
-    olapp.Source.GSIElevTile
-      inherits from olapp.Source.Base
+    olapp.source.GSIElevTile
+      inherits from olapp.source.Base
     */
-    olapp.Source.GSIElevTile = function () {
-      olapp.Source.Base.call(this);
+    olapp.source.GSIElevTile = function () {
+      olapp.source.Base.call(this);
     };
 
-    olapp.Source.GSIElevTile.prototype = Object.create(olapp.Source.Base.prototype);
-    olapp.Source.GSIElevTile.prototype.constructor = olapp.Source.Base;
+    olapp.source.GSIElevTile.prototype = Object.create(olapp.source.Base.prototype);
+    olapp.source.GSIElevTile.prototype.constructor = olapp.source.Base;
 
-    olapp.Source.GSIElevTile.prototype.list = function () {
+    olapp.source.GSIElevTile.prototype.list = function () {
       var listItems = [];
       layerIds.forEach(function (subId) {
         listItems.push('<li>' + layers[subId].name  + '</li>');
@@ -347,7 +347,7 @@
       return listItems;
     };
 
-    olapp.Source.GSIElevTile.prototype.createLayer = function (subId) {
+    olapp.source.GSIElevTile.prototype.createLayer = function (subId) {
       if (layerIds.indexOf(subId) === -1) return null;
 
       var lyr = layers[subId];
@@ -372,9 +372,6 @@
       layer.title = layers[subId].name;
       return layer;
     };
-
-    // register this data source
-    olapp.source.GSIElevTile = olapp.Source.GSIElevTile;
 
     // register this plugin
     olapp.plugin.addPlugin(plugin.path, plugin);

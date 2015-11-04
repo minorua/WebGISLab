@@ -13,14 +13,14 @@ olapp - An OpenLayers application
 .map          - An object of ol.Map. Initialized in olapp.init().
 .plugin       - Plugin module.
 .project      - An object of olapp.Project. Current project.
-.source       - An object. Key is a data source ID and value is a subclass based on olapp.Source.Base.
+.source       - An object. Key is a data source ID and value is a subclass based on olapp.source.Base.
 .tools        - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
 .init()         - Initialize application.
 .loadProject()  - Load a project.
 
 .Project
-.Source.Base
+.source.Base
 */
 var olapp = {
   core: {},
@@ -621,20 +621,20 @@ olapp.Project.prototype = {
 };
 
 
-// olapp.Source
-olapp.Source = {};
+// olapp.source
+olapp.source = {};
 
 /*
-olapp.Source.Base
+olapp.source.Base
 
 .list()             - Get layer list in HTML.
 .createLayer(subId) - Create a layer from a sub-source identified by id.
 */
-olapp.Source.Base = function () {};
+olapp.source.Base = function () {};
 
-olapp.Source.Base.prototype = {
+olapp.source.Base.prototype = {
 
-  constructor: olapp.Source.Base,
+  constructor: olapp.source.Base,
 
   list: function () {},
 
