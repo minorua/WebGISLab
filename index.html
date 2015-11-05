@@ -33,6 +33,7 @@
     </div>
     <div id="navbar" class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
+        <li><a href="#" data-toggle="modal" data-target="#dlg_addlayer">Add Layer</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project<span class="caret"></span></a>
           <ul class="dropdown-menu">
@@ -45,13 +46,6 @@
             <li><a href="#">Properties...</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="#">Print...</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Layer<span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Add Layer from File (GeoJSON, KML, etc.)...</a></li>
-            <li><a href="#">Add Tiled Map Layer...</a></li>
           </ul>
         </li>
         <li>
@@ -82,6 +76,59 @@
 <div id="slider">
   <div id="layer_list" class="list-group"></div>
 </div>
+
+<div class="modal" id="dlg_addlayer" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="modal-label">Add Layer</h4>
+      </div>
+      <div class="modal-body">
+        <table>
+          <tr><td width="35%">
+            <ul id="addlg_group_list" class="list-group">
+              <li class="list-group-item">
+                <span>Natural Earth</span>
+                <a class="btn accordion-toggle" style="float:right; padding:2px;" data-toggle="collapse" data-parent="#addlg_group_list" href="#addlg_sub_list_NE">
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+                </a>
+                <div class="panel-collapse collapse in" id="addlg_sub_list_NE">
+                  <ul class="list-group">
+                    <li class="list-group-item"><span style="display: none;">cl</span>Coastline</li>
+                  </ul>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <span>Tile</span>
+                <a class="btn accordion-toggle" style="float:right; padding:2px;" data-toggle="collapse" data-parent="#addlg_group_list" href="#addlg_sub_list_Tile">
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+                </a>
+                <div class="panel-collapse collapse in" id="addlg_sub_list_Tile">
+                  <ul class="list-group"></ul>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <span>File</span>
+              </li>
+            </ul>
+          </td><td>
+            <ul id="addlg_layer_list" class="list-group"></ul>
+          </td></tr>
+        </table>
+      </div>
+      <!--
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Add</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+      -->
+    </div>
+  </div>
+</div>
+
 <div id="info"></div>
 </body>
 </html>

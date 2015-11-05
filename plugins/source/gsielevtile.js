@@ -335,6 +335,8 @@
     */
     olapp.source.GSIElevTile = function () {
       olapp.source.Base.call(this);
+      this.name = 'GSI Elevation Tile';
+      this.group = 'Tile';
     };
 
     olapp.source.GSIElevTile.prototype = Object.create(olapp.source.Base.prototype);
@@ -343,7 +345,10 @@
     olapp.source.GSIElevTile.prototype.list = function () {
       var listItems = [];
       layerIds.forEach(function (id) {
-        listItems.push('<li>' + layers[id].name  + '</li>');
+        listItems.push({
+          id: id,
+          name: layers[id].name
+        });
       });
       return listItems;
     };

@@ -25,7 +25,9 @@ olapp - An OpenLayers application
 var olapp = {
   core: {},
   source: {},
-  gui: {},
+  gui: {
+    dialog: {}
+  },
   plugin: {},
   tools: {}
 };
@@ -300,6 +302,11 @@ var olapp = {
       }
     });
 
+    // Initialize dialogs
+    for (var k in gui.dialog) {
+      gui.dialog[k].init();
+    }
+
     map.on('pointermove', function (evt) {
       if (evt.dragging) return;
       var pixel = map.getEventPixel(evt.originalEvent);
@@ -464,6 +471,94 @@ var olapp = {
   gui.setProjectTitle = function (title) {
     document.title = gui._originalTitle + (title ? ' - ' + title : '');
   };
+
+  // olapp.gui.dialog.addLayer
+  var dataSources = {};
+  var addLayerDialog = {
+
+    init: function () {
+      $('#dlg_addlayer').on('show.bs.modal', function () {
+        var groupList = $('#addlg_group_list');
+        var list;
+        if (Object.keys(dataSources).length == 0) {
+          // Initialize group list
+          //groupList.find('.list-group').html('');
+          $('#addlg_sub_list_Tile').children().html('');    // for test
+
+          for (var src in olapp.source) {
+            if (src == 'Base') continue;
+
+            var source = new olapp.source[src];
+            if (dataSources[source.group] === undefined) {
+              dataSources[source.group] = {};
+
+              // TODO: add group list item
+            }
+            dataSources[source.group][src] = source;
+
+            list = $('#addlg_sub_list_' + source.group).find('.list-group');
+            list.append('<li class="list-group-item"><span style="display: none;">' + src + '</span>' + source.name + '</li>');
+          }
+
+          // item selection and layer list update
+          groupList.children().click(function (event) {
+            if ($(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon')) return;
+            groupList.find('.active').removeClass('active');
+            $(this).addClass('active');
+            $(this).find('.list-group-item').addClass('active');
+            addLayerDialog.groupSelectionChanged($(event.target).children('span').text());
+          }).find('.list-group-item').click(function (event) {
+            event.stopPropagation();
+            groupList.find('.active').removeClass('active');
+            $(this).addClass('active');
+            addLayerDialog.groupSelectionChanged('Tile', $(event.target).children('span').text());
+          });
+        }
+      });
+      // toggle button style
+      $('#addlg_group_list').find('.collapse').on('hide.bs.collapse', function () {
+        $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-down"></span>');
+      }).on('show.bs.collapse', function () {
+        $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-up"></span>');
+      }).collapse('hide');
+    },
+
+    groupSelectionChanged: function (group, subGroup) {
+      // Populate layer list
+      var list = $('#addlg_layer_list');
+      list.html('');
+      if (dataSources[group] === undefined) return;
+
+      var appendItem = function (subGroup, item) {
+        var html = '<li class="list-group-item">' +
+                   '  <span style="display: none;">' + subGroup + '/' + item.id + '</span>' + item.name +
+                   '  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
+                   '</li>';
+        list.append(html);
+      };
+
+      if (subGroup === undefined) {
+        for (subGroup in dataSources[group]) {
+          dataSources[group][subGroup].list().forEach(function (item) {
+            appendItem(subGroup, item);
+          });
+        }
+      }
+      else {
+        dataSources[group][subGroup].list().forEach(function (item) {
+          appendItem(subGroup, item);
+        });
+      }
+      list.find('button').click(function () {
+        var subgroup_id = $(this).parent().children('span').text().split('/');
+        var layer = dataSources[group][subgroup_id[0]].createLayer(subgroup_id[1]);
+        olapp.core.project.addLayer(layer);
+        // TODO: status message
+      });
+    }
+
+  };
+  gui.dialog.addLayer = addLayerDialog;
 
 
   // olapp.plugin

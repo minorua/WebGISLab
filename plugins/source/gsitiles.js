@@ -106,6 +106,8 @@
   */
   olapp.source.GSITiles = function () {
     olapp.source.Base.call(this);
+    this.name = 'GSI Tiles';
+    this.group = 'Tile';
   };
 
   olapp.source.GSITiles.prototype = Object.create(olapp.source.Base.prototype);
@@ -114,7 +116,10 @@
   olapp.source.GSITiles.prototype.list = function () {
     var listItems = [];
     layerIds.forEach(function (id) {
-      listItems.push('<li>' + layers[id].name  + '</li>');
+      listItems.push({
+        id: id,
+        name: layers[id].name
+      });
     });
     return listItems;
   };
