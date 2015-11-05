@@ -68,7 +68,7 @@
 
 ## Design for Project File
 
-- プロジェクトファイル
+### プロジェクトファイル
     - 内容はJavaScriptのコード(拡張子はjs)。スクリプトの記述によるプロジェクトの構成
     - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
 
@@ -80,24 +80,48 @@ olapp.loadProject(new olapp.Project({
   init: function (project) {
     var gsitiles = new olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));
+    project.addLayer(gsitiles.createLayer('ort'));
   }
 }));
 ```
 
-    - 追加情報
-        - レイヤの追加削除
-        - スタイル設定
-        - 読み込まれたローカルファイルデータ(データまたは参照)
-            - レイヤに設定されたスタイル(データまたは関数)
+### プロジェクトの保存
+
+- プロジェクトの文字列化 - olapp.Project.toString()
+    - Function.toString()
+- ローカルストレージへの保存
+- jsファイルのダウンロード
+
+### プロジェクトに対する変更の保存
+
+- レイヤの追加削除
+- スタイル設定
+- 読み込まれたローカルファイルデータ(データまたは参照)
+    - レイヤに設定されたスタイル(データまたは関数)
 
 ```javascript
-olapp.loadLayer(function () {
+// L2
+olapp.project.addLayer(function () {
   var data = 'JSON Content';
   var layer = olapp.core.loadText(data, 'GeoJSON');
   // TODO: set layer style
   return layer;
 });
+
+// L3
+olapp.loadLayer(function () {
+  var gsitiles = new olapp.source.GSITiles;
+  return gsitiles.createLayer('relief');
+});
+
+// Layer ordering and properties settings
+olapp.project.setLayerOrder(['L0', 'L3', 'L2']);  // L1 (ort) was removed
+olapp.setLayerProperties('L0', {visible: true, opacity: 1, blend: false});   // std
+olapp.setLayerProperties('L2', {visible: true, opacity: 1});                 // vector layer
+olapp.setLayerProperties('L3', {visible: true, opacity: 0.5, blend: true});  // relief
 ```
+
+### プロジェクトの読み込み
 
 - メニューからの読み込み
     - 読み込み可能な用意されたプロジェクト一覧
@@ -120,7 +144,10 @@ olapp.loadLayer(function () {
 プラグインのコード
 ```javascript
 (function () {
-  var myplugin = {};
+  var myplugin = {
+    name: 'my plugin',
+    description: '...'
+  };
 
   ...
 
