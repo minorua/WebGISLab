@@ -357,6 +357,8 @@
       if (layerIds.indexOf(id) === -1) return null;
 
       var lyr = layers[id];
+
+      // source options
       var options = {
         attributions: [
           new ol.Attribution({
@@ -372,9 +374,13 @@
         url: 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt'
       };
 
-      var layer = new ol.layer.Tile($.extend({
+      // layer options
+      options = {
         source: new ol.source.GSIElevTile(options)
-      }, layerOptions));
+      };
+      if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
+
+      var layer = new ol.layer.Tile($.extend(options, layerOptions));
       layer.title = layers[id].name;
       return layer;
     };

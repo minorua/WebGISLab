@@ -130,6 +130,7 @@
     var lyr = layers[id],
         url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format;
 
+    // source options
     var options = {
       attributions: attributions,
       projection: 'EPSG:3857',
@@ -139,11 +140,14 @@
       }),
       url: url
     };
+
+    // layer options
+    options = {
+      source: new ol.source.XYZ(options)
+    };
     if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
 
-    var layer = new ol.layer.Tile($.extend({
-      source: new ol.source.XYZ(options)
-    }, layerOptions));
+    var layer = new ol.layer.Tile($.extend(options, layerOptions));
     layer.title = layers[id].name;
     return layer;
   };
