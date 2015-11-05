@@ -34,6 +34,9 @@
 - ベクトルタイルの追加
     - スタイル設定
         - 用意された外部スタイルファイル(関数)の適用
+- Natural Earthデータレイヤの追加
+    - 小スケールデータの一部
+    - デフォルトプロジェクトで利用
 - 地理院標高タイルの利用
     - 段彩図、傾斜区分図レイヤの追加
         - 凡例
@@ -47,8 +50,9 @@
 - 地図検索 (Nominatim/国土数値情報公共施設データ等)
     - 5件程度の結果を一覧表示する
 - ローカルファイルの読み込み
-    - KMLファイル
-    - JPGIS形式ファイル
+    - KML
+    - GeoJSON
+    - JPGIS
         - 国土数値情報 (JPGIS 2.1)
 - 読み込まれたデータのHTML5 ローカルストレージへの保存
 - プロジェクトの保存と読み込み
@@ -66,6 +70,7 @@
 
 - プロジェクトファイル
     - 内容はJavaScriptのコード(拡張子はjs)。スクリプトの記述によるプロジェクトの構成
+    - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
 
 ```javascript
 olapp.loadProject(new olapp.Project({
@@ -81,16 +86,25 @@ olapp.loadProject(new olapp.Project({
 
     - 追加情報
         - レイヤの追加削除
+        - スタイル設定
         - 読み込まれたローカルファイルデータ(データまたは参照)
             - レイヤに設定されたスタイル(データまたは関数)
-        - スタイル設定
-    - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
+
+```javascript
+olapp.loadLayer(function () {
+  var data = 'JSON Content';
+  var layer = olapp.core.loadText(data, 'GeoJSON');
+  // TODO: set layer style
+  return layer;
+});
+```
+
 - メニューからの読み込み
     - 読み込み可能な用意されたプロジェクト一覧
     - ローカルストレージに保存されたプロジェクト一覧
 - URLパラメータによる読み込み
     - index.html?project=project_name
-    - 安全のためにprojectsフォルダ以下のプロジェクトファイルに限定
+    - 安全のためにfilesフォルダ以下のプロジェクトファイルに限定
 - ローカルプロジェクトファイルのドラッグ&ドロップによる読み込み
 
 
