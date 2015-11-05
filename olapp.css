@@ -1,0 +1,74 @@
+body {
+  margin: 0
+}
+html, body {
+  height: 100%;
+  width: 100%;
+}
+#map {
+  position: absolute;
+  top: 50px;
+  bottom: 0px;
+  width: 100%;
+  height: auto;
+}
+#info {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  background-color: rgba(255, 255, 255, 0.6)
+}
+
+/* nav bar */
+nav .container {
+  width: 100%;
+}
+#trigger {
+  background-color: #f4f4f4;
+  float: left;
+  margin: 4px 2px;
+  padding: 8px 16px;
+}
+#trigger:focus {
+  outline: 0 none;
+}
+#search {
+  width: 120px;
+}
+
+/* layer list panel */
+#slider {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding-top: 5px;
+}
+#layer_list {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+  width: 100%;
+}
+.list-group-item {
+  cursor: pointer;
+}
+a.btn {
+  color: gray;
+}
+.layer-sub-container {
+  margin-top: 10px;
+  display: none;
+  float: clear;
+  height: 60px;
+}
+.opacity-slider {
+  margin: 8px 0px;
+  width: 175px;
+}
+a.btn-blendmode {
+  padding: 2px;
+}
+a.btn-blendmode span {
+  color: lightgray;
+}
+a.btn-blendmode span.active {
+  color: black;
+}
