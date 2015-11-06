@@ -99,7 +99,7 @@ var olapp = {
 
       if (layer) {
         layer.title = file.name;
-        olapp.project.addLayer(layer);
+        core.project.addLayer(layer);
         map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
       }
       else {
@@ -552,7 +552,7 @@ var olapp = {
       list.find('button').click(function () {
         var subgroup_id = $(this).parent().children('span').text().split('/');
         var layer = dataSources[group][subgroup_id[0]].createLayer(subgroup_id[1]);
-        olapp.core.project.addLayer(layer);
+        core.project.addLayer(layer);
         // TODO: status message
       });
     }
