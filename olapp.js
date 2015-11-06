@@ -486,21 +486,33 @@ var olapp = {
         var list;
         if (Object.keys(dataSources).length == 0) {
           // Initialize group list
-          //groupList.find('.list-group').html('');
-          $('#addlg_sub_list_Tile').children().html('');    // for test
+          groupList.find('.list-group').html('');
 
           for (var src in olapp.source) {
             if (src == 'Base') continue;
 
             var source = new olapp.source[src];
+            var subListId = 'addlg_sub_list_' + source.group.split(' ').join('_');
             if (dataSources[source.group] === undefined) {
               dataSources[source.group] = {};
 
-              // TODO: add group list item
+              // Add group item
+              var html =
+'<li class="list-group-item">' +
+'  <span>' + source.group + '</span>' +
+'  <a class="btn accordion-toggle" style="float:right; padding:2px;" data-toggle="collapse" data-parent="#addlg_group_list" href="#' + subListId + '">' +
+'    <span class="glyphicon glyphicon-chevron-down"></span>' +
+'  </a>' +
+'  <div class="panel-collapse collapse in" id="' + subListId + '">' +
+'    <ul class="list-group"></ul>' +
+'  </div>' +
+'</li>';
+              groupList.append(html);
             }
             dataSources[source.group][src] = source;
 
-            list = $('#addlg_sub_list_' + source.group).find('.list-group');
+            // Add sub list item
+            list = $('#' + subListId).find('.list-group');
             list.append('<li class="list-group-item"><span style="display: none;">' + src + '</span>' + source.name + '</li>');
           }
 
@@ -515,16 +527,23 @@ var olapp = {
             event.stopPropagation();
             groupList.find('.active').removeClass('active');
             $(this).addClass('active');
-            addLayerDialog.groupSelectionChanged('Tile', $(event.target).children('span').text());
+            var group = $(event.target).parent().parent().parent().children('span').text();
+            addLayerDialog.groupSelectionChanged(group, $(event.target).children('span').text());
           });
+
+          groupList.append(
+'<li class="list-group-item">' +
+'  <span>File</span>' +
+'</li>');
+
+          // toggle button style
+          $('#addlg_group_list').find('.collapse').on('hide.bs.collapse', function () {
+            $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-down"></span>');
+          }).on('show.bs.collapse', function () {
+            $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-up"></span>');
+          }).collapse('hide');
         }
       });
-      // toggle button style
-      $('#addlg_group_list').find('.collapse').on('hide.bs.collapse', function () {
-        $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-down"></span>');
-      }).on('show.bs.collapse', function () {
-        $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-up"></span>');
-      }).collapse('hide');
     },
 
     groupSelectionChanged: function (group, subGroup) {
