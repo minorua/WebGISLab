@@ -31,22 +31,16 @@ olapp.loadProject(new olapp.Project({
         matrixSet: 'g_set',
         requestEncoding: 'REST'
       });
-      options.attributions = [
-        new ol.Attribution({
-          html: "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>"
-        })
-      ];
+      var attr = "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>";
+      options.attributions = [olapp.core.attribution.getAttribution(attr)];
       gsjlayer.setSource(new ol.source.WMTS(options));
     });
 
     // EXPERIMENTAL vector tile - experimental_rdcl
+    var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";
     layer = new ol.layer.Vector({
       source: new ol.source.TileVector({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>"
-          })
-        ],
+        attributions: [olapp.core.attribution.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({
@@ -115,13 +109,10 @@ olapp.loadProject(new olapp.Project({
       return olapp.defaultStyle[geomType];
     };
 
+    attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
     layer = new ol.layer.Vector({
       source: new ol.source.TileVector({
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>"
-          })
-        ],
+        attributions: [olapp.core.attribution.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({

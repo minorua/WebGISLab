@@ -96,11 +96,7 @@
     }
   };
 
-  var attributions = [
-    new ol.Attribution({
-      html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-    })
-  ];
+  var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
   var transform = function (extent) {
     return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
@@ -143,7 +139,7 @@
 
     // source options
     var options = {
-      attributions: attributions,
+      attributions: [olapp.core.attribution.getAttribution(attr)],
       projection: 'EPSG:3857',
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: lyr.zmin,

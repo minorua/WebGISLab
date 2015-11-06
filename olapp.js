@@ -7,14 +7,15 @@
 /*
 olapp - An OpenLayers application
 
-.core         - Core module.
-.core.project - Project management module.
-.gui          - GUI module.
-.map          - An object of ol.Map. Initialized in olapp.init().
-.plugin       - Plugin module.
-.project      - An object of olapp.Project. Current project.
-.source       - An object. Key is a data source ID and value is a subclass based on olapp.source.Base.
-.tools        - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
+.core             - Core module.
+.core.attribution - Attribution management module.
+.core.project     - Project management module.
+.gui              - GUI module.
+.map              - An object of ol.Map. Initialized in olapp.init().
+.plugin           - Plugin module.
+.project          - An object of olapp.Project. Current project.
+.source           - An object. Key is a data source ID and value is a subclass based on olapp.source.Base.
+.tools            - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
 .init()         - Initialize application.
 .loadProject()  - Load a project.
@@ -162,6 +163,21 @@ var olapp = {
       vars[p[0]] = p[1];
     });
     return vars;
+  };
+
+
+  // olapp.core.attribution - Attribution management module
+  core.attribution = {
+
+    _attr: {},
+
+    getAttribution: function (html) {
+      if (core.attribution._attr[html] === undefined) {
+        core.attribution._attr[html] = new ol.Attribution({html: html});
+      }
+      return core.attribution._attr[html];
+    }
+
   };
 
 

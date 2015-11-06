@@ -366,14 +366,11 @@
       if (layerIds.indexOf(id) === -1) return null;
 
       var lyr = layers[id];
+      var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
       // source options
       var options = {
-        attributions: [
-          new ol.Attribution({
-            html: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-          })
-        ],
+        attributions: [olapp.core.attribution.getAttribution(attr)],
         mode: id,
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({
