@@ -555,13 +555,13 @@ var olapp = {
             groupList.find('.active').removeClass('active');
             $(this).addClass('active');
             $(this).find('.list-group-item').addClass('active');
-            addLayerDialog.groupSelectionChanged($(event.target).children('span').text());
+            addLayerDialog.groupSelectionChanged($(this).children('span').text());
           }).find('.list-group-item').click(function (event) {
             event.stopPropagation();
             groupList.find('.active').removeClass('active');
             $(this).addClass('active');
-            var group = $(event.target).parent().parent().parent().children('span').text();
-            addLayerDialog.groupSelectionChanged(group, $(event.target).children('span').text());
+            var group = $(this).parent().parent().parent().children('span').text();
+            addLayerDialog.groupSelectionChanged(group, $(this).children('span').text());
           });
 
           groupList.append('<li class="list-group-item"><span>File</span></li>');
