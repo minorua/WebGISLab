@@ -78,6 +78,7 @@ var olapp = {
     if (!olapp.project) alert('No project');   // TODO: assert
 
     var ext2formatConstructors = {
+      'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
       'kml': [ol.format.KML],
       'json': [ol.format.GeoJSON, ol.format.TopoJSON]
