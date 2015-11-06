@@ -329,6 +329,15 @@
       }
     };
 
+    var transform = function (extent) {
+      return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
+    };
+
+    var extents = {
+      japan: transform([122.7, 20.4, 154.8, 45.6])
+    };
+
+
     /*
     olapp.source.GSIElevTile
       inherits from olapp.source.Base
@@ -376,6 +385,7 @@
 
       // layer options
       options = {
+        extent: extents.japan,
         source: new ol.source.GSIElevTile(options)
       };
       if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);

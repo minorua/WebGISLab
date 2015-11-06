@@ -18,7 +18,8 @@
       name: '標準地図',
       format: 'png',
       zmin: 2,
-      zmax: 18
+      zmax: 18,
+      zminJp: 9
     },
     'pale': {
       name: '淡色地図',
@@ -48,7 +49,8 @@
       name: '写真',
       format: 'jpg',
       zmin: 2,
-      zmax: 18
+      zmax: 18,
+      zminJp: 5
     },
     'gazo1': {
       name: '国土画像情報（第一期：1974～1978年撮影）',
@@ -100,6 +102,15 @@
     })
   ];
 
+  var transform = function (extent) {
+    return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
+  };
+
+  var extents = {
+    japan: transform([122.7, 20.4, 154.8, 45.6])
+  };
+
+
   /*
   olapp.source.GSITiles
     inherits from olapp.source.Base
@@ -141,15 +152,43 @@
       url: url
     };
 
-    // layer options
-    options = {
-      source: new ol.source.XYZ(options)
-    };
-    if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
+    var source = new ol.source.XYZ(options);
 
-    var layer = new ol.layer.Tile($.extend(options, layerOptions));
-    layer.title = layers[id].name;
-    return layer;
+    // layer options
+
+    // "std" and "ort" maps have world wide tiles in small zoom levels.
+    if (lyr.zminJp !== undefined) {
+      // options for worldwide map
+      var options1 = {
+        source: source,
+        minResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zminJp - 0.1)
+      };
+      // options for Japanese map
+      var options2 = {
+        extent: extents.japan,
+        source: source,
+        maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zminJp - 0.1)
+      };
+
+      // Create two layers and a layer group that binds the layers
+      options = {
+        layers: [new ol.layer.Tile(options1), new ol.layer.Tile(options2)]
+      };
+      var group = new ol.layer.Group($.extend(options, layerOptions));
+      group.title = layers[id].name;
+      return group;
+    }
+    else {
+      // Create a layer
+      options = {
+        extent: extents.japan,
+        maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1),
+        source: source
+      };
+      var layer = new ol.layer.Tile($.extend(options, layerOptions));
+      layer.title = layers[id].name;
+      return layer;
+    }
   };
 
   // register this plugin
