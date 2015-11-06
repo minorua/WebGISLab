@@ -77,15 +77,23 @@ var olapp = {
   core.loadLayerFromFile = function (file) {
     if (!olapp.project) alert('No project');   // TODO: assert
 
-    var ext2formatConstructors = {
+    var reader = new FileReader();
+    reader.onload = function (event) {
+      var format = file.name.split('.').pop();
+      core.loadText(reader.result, file.name, format);
+    }
+    reader.readAsText(file, 'UTF-8');
+  };
+
+  core.loadText = function (text, title, format) {
+    var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
       'kml': [ol.format.KML],
       'json': [ol.format.GeoJSON, ol.format.TopoJSON]
     };
 
-    var ext = file.name.split('.').pop().toLowerCase();
-    var formatConstructors = ext2formatConstructors[ext];
+    var formatConstructors = format2formatConstructors[format.toLowerCase()];
     if (!formatConstructors) formatConstructors = [
       ol.format.GeoJSON,
       ol.format.GPX,
@@ -94,20 +102,15 @@ var olapp = {
       ol.format.TopoJSON
     ];
 
-    var reader = new FileReader();
-    reader.onload = function (event) {
-      var layer = core._loadText(reader.result, formatConstructors);
-
-      if (layer) {
-        layer.title = file.name;
-        core.project.addLayer(layer);
-        map.getView().fit(layer.getSource().getExtent(), /** @type {ol.Size} */ (map.getSize()));
-      }
-      else {
-        alert('Unknown format file: ' + file.name);
-      }
+    var layer = core._loadText(text, formatConstructors);
+    if (layer) {
+      layer.title = title;
+      core.project.addLayer(layer);
+      map.getView().fit(layer.getSource().getExtent(), map.getSize());
     }
-    reader.readAsText(file, 'UTF-8');
+    else {
+      alert('Unknown format: ' + title);
+    }
   };
 
   core._loadText = function (text, formatConstructors) {
