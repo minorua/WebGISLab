@@ -385,12 +385,14 @@ var olapp = {
   // Add a layer to layer list.
   gui.addLayer = function (layer) {
     var checked = (layer.getVisible()) ? ' checked' : '';
-    var html = '<div class="list-group-item" id="' + layer.elemId + '">' +
-               '  <input type="checkbox"' + checked + '>' + layer.title +
-               '  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
-               '    <span class="glyphicon glyphicon-chevron-down"></span>' +
-               '  </a>' +
-               '</div>';
+    var html =
+'<div class="list-group-item" id="' + layer.elemId + '">' +
+'  <input type="checkbox"' + checked + '>' + layer.title +
+'  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
+'    <span class="glyphicon glyphicon-chevron-down"></span>' +
+'  </a>' +
+'</div>';
+
     var item = $('#layer_list').prepend(html).find('.list-group-item').first();
     item.click(function (event) {
       $('#layer_list .list-group-item.active').removeClass('active');
@@ -414,19 +416,21 @@ var olapp = {
       if ($(this).parent().find('.layer-sub-container').length == 0) {
         $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
-        var html = '<div class="layer-sub-container">' +
-                   '  <div class="layer-button-container">' +
-                   '    <button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
-                   '    <button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
-                   '    <button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
-                   '  </div><div>' +
-                   '    <div style="float:left;">' +
-                   '      <div class="opacity-slider"></div>' +
-                   '    </div><div style="float:right;">' +
-                   '      <a href="#" class="btn btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
-                   '    </div>' +
-                   '  </div>' +
-                   '</div>';
+        var html =
+'<div class="layer-sub-container">' +
+'  <div class="layer-button-container">' +
+'    <button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+'    <button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+'    <button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+'  </div><div>' +
+'    <div style="float:left;">' +
+'      <div class="opacity-slider"></div>' +
+'    </div><div style="float:right;">' +
+'      <a href="#" class="btn btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
+'    </div>' +
+'  </div>' +
+'</div>';
+
         item.append(html);
 
         if (mapLayers[layerId].blendMode == 'multiply') {
@@ -535,6 +539,7 @@ var olapp = {
 '    <ul class="list-group"></ul>' +
 '  </div>' +
 '</li>';
+
               groupList.append(html);
             }
             dataSources[source.group][src] = source;
@@ -559,10 +564,7 @@ var olapp = {
             addLayerDialog.groupSelectionChanged(group, $(event.target).children('span').text());
           });
 
-          groupList.append(
-'<li class="list-group-item">' +
-'  <span>File</span>' +
-'</li>');
+          groupList.append('<li class="list-group-item"><span>File</span></li>');
 
           // toggle button style
           $('#addlg_group_list').find('.collapse').on('hide.bs.collapse', function () {
@@ -581,10 +583,12 @@ var olapp = {
       if (dataSources[group] === undefined) return;
 
       var appendItem = function (subGroup, item) {
-        var html = '<li class="list-group-item">' +
-                   '  <span style="display: none;">' + subGroup + '/' + item.id + '</span>' + item.name +
-                   '  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
-                   '</li>';
+        var html =
+'<li class="list-group-item">' +
+'  <span style="display: none;">' + subGroup + '/' + item.id + '</span>' + item.name +
+'  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
+'</li>';
+
         list.append(html);
       };
 
