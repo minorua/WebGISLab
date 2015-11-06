@@ -111,7 +111,7 @@
   };
 
   olapp.source.GSITiles.prototype = Object.create(olapp.source.Base.prototype);
-  olapp.source.GSITiles.prototype.constructor = olapp.source.Base;
+  olapp.source.GSITiles.prototype.constructor = olapp.source.GSITiles;
 
   olapp.source.GSITiles.prototype.list = function () {
     var listItems = [];

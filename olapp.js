@@ -80,12 +80,20 @@ var olapp = {
     var reader = new FileReader();
     reader.onload = function (event) {
       var format = file.name.split('.').pop();
-      core.loadText(reader.result, file.name, format);
+      var layer = core.loadText(reader.result, file.name, format);
+      if (layer) {
+        layer.title = file.name;
+        core.project.addLayer(layer);
+        map.getView().fit(layer.getSource().getExtent(), map.getSize());
+      }
+      else {
+        alert('Unknown format file: ' + file.name);
+      }
     }
     reader.readAsText(file, 'UTF-8');
   };
 
-  core.loadText = function (text, title, format) {
+  core.loadText = function (text, format) {
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
@@ -102,15 +110,7 @@ var olapp = {
       ol.format.TopoJSON
     ];
 
-    var layer = core._loadText(text, formatConstructors);
-    if (layer) {
-      layer.title = title;
-      core.project.addLayer(layer);
-      map.getView().fit(layer.getSource().getExtent(), map.getSize());
-    }
-    else {
-      alert('Unknown format: ' + title);
-    }
+    return core._loadText(text, formatConstructors);
   };
 
   core._loadText = function (text, formatConstructors) {
@@ -198,6 +198,8 @@ var olapp = {
 
     _loadCallback: null,
 
+    _loadingLayers: {},
+
     _scriptElement: null,
 
     // Load a project
@@ -262,6 +264,32 @@ var olapp = {
       if (prj.init !== undefined) prj.init(prj);
       core.project.setProject(prj);
       projectLoaded();
+    },
+
+    loadLayerSource: function (layer, url) {
+      if (core.project._loadingLayers[url] !== undefined) {
+        // already loading
+        core.project._loadingLayers[url].push(layer);
+      }
+      else {
+        // Add script element to load layer source data
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = url;
+        document.getElementsByTagName('head')[0].appendChild(s);
+
+        core.project._loadingLayers[url] = [layer];
+      }
+    },
+
+    setLayerSource: function (url, source) {
+      if (core.project._loadingLayers[url] === undefined) return;
+
+      if (typeof source == 'function') source = source();
+      core.project._loadingLayers[url].forEach(function (layer) {
+        layer.setSource(source);
+      });
+      delete core.project._loadingLayers[url];
     },
 
     setProject: function (project) {
@@ -822,15 +850,17 @@ olapp.createDefaultProject = function () {
   return new olapp.Project({
     title: 'Default project',
     description: 'This project is default project, which has GSI tile layers.',
-    plugins: ['source/gsitiles.js'],
+    plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
     init: function (project) {
-      var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
-
       // GSI Tiles (source/gsitiles.js)
-      var gsitiles = new olapp.source.GSITiles, layer;
+      var gsitiles = new olapp.source.GSITiles;
       project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
       project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
       project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
+
+      // Natural Earth data
+      var ne = new olapp.source.NaturalEarth;
+      project.addLayer(ne.createLayer('cl'));       // Coastline
     }
   });
 };
