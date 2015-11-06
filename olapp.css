@@ -44,11 +44,14 @@ nav .container {
   bottom: 0px;
   background-color: rgba(255, 255, 255, 0.9);
   overflow: auto;
+  padding: 5px;
+}
+#slider button:focus {
+  outline: 0 none;
 }
 #layer_list {
   list-style-type: none;
-  margin: 0;
-  padding: 5px;
+  margin: 5px 0 0 0;
   width: 100%;
 }
 .list-group-item {
