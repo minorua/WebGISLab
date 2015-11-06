@@ -827,7 +827,7 @@ $(function () {
     }
     else {
       // load the project
-      olapp.loadProject('projects/' + projectName + '.js');
+      olapp.loadProject('files/' + projectName + '.js');
     }
   }
   else {
