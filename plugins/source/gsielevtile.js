@@ -181,7 +181,7 @@
             d[2] = rgb[2];
             context.putImageData(pixel, x, y);
           } else {
-            console.log('Wrong slope value:', x, y, slope);
+            // console.log('Wrong slope value:', x, y, slope);
           }
         };
 
@@ -323,8 +323,8 @@
         zmax: 14
       },
       'slope': {
-        name: '傾斜区分図 (標高タイル)',
-        zmin: 0,
+        name: '傾斜区分図 (標高タイル) (z>=10)',
+        zmin: 10,
         zmax: 14
       }
     };
