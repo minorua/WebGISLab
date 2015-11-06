@@ -332,13 +332,16 @@ var olapp = {
     gui._originalTitle = document.title;
 
     // layer list panel
-    $('#slider').slideReveal({
-      push: false,
-      top: 50,    // TODO: const NAVBAR_HEIGHT = 50;
-      trigger: $('#trigger'),
-      hidden: function(slider, trigger){
-        // Need to remove pushed style manually when the panel is closed with ESC key.
-        $('#trigger').removeClass('active');
+    $('#trigger').click(function () {
+      $('#slider').toggle('slide', 'fast');
+    });
+
+    $(window).keydown(function (e) {
+      if (e.keyCode == 27) {
+        if ($('#trigger').hasClass('active')) {
+          $('#trigger').removeClass('active');
+          $('#slider').toggle('slide', 'fast');
+        }
       }
     });
 
