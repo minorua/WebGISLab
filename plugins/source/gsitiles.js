@@ -107,7 +107,7 @@
   olapp.source.GSITiles = function () {
     olapp.source.Base.call(this);
     this.name = 'GSI Tiles';
-    this.group = 'Tile';
+    this.group = 'Tiled Map';
   };
 
   olapp.source.GSITiles.prototype = Object.create(olapp.source.Base.prototype);

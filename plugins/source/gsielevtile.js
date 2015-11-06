@@ -336,7 +336,7 @@
     olapp.source.GSIElevTile = function () {
       olapp.source.Base.call(this);
       this.name = 'GSI Elevation Tile';
-      this.group = 'Tile';
+      this.group = 'Tiled Map';
     };
 
     olapp.source.GSIElevTile.prototype = Object.create(olapp.source.Base.prototype);
