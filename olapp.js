@@ -190,15 +190,24 @@ var olapp = {
       mapLayers = {};
     },
 
-    // Add a layer to current project.
-    // The layer is added also to map and layer list.
+    // Add a layer to current project, map and layer list
     addLayer: function (layer) {
       // TODO: assert(olapp.project)
-      layer.elemId = core.project.getNextLayerElemId();
+      layer.elemId = core.project.getNextLayerElemId();   // TODO: do in olapp.project.addLayer()
       mapLayers[layer.elemId] = layer;
       olapp.project.mapLayers.push(layer);
       map.addLayer(layer);
       gui.addLayer(layer);
+    },
+
+    // Remove a layer from current project, map and layer list
+    removeLayer: function (elemId) {    // TODO: layerId
+      var layer = mapLayers[elemId];
+      var index = olapp.project.mapLayers.indexOf(layer);
+      olapp.project.mapLayers.splice(index, 1);     // TODO: do in olapp.project.removeLayer(layerId)
+      map.removeLayer(layer);
+      gui.removeLayer(elemId);
+      delete mapLayers[elemId];
     },
 
     clear: function () {
@@ -438,9 +447,9 @@ var olapp = {
         var html =
 '<div class="layer-sub-container">' +
 '  <div class="layer-button-container">' +
-'    <button class="btn" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
-'    <button class="btn" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
-'    <button class="btn" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+'    <button class="btn btn-zoomtolayer" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+'    <button class="btn btn-attrtable" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+'    <button class="btn btn-removelayer" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
 '  </div><div>' +
 '    <div style="float:left;">' +
 '      <div class="opacity-slider"></div>' +
@@ -467,8 +476,20 @@ var olapp = {
           },
           value: mapLayers[layerId].getOpacity() * 100
         });
-        item.find('.layer-sub-container').slideDown('fast');
-        item.find('.layer-sub-container').find('.btn-blendmode').click(function (e) {
+
+        item.find('.layer-button-container .btn').click(function () {
+          if ($(this).hasClass('btn-removelayer')) {
+            bootbox.confirm("Are you sure you want to remove this layer?", function(result) {
+              if (result) olapp.core.project.removeLayer(layerId);
+            });
+          }
+          else if ($(this).hasClass('btn-zoomtolayer')) {
+          }
+          else {    // btn-attrtable
+          }
+        });
+
+        item.find('.btn-blendmode').click(function (e) {
           e.stopPropagation();
 
           var blendMode = (mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
@@ -481,15 +502,17 @@ var olapp = {
 
           map.render();
         });
+
+        item.find('.layer-sub-container').slideDown('fast');
       }
     };
     item.children('.btn').click(switchExpansion);
     item.dblclick(switchExpansion);
   };
 
-  // Remove a layer from layer list.
-  gui.removeLayer = function (id) {
-    // TODO
+  // Remove a layer from layer list
+  gui.removeLayer = function (layerId) {
+    $('#' + layerId).remove();
   };
 
   gui.clearLayerList = function () {
