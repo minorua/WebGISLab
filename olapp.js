@@ -186,39 +186,31 @@ var olapp = {
 
     init: function () {
       olapp.project = null;
-      core.project._lastElemId = -1;
       mapLayers = {};
     },
 
     // Add a layer to current project, map and layer list
     addLayer: function (layer) {
       // TODO: assert(olapp.project)
-      layer.elemId = core.project.getNextLayerElemId();   // TODO: do in olapp.project.addLayer()
-      mapLayers[layer.elemId] = layer;
-      olapp.project.mapLayers.push(layer);
+      olapp.project.addLayer(layer);    // layer.id is set
+      mapLayers[layer.id] = layer;
       map.addLayer(layer);
       gui.addLayer(layer);
     },
 
     // Remove a layer from current project, map and layer list
-    removeLayer: function (elemId) {    // TODO: layerId
-      var layer = mapLayers[elemId];
-      var index = olapp.project.mapLayers.indexOf(layer);
-      olapp.project.mapLayers.splice(index, 1);     // TODO: do in olapp.project.removeLayer(layerId)
+    removeLayer: function (layerId) {
+      var layer = mapLayers[layerId];
+      olapp.project.removeLayer(layerId)
       map.removeLayer(layer);
-      gui.removeLayer(elemId);
-      delete mapLayers[elemId];
+      gui.removeLayer(layerId);
+      delete mapLayers[layerId];
     },
 
     clear: function () {
       core.project.init();
       map.getLayers().clear();
       gui.clearLayerList();
-    },
-
-    getNextLayerElemId: function () {
-      core.project._lastElemId++;
-      return 'L' + core.project._lastElemId;
     },
 
     _loadCallback: null,
@@ -326,8 +318,7 @@ var olapp = {
 
       // Add layers to map and layer list
       project.mapLayers.forEach(function (layer) {
-        layer.elemId = core.project.getNextLayerElemId();
-        mapLayers[layer.elemId] = layer;
+        mapLayers[layer.id] = layer;
         map.addLayer(layer);
         gui.addLayer(layer);
       });
@@ -414,7 +405,7 @@ var olapp = {
   gui.addLayer = function (layer) {
     var checked = (layer.getVisible()) ? ' checked' : '';
     var html =
-'<div class="list-group-item" id="' + layer.elemId + '">' +
+'<div class="list-group-item" id="' + layer.id + '">' +
 '  <input type="checkbox"' + checked + '>' + layer.title +
 '  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
 '    <span class="glyphicon glyphicon-chevron-down"></span>' +
@@ -789,6 +780,7 @@ olapp.Project = function (options) {
   this.plugins = options.plugins || [];
   this.init = options.init;
 
+  this._lastLayerId = -1;
   this.mapLayers = [];
 };
 
@@ -807,11 +799,18 @@ olapp.Project.prototype = {
       evt.context.globalCompositeOperation = 'source-over';
     });
 
+    layer.id = this.getNextLayerId();
     this.mapLayers.push(layer);
   },
 
   removeLayer: function (layer) {
-    // TODO
+    var index = this.mapLayers.indexOf(layer);
+    if (index !== -1) this.mapLayers.splice(index, 1);
+  },
+
+  getNextLayerId: function () {
+    this._lastLayerId++;
+    return 'L' + this._lastLayerId;
   },
 
   toJSON: function () {
