@@ -32,7 +32,7 @@ olapp.loadProject(new olapp.Project({
         requestEncoding: 'REST'
       });
       var attr = "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>";
-      options.attributions = [olapp.core.attribution.getAttribution(attr)];
+      options.attributions = [olapp.core.getAttribution(attr)];
       gsjlayer.setSource(new ol.source.WMTS(options));
     });
 
@@ -40,7 +40,7 @@ olapp.loadProject(new olapp.Project({
     var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";
     layer = new ol.layer.Vector({
       source: new ol.source.TileVector({
-        attributions: [olapp.core.attribution.getAttribution(attr)],
+        attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({
@@ -112,7 +112,7 @@ olapp.loadProject(new olapp.Project({
     attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
     layer = new ol.layer.Vector({
       source: new ol.source.TileVector({
-        attributions: [olapp.core.attribution.getAttribution(attr)],
+        attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({

@@ -73,5 +73,5 @@
   };
 
   // register this plugin
-  olapp.plugin.addPlugin(plugin.path, plugin);
+  olapp.plugin.register(plugin.path, plugin);
 })();

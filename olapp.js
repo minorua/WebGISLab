@@ -8,7 +8,6 @@
 olapp - An OpenLayers application
 
 .core             - Core module.
-.core.attribution - Attribution management module.
 .core.project     - Project management module.
 .gui              - GUI module.
 .map              - An object of ol.Map. Initialized in olapp.init().
@@ -73,6 +72,14 @@ var olapp = {
 
     core.project.init();
     gui.init(map);
+  };
+
+  var attrs = {};
+  core.getAttribution = function (html) {
+    if (attrs[html] === undefined) {
+      attrs[html] = new ol.Attribution({html: html});
+    }
+    return attrs[html];
   };
 
   core.loadLayerFromFile = function (file) {
@@ -166,21 +173,6 @@ var olapp = {
   };
 
 
-  // olapp.core.attribution - Attribution management module
-  core.attribution = {
-
-    _attr: {},
-
-    getAttribution: function (html) {
-      if (core.attribution._attr[html] === undefined) {
-        core.attribution._attr[html] = new ol.Attribution({html: html});
-      }
-      return core.attribution._attr[html];
-    }
-
-  };
-
-
   // olapp.core.project - Project management module
   core.project = {
 
@@ -191,7 +183,6 @@ var olapp = {
 
     // Add a layer to current project, map and layer list
     addLayer: function (layer) {
-      // TODO: assert(olapp.project)
       olapp.project.addLayer(layer);    // layer.id is set
       mapLayers[layer.id] = layer;
       map.addLayer(layer);
@@ -269,18 +260,33 @@ var olapp = {
       // prj is an instance of olapp.Project
       if (prj.plugins.length > 0) {
         // Load plugins
-        plugin.loadPlugins(prj.plugins, function () {
+        plugin.load(prj.plugins, function () {
           // Initialize project after plugins are loaded.
           if (prj.init !== undefined) prj.init(prj);
-          core.project.setProject(prj);
+          core.project.set(prj);
           projectLoaded();
         });
         return;
       }
 
       if (prj.init !== undefined) prj.init(prj);
-      core.project.setProject(prj);
+      core.project.set(prj);
       projectLoaded();
+    },
+
+    set: function (project) {
+      // Clear the current project
+      core.project.clear();
+
+      olapp.project = project;
+      gui.setProjectTitle(project.title);
+
+      // Add layers to map and layer list
+      project.mapLayers.forEach(function (layer) {
+        mapLayers[layer.id] = layer;
+        map.addLayer(layer);
+        gui.addLayer(layer);
+      });
     },
 
     loadLayerSource: function (layer, url) {
@@ -307,21 +313,6 @@ var olapp = {
         layer.setSource(source);
       });
       delete core.project._loadingLayers[url];
-    },
-
-    setProject: function (project) {
-      // Clear the current project
-      core.project.clear();
-
-      olapp.project = project;
-      gui.setProjectTitle(project.title);
-
-      // Add layers to map and layer list
-      project.mapLayers.forEach(function (layer) {
-        mapLayers[layer.id] = layer;
-        map.addLayer(layer);
-        gui.addLayer(layer);
-      });
     }
 
   };
@@ -651,17 +642,17 @@ var olapp = {
 
   // olapp.plugin
   plugin.plugins = {};
-  plugin._loadingPluginSets = [];
+  plugin._loadingSets = [];
 
   // Add a plugin to the application
-  // addPlugin() is called from end of a plugin code, whereas loadPlugin() is called from project/gui.
-  plugin.addPlugin = function (pluginPath, module) {
+  // register() is called from end of a plugin code, whereas load() is called from project/gui.
+  plugin.register = function (pluginPath, module) {
     // Register and initialize the plugin
     plugin.plugins[pluginPath] = module;
     if (module.init !== undefined) module.init();
 
     // Call callback function
-    plugin._loadingPluginSets.forEach(function (pluginSet) {
+    plugin._loadingSets.forEach(function (pluginSet) {
       var index = pluginSet.plugins.indexOf(pluginPath);
       if (index !== -1) {
         pluginSet.plugins.splice(index, 1);
@@ -670,19 +661,17 @@ var olapp = {
     });
 
     // Remove completely loaded plugin set from the array
-    for (var i = plugin._loadingPluginSets.length - 1; i >= 0; i--) {
-      if (plugin._loadingPluginSets[i].plugins.length == 0) plugin._loadingPluginSets.splice(i, 1);
+    for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
+      if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
     }
   };
 
-  // Load a plugin
-  plugin.loadPlugin = function (pluginPath, callback) {
-    plugin.loadPlugins([pluginPath], callback);
-  };
+  // Load a plugin/plugins
+  // pluginPaths: a plugin path string or an array of plugin paths.
+  // callback: callback is called once when all the plugins have been loaded.
+  plugin.load = function (pluginPaths, callback) {
+    if (typeof pluginPaths == 'string') pluginPaths = [pluginPaths];
 
-  // Load plugins
-  // callback is called once when all the plugins have been loaded.
-  plugin.loadPlugins = function (pluginPaths, callback) {
     // add scripts
     var head = document.getElementsByTagName('head')[0];
     var loadingPlugins = [];
@@ -696,71 +685,13 @@ var olapp = {
       loadingPlugins.push(pluginPath);
     });
 
-    plugin._loadingPluginSets.push({
+    plugin._loadingSets.push({
       plugins: loadingPlugins,
       callback: callback
     });
   };
 
 })();
-
-// TODO: move to below tools
-olapp.defaultStyle = {
-  'Point': [new ol.style.Style({
-    image: new ol.style.Circle({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,255,0,0.5)'
-      }),
-      radius: 5,
-      stroke: new ol.style.Stroke({
-        color: '#ff0',
-        width: 1
-      })
-    })
-  })],
-  'LineString': [new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: '#f00',
-      width: 3
-    })
-  })],
-  'Polygon': [new ol.style.Style({
-    fill: new ol.style.Fill({
-      color: 'rgba(0,255,255,0.5)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#0ff',
-      width: 1
-    })
-  })],
-  'MultiPoint': [new ol.style.Style({
-    image: new ol.style.Circle({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,0,255,0.5)'
-      }),
-      radius: 5,
-      stroke: new ol.style.Stroke({
-        color: '#f0f',
-        width: 1
-      })
-    })
-  })],
-  'MultiLineString': [new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: '#0f0',
-      width: 3
-    })
-  })],
-  'MultiPolygon': [new ol.style.Style({
-    fill: new ol.style.Fill({
-      color: 'rgba(0,0,255,0.5)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#00f',
-      width: 1
-    })
-  })]
-};
 
 
 // olapp.Project
@@ -888,6 +819,64 @@ olapp.tools.geocoding.Nominatim = {
     });
   }
 
+};
+
+
+olapp.defaultStyle = {
+  'Point': [new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(255,255,0,0.5)'
+      }),
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        color: '#ff0',
+        width: 1
+      })
+    })
+  })],
+  'LineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#f00',
+      width: 3
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(0,255,255,0.5)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#0ff',
+      width: 1
+    })
+  })],
+  'MultiPoint': [new ol.style.Style({
+    image: new ol.style.Circle({
+      fill: new ol.style.Fill({
+        color: 'rgba(255,0,255,0.5)'
+      }),
+      radius: 5,
+      stroke: new ol.style.Stroke({
+        color: '#f0f',
+        width: 1
+      })
+    })
+  })],
+  'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: '#0f0',
+      width: 3
+    })
+  })],
+  'MultiPolygon': [new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: 'rgba(0,0,255,0.5)'
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#00f',
+      width: 1
+    })
+  })]
 };
 
 

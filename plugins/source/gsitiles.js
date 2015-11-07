@@ -139,7 +139,7 @@
 
     // source options
     var options = {
-      attributions: [olapp.core.attribution.getAttribution(attr)],
+      attributions: [olapp.core.getAttribution(attr)],
       projection: 'EPSG:3857',
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: lyr.zmin,
@@ -188,5 +188,5 @@
   };
 
   // register this plugin
-  olapp.plugin.addPlugin(plugin.path, plugin);
+  olapp.plugin.register(plugin.path, plugin);
 })();

@@ -370,7 +370,7 @@
 
       // source options
       var options = {
-        attributions: [olapp.core.attribution.getAttribution(attr)],
+        attributions: [olapp.core.getAttribution(attr)],
         mode: id,
         projection: 'EPSG:3857',
         tileGrid: ol.tilegrid.createXYZ({
@@ -393,6 +393,6 @@
     };
 
     // register this plugin
-    olapp.plugin.addPlugin(plugin.path, plugin);
+    olapp.plugin.register(plugin.path, plugin);
   }
 })();
