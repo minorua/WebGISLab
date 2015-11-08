@@ -209,7 +209,9 @@ var olapp = {
 
     _loadingLayers: {},
 
-    _scriptElement: null,
+    _loadingScripts: {},    // script elements to load layer source data
+
+    _scriptElement: null,   // script element to load a project
 
     // Load a project
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
@@ -303,6 +305,7 @@ var olapp = {
         document.getElementsByTagName('head')[0].appendChild(s);
 
         core.project._loadingLayers[url] = [layer];
+        core.project._loadingScripts[url] = s;
       }
     },
 
@@ -314,6 +317,10 @@ var olapp = {
         layer.setSource(source);
       });
       delete core.project._loadingLayers[url];
+
+      // Remove the script element from document
+      $(core.project._loadingScripts[url]).remove();
+      delete core.project._loadingScripts[url];
     }
 
   };
