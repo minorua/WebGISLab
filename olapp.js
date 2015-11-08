@@ -61,13 +61,7 @@ var olapp = {
         })
       }),
       renderer: ['canvas', 'dom'],    // dom
-      target: 'map',
-      view: new ol.View({
-        projection: 'EPSG:3857',
-        center: ol.proj.transform([138.7313889, 35.3622222], 'EPSG:4326', 'EPSG:3857'),
-        maxZoom: 18,
-        zoom: 5
-      })
+      target: 'map'
     });
     olapp.map = map;
 
@@ -283,6 +277,8 @@ var olapp = {
 
       olapp.project = project;
       gui.setProjectTitle(project.title);
+      if (project.view === undefined) alert('The project has no view.');
+      else map.setView(project.view);
 
       // Add layers to map and layer list
       project.mapLayers.forEach(function (layer) {
@@ -738,15 +734,17 @@ var olapp = {
 // Constructor
 //   params
 //     - options
-//       title: Title of project.
+//       title: Title of project. Required.
 //       description: Description of project.
+//       view: An ol.View object. View for the map. Required.
 //       plugins: Array of paths of plugins to load.
-//       init: function (project). A function to initialize project.
+//       init: function (project). A function to initialize project. Required.
 //         - project: project-self.
 olapp.Project = function (options) {
   // for (var k in options) { this[k] = options[k]; }
   this.title = options.title || '';
   this.description = options.description || '';
+  this.view = options.view;
   this.plugins = options.plugins || [];
   this.init = options.init;
 
@@ -920,6 +918,12 @@ olapp.createDefaultProject = function () {
   return new olapp.Project({
     title: 'Default project',
     description: 'This project is default project, which has GSI tile layers.',
+    view: new ol.View({
+      projection: 'EPSG:3857',
+      center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
+      maxZoom: 18,
+      zoom: 5
+    }),
     plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
     init: function (project) {
       // GSI Tiles (source/gsitiles.js)
