@@ -13,7 +13,7 @@ olapp - An OpenLayers application
 .map              - An object of ol.Map. Initialized in olapp.init().
 .plugin           - Plugin module.
 .project          - An object of olapp.Project. Current project.
-.source           - An object. Key is a data source ID and value is a subclass based on olapp.source.Base.
+.source           - Data source management module. A souce class is a subclass based on olapp.source.Base.
 .tools            - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
 .init()         - Initialize application.
@@ -24,10 +24,10 @@ olapp - An OpenLayers application
 */
 var olapp = {
   core: {},
-  source: {},
   gui: {
     dialog: {}
   },
+  source: {},
   plugin: {},
   tools: {}
 };
@@ -37,6 +37,7 @@ var olapp = {
   var core = olapp.core,
       gui = olapp.gui,
       plugin = olapp.plugin,
+      source = olapp.source,
       tools = olapp.tools;
 
   var map, mapLayers;
@@ -533,29 +534,25 @@ var olapp = {
   };
 
   // olapp.gui.dialog.addLayer
-  var dataSources = {};
   var addLayerDialog = {
+
+    groupListInitialized: false,
 
     init: function () {
       $('#dlg_addlayer').on('show.bs.modal', function () {
         var groupList = $('#addlg_group_list');
-        var list;
-        if (Object.keys(dataSources).length == 0) {
-          // Initialize group list
-          groupList.find('.list-group').html('');
 
-          for (var src in olapp.source) {
-            if (src == 'Base') continue;
+        if (!addLayerDialog.groupListInitialized) {
+          // Initialize and populate group list
+          groupList.html('');
 
-            var source = new olapp.source[src];
-            var subListId = 'addlg_sub_list_' + source.group.split(' ').join('_');
-            if (dataSources[source.group] === undefined) {
-              dataSources[source.group] = {};
+          source.groupNames().forEach(function (group) {
+            var subListId = 'addlg_sub_list_' + group.split(' ').join('_');
 
-              // Add group item
-              var html =
+            // Add group item
+            var html =
 '<li class="list-group-item">' +
-'  <span>' + source.group + '</span>' +
+'  <span>' + group + '</span>' +
 '  <a class="btn accordion-toggle" style="float:right; padding:2px;" data-toggle="collapse" data-parent="#addlg_group_list" href="#' + subListId + '">' +
 '    <span class="glyphicon glyphicon-chevron-down"></span>' +
 '  </a>' +
@@ -564,14 +561,17 @@ var olapp = {
 '  </div>' +
 '</li>';
 
-              groupList.append(html);
-            }
-            dataSources[source.group][src] = source;
+            groupList.append(html);
 
-            // Add sub list item
-            list = $('#' + subListId).find('.list-group');
-            list.append('<li class="list-group-item"><span style="display: none;">' + src + '</span>' + source.name + '</li>');
-          }
+            // Populate sub source lists
+            source.sourceNames(group).forEach(function (sourceName) {
+              var src = source.get(sourceName);
+              // Add sub list item
+              var list = $('#' + subListId).find('.list-group');
+              // Append source item to the group (sourceName is class name and src.name is display name)
+              list.append('<li class="list-group-item"><span style="display: none;">' + sourceName + '</span>' + src.name + '</li>');
+            });
+          });
 
           // item selection and layer list update
           groupList.children().click(function (event) {
@@ -596,41 +596,42 @@ var olapp = {
           }).on('show.bs.collapse', function () {
             $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-up"></span>');
           }).collapse('hide');
+
+          addLayerDialog.groupListInitialized = true;
         }
       });
     },
 
-    groupSelectionChanged: function (group, subGroup) {
+    groupSelectionChanged: function (groupName, sourceName) {
       // Populate layer list
       var list = $('#addlg_layer_list');
       list.html('');
-      if (dataSources[group] === undefined) return;
 
-      var appendItem = function (subGroup, item) {
+      var appendItem = function (sourceName, item) {
         var html =
 '<li class="list-group-item">' +
-'  <span style="display: none;">' + subGroup + '/' + item.id + '</span>' + item.name +
+'  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
 '  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
 '</li>';
 
         list.append(html);
       };
 
-      if (subGroup === undefined) {
-        for (subGroup in dataSources[group]) {
-          dataSources[group][subGroup].list().forEach(function (item) {
-            appendItem(subGroup, item);
+      if (sourceName === undefined) {
+        source.sourceNames(groupName).forEach(function (sourceName) {
+          source.get(sourceName).list().forEach(function (item) {
+            appendItem(sourceName, item);
           });
-        }
+        });
       }
       else {
-        dataSources[group][subGroup].list().forEach(function (item) {
-          appendItem(subGroup, item);
+        source.get(sourceName).list().forEach(function (item) {
+          appendItem(sourceName, item);
         });
       }
       list.find('button').click(function () {
-        var subgroup_id = $(this).parent().children('span').text().split('/');
-        var layer = dataSources[group][subgroup_id[0]].createLayer(subgroup_id[1]);
+        var srcname_id = $(this).parent().children('span').text().split('/');
+        var layer = source.get(srcname_id[0]).createLayer(srcname_id[1]);
         core.project.addLayer(layer);
         // TODO: status message
       });
@@ -638,6 +639,37 @@ var olapp = {
 
   };
   gui.dialog.addLayer = addLayerDialog;
+
+
+  // olapp.source
+  var sources = {};
+  var sourceGroups = {};
+
+  source.register = function (group, name, constructor) {
+    if (sourceGroups[group] === undefined) sourceGroups[group] = {};
+    sourceGroups[group][name] = constructor;
+    sources[name] = constructor;
+  };
+
+  source.get = function (name) {
+    if (source[name] === undefined) return null;
+    return new source[name];
+  };
+
+  source.groupNames = function () {
+    return Object.keys(sourceGroups);
+  };
+
+  // group: Group name. If specified, returns sources in the group. Otherwise, returns all registered sources.
+  source.sourceNames = function (group) {
+    if (group !== undefined) return Object.keys(sourceGroups[group]);
+
+    var names = [];
+    source.groupNames().forEach(function (group) {
+      Array.prototype.push.apply(names, source.sourceNames(group));
+    });
+    return names;
+  };
 
 
   // olapp.plugin
@@ -750,9 +782,6 @@ olapp.Project.prototype = {
 
 };
 
-
-// olapp.source
-olapp.source = {};
 
 /*
 olapp.source.Base

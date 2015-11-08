@@ -72,6 +72,9 @@
     return layer;
   };
 
+  // register this source
+  olapp.source.register('NaturalEarth', 'NaturalEarth', olapp.source.NaturalEarth);
+
   // register this plugin
   olapp.plugin.register(plugin.path, plugin);
 })();

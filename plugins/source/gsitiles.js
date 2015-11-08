@@ -187,6 +187,9 @@
     }
   };
 
+  // register this source
+  olapp.source.register('Tiled Map', 'GSITiles', olapp.source.GSITiles);
+
   // register this plugin
   olapp.plugin.register(plugin.path, plugin);
 })();
