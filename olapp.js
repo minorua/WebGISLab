@@ -314,7 +314,7 @@ var olapp = {
       });
       delete core.project._loadingLayers[url];
 
-      // Remove the script element from document
+      // Remove the script element from DOM
       $(core.project._loadingScripts[url]).remove();
       delete core.project._loadingScripts[url];
     }
@@ -438,7 +438,7 @@ var olapp = {
 '    <button class="btn btn-removelayer" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
 '  </div><div>' +
 '    <div style="float:left;">' +
-'      <div class="opacity-slider"></div>' +
+'      <div class="opacity-slider" title="Opacity"></div>' +
 '    </div><div style="float:right;">' +
 '      <a href="#" class="btn btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
 '    </div>' +

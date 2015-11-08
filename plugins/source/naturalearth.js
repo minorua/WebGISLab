@@ -41,7 +41,6 @@
   olapp.source.NaturalEarth = function () {
     olapp.source.Base.call(this);
     this.name = 'Natural Earth (1:110m)';
-    this.group = 'Natural Earth';
   };
 
   olapp.source.NaturalEarth.prototype = Object.create(olapp.source.Base.prototype);
@@ -73,7 +72,7 @@
   };
 
   // register this source
-  olapp.source.register('NaturalEarth', 'NaturalEarth', olapp.source.NaturalEarth);
+  olapp.source.register('Natural Earth', 'NaturalEarth', olapp.source.NaturalEarth);
 
   // register this plugin
   olapp.plugin.register(plugin.path, plugin);

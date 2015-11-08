@@ -70,13 +70,20 @@
 ## Design for Project File
 
 ### プロジェクトファイル
-    - 内容はJavaScriptのコード(拡張子はjs)。スクリプトの記述によるプロジェクトの構成
-    - example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
+
+- 内容はJavaScriptのコード(拡張子はjs)。スクリプトの記述によるプロジェクトの構成
+- example: https://github.com/minorua/WebGISLab/blob/gh-pages/projects/experimental.js
 
 ```javascript
 olapp.loadProject(new olapp.Project({
   title: 'New Project',
   description: '',
+  view: new ol.View({
+    projection: 'EPSG:3857',
+    center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
+    maxZoom: 18,
+    zoom: 5
+  }),
   plugins: ['source/gsitiles.js'],
   init: function (project) {
     var gsitiles = new olapp.source.GSITiles;
