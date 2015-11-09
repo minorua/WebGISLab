@@ -53,6 +53,8 @@ var olapp = {
   };
 
   // olapp.core
+  core.wgs84Sphere = new ol.Sphere(6378137);
+
   core.init = function () {
     map = new ol.Map({
       controls: ol.control.defaults({
@@ -277,8 +279,16 @@ var olapp = {
 
       olapp.project = project;
       gui.setProjectTitle(project.title);
-      if (project.view === undefined) alert('The project has no view.');
-      else map.setView(project.view);
+      if (project.view === undefined) {
+        alert('The project has no view.');
+        core.transformToWgs84 = core.transformFromWgs84 = undefined;
+      }
+      else {
+        map.setView(project.view);
+        var projection = project.view.getProjection();
+        core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
+        core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
+      }
 
       // Add layers to map and layer list
       project.mapLayers.forEach(function (layer) {
@@ -844,16 +854,15 @@ olapp.source.Base.prototype = {
 
 // geometry
 olapp.tools.geom = {};
-olapp.tools.geom.wgs84Sphere = new ol.Sphere(6378137);
 
 olapp.tools.geom.formatLength = function(line) {
+  var core = olapp.core;
   var length = 0;
   var coordinates = line.getCoordinates();
-  var sourceProj = olapp.map.getView().getProjection();
   for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
-    var c1 = ol.proj.transform(coordinates[i], sourceProj, 'EPSG:4326');    // TODO: olapp.core.transformToWgs84
-    var c2 = ol.proj.transform(coordinates[i + 1], sourceProj, 'EPSG:4326');
-    length += this.wgs84Sphere.haversineDistance(c1, c2);
+    var c1 = core.transformToWgs84(coordinates[i]);
+    var c2 = core.transformToWgs84(coordinates[i + 1]);
+    length += core.wgs84Sphere.haversineDistance(c1, c2);
   }
 
   if (length > 1000) {
@@ -867,7 +876,7 @@ olapp.tools.geom.formatArea = function(polygon) {
   var sourceProj = olapp.map.getView().getProjection();
   var geom = polygon.clone().transform(sourceProj, 'EPSG:4326');
   var coordinates = geom.getLinearRing(0).getCoordinates();
-  var area = Math.abs(this.wgs84Sphere.geodesicArea(coordinates));
+  var area = Math.abs(olapp.core.wgs84Sphere.geodesicArea(coordinates));
   if (area > 1000000) {
     return (Math.round(area / 1000000 * 1000) / 1000) + ' km<sup>2</sup>';
   } else {
