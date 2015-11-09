@@ -62,7 +62,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools<span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#">Measure...</a></li>
+            <li><a href="#" data-target="#dlg_measure">Measure...</a></li>
           </ul>
         </li>
         <li><a href="#" data-toggle="modal" data-target="#dlg_about">About</a></li>
@@ -102,6 +102,23 @@
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>-->
     </div>
+  </div>
+</div>
+
+<div class="dlg" id="dlg_measure">
+  <div class="dlg-header">
+    <div class="btn btn-default close">
+      <span aria-hidden="true">&times;</span>
+    </div>
+    <h4>Measure Tool</h4>
+  </div>
+  <div class="dlg-body btn-group" data-toggle="buttons">
+    <label class="btn btn-default active">
+      <input type="radio" name="options" id="measure_length" autocomplete="off" checked> Length
+    </label>
+    <label class="btn btn-default">
+      <input type="radio" name="options" id="measure_area" autocomplete="off"> Area
+    </label>
   </div>
 </div>
 

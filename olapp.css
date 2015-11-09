@@ -107,3 +107,57 @@ a.btn-blendmode span.active {
   height: 300px;
   overflow: auto;
 }
+
+/* measure dialog */
+#dlg_measure {
+  display: none;
+  background-color: white;
+  position: absolute;
+}
+#dlg_measure h4 {
+  font-size: small;
+  margin: 0;
+  padding: 5px;
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+#dlg_measure .close {
+  padding: 0px 4px;
+}
+#dlg_measure .dlg-body {
+  padding: 5px;
+}
+
+/* tooltip for measure tool */
+.tooltip {
+  position: relative;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  color: white;
+  opacity: 0.9;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+.tooltip-measure {
+  font-weight: bold;
+  opacity: 0.9;
+}
+.tooltip-static {
+  background-color: #ffcc33;
+  color: black;
+  border: 1px solid white;
+}
+.tooltip-measure:before,
+.tooltip-static:before {
+  border-top: 6px solid rgba(0, 0, 0, 0.5);
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  margin-left: -7px;
+  left: 50%;
+}
+.tooltip-static:before {
+  border-top-color: #ffcc33;
+}

@@ -644,6 +644,42 @@ var olapp = {
   gui.dialog.addLayer = addLayerDialog;
 
 
+  // olapp.gui.dialog.measure
+  var measureDialog = {
+
+    init: function () {
+      var measure = olapp.tools.measure;
+      // show/hide measure tool dialog
+      $('#navbar a[data-target="#dlg_measure"]').click(function () {
+        $('#dlg_measure').toggle();
+        if ($('#dlg_measure').is(':visible')) {
+          $('#dlg_measure').css({
+            'left': 'auto',
+            'right': '15px',
+            'top': '65px'
+          });
+          measure.startMeasure($('#measure_area').prop('checked') ? 'Polygon' : 'LineString');
+        }
+        else {
+          measure.stopMeasure();
+        }
+      });
+
+      var dlg = $('#dlg_measure').draggable({handle: ".dlg-header"});
+      dlg.find('.close').click(function () {
+        $('#dlg_measure').hide();
+          measure.stopMeasure();
+      });
+      dlg.find('input').change(function () {
+        measure.stopMeasure();
+        measure.startMeasure($('#measure_area').prop('checked') ? 'Polygon' : 'LineString');
+      });
+    },
+
+  };
+  gui.dialog.measure = measureDialog;
+
+
   // olapp.source
   var sources = {};
   var sourceGroups = {};
@@ -806,6 +842,39 @@ olapp.source.Base.prototype = {
 
 };
 
+// geometry
+olapp.tools.geom = {};
+olapp.tools.geom.wgs84Sphere = new ol.Sphere(6378137);
+
+olapp.tools.geom.formatLength = function(line) {
+  var length = 0;
+  var coordinates = line.getCoordinates();
+  var sourceProj = olapp.map.getView().getProjection();
+  for (var i = 0, ii = coordinates.length - 1; i < ii; ++i) {
+    var c1 = ol.proj.transform(coordinates[i], sourceProj, 'EPSG:4326');    // TODO: olapp.core.transformToWgs84
+    var c2 = ol.proj.transform(coordinates[i + 1], sourceProj, 'EPSG:4326');
+    length += this.wgs84Sphere.haversineDistance(c1, c2);
+  }
+
+  if (length > 1000) {
+    return (Math.round(length) / 1000) + ' km';
+  } else {
+    return (Math.round(length)) + ' m';
+  }
+};
+
+olapp.tools.geom.formatArea = function(polygon) {
+  var sourceProj = olapp.map.getView().getProjection();
+  var geom = polygon.clone().transform(sourceProj, 'EPSG:4326');
+  var coordinates = geom.getLinearRing(0).getCoordinates();
+  var area = Math.abs(this.wgs84Sphere.geodesicArea(coordinates));
+  if (area > 1000000) {
+    return (Math.round(area / 1000000 * 1000) / 1000) + ' km<sup>2</sup>';
+  } else {
+    return (Math.round(area)) + ' m<sup>2</sup>';
+  }
+};
+
 
 // projection
 olapp.tools.projection = {};
@@ -815,6 +884,118 @@ olapp.tools.projection.resolutionFromZoomLevel = function (zoom) {
   var TILE_SIZE = 256,
       TSIZE1 = 20037508.342789244;
   return TSIZE1 / Math.pow(2, zoom - 1) / TILE_SIZE;
+};
+
+
+// olapp.tools.measure
+olapp.tools.measure = {
+
+  draw: null,
+  layer: null,         // vector layer that has traverse lines and/or polygons
+  tooltipElem: null,
+  tooltip: null,       // current tooltip
+  tooltips: [],
+
+  startMeasure: function (geomType) {
+    this.layer = this.createMeasureLayer();
+    olapp.map.addLayer(this.layer);
+
+    this.draw = this.createInteraction(geomType, this.layer);
+    olapp.map.addInteraction(this.draw);
+
+    var listener = null;
+    this.draw.on('drawstart', function(evt) {
+      this.addMeasureTooltip();
+      listener = evt.feature.getGeometry().on('change', function(evt) {
+        var geom = evt.target;
+        var output, tooltipCoord;
+        if (geom instanceof ol.geom.Polygon) {
+          output = olapp.tools.geom.formatArea(geom);
+          tooltipCoord = geom.getInteriorPoint().getCoordinates();
+        } else if (geom instanceof ol.geom.LineString) {
+          output = olapp.tools.geom.formatLength(geom);
+          tooltipCoord = geom.getLastCoordinate();
+        }
+        this.tooltipElem.innerHTML = output;
+        this.tooltip.setPosition(tooltipCoord);
+      }, this);
+    }, this);
+
+    this.draw.on('drawend', function(evt) {
+      this.tooltipElem.className = 'tooltip tooltip-static';
+      this.tooltip.setOffset([0, -7]);
+
+      ol.Observable.unByKey(listener);
+    }, this);
+
+    $('#map').css('cursor', 'crosshair');
+  },
+
+  stopMeasure: function () {
+    $('#map').css('cursor', 'auto');
+
+    olapp.map.removeLayer(this.layer);
+    this.layer = null;
+
+    olapp.map.removeInteraction(this.draw);
+    this.draw = null;
+
+    this.tooltips.forEach(function (tooltip) {
+      olapp.map.removeOverlay(tooltip);
+    });
+    this.tooltips = [];
+  },
+
+  addMeasureTooltip: function () {
+    this.tooltipElem = document.createElement('div');
+    this.tooltipElem.className = 'tooltip tooltip-measure';
+    this.tooltip = new ol.Overlay({
+      element: this.tooltipElem,
+      offset: [0, -15],
+      positioning: 'bottom-center'
+    });
+    olapp.map.addOverlay(this.tooltip);
+    this.tooltips.push(this.tooltip);
+  },
+
+  createMeasureLayer: function () {
+    return new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: '#ffcc33',
+          width: 2
+        }),
+        image: new ol.style.Circle({
+          radius: 7,
+          fill: new ol.style.Fill({
+            color: '#ffcc33'
+          })
+        })
+      })
+    });
+  },
+
+  createInteraction: function (geomType, measureLayer) {
+    return new ol.interaction.Draw({
+      source: measureLayer.getSource(),
+      type: geomType,
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'rgba(0, 0, 0, 0.5)',
+          lineDash: [10, 10],
+          width: 2
+        })
+      })
+    });
+  }
+
 };
 
 
