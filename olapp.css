@@ -22,6 +22,7 @@ html, body {
 /* nav bar */
 nav .container {
   width: 100%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 #trigger {
   background-color: #f4f4f4;
@@ -43,9 +44,10 @@ nav .container {
   top: 50px;
   bottom: 0px;
   min-width: 250px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   overflow: auto;
   padding: 5px;
+  box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
 }
 #slider button:focus {
   outline: 0 none;
