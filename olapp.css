@@ -95,7 +95,7 @@ a.btn-blendmode span.active {
 
 #addlg_group_list {
   background-color: gray;
-  width: 200px;
+  min-width: 120px;
   height: 300px;
   overflow: auto;
 }

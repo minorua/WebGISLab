@@ -565,10 +565,10 @@ var olapp = {
             // Add group item
             var html =
 '<li class="list-group-item">' +
-'  <span>' + group + '</span>' +
 '  <a class="btn accordion-toggle" style="float:right; padding:2px;" data-toggle="collapse" data-parent="#addlg_group_list" href="#' + subListId + '">' +
 '    <span class="glyphicon glyphicon-chevron-down"></span>' +
 '  </a>' +
+'  <span>' + group + '</span>' +
 '  <div class="panel-collapse collapse in" id="' + subListId + '">' +
 '    <ul class="list-group"></ul>' +
 '  </div>' +
@@ -623,8 +623,8 @@ var olapp = {
       var appendItem = function (sourceName, item) {
         var html =
 '<li class="list-group-item">' +
-'  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
 '  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
+'  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
 '</li>';
 
         list.append(html);
