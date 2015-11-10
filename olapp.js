@@ -655,10 +655,26 @@ var olapp = {
 
 
   // olapp.gui.dialog.measure
-  var measureDialog = {
+  gui.dialog.measure = {
 
     init: function () {
       var measure = olapp.tools.measure;
+      var startMeasure = function () {
+        measure.startMeasure($('#measure_area').prop('checked') ? 'Polygon' : 'LineString', function () {
+          $('#measure_redo,#measure_fin').removeClass('disabled');
+        }, function () {
+          $('#measure_redo,#measure_fin').addClass('disabled');
+        });
+      };
+      var stopMeasure = function () {
+        measure.stopMeasure();
+        $('#measure_redo,#measure_fin').addClass('disabled');
+      };
+      var restartMeasure = function () {
+        stopMeasure();
+        startMeasure();
+      };
+
       // show/hide measure tool dialog
       $('#navbar a[data-target="#dlg_measure"]').click(function () {
         $('#dlg_measure').toggle();
@@ -668,26 +684,35 @@ var olapp = {
             'right': '15px',
             'top': '65px'
           });
-          measure.startMeasure($('#measure_area').prop('checked') ? 'Polygon' : 'LineString');
+          startMeasure();
         }
         else {
-          measure.stopMeasure();
+          stopMeasure();
         }
       });
 
       var dlg = $('#dlg_measure').draggable({handle: ".dlg-header"});
       dlg.find('.close').click(function () {
         $('#dlg_measure').hide();
-          measure.stopMeasure();
+          stopMeasure();
       });
-      dlg.find('input').change(function () {
-        measure.stopMeasure();
-        measure.startMeasure($('#measure_area').prop('checked') ? 'Polygon' : 'LineString');
+      dlg.find('input').change(restartMeasure);
+
+      $('#measure_redo').addClass('disabled').click(function () {
+        this.blur();
+        if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.removeLastPoint();
       });
-    },
+      $('#measure_fin').addClass('disabled').click(function () {
+        this.blur();
+        if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.finishDrawing();
+      });
+      $('#measure_clear').click(function () {
+        this.blur();
+        restartMeasure();
+      });
+    }
 
   };
-  gui.dialog.measure = measureDialog;
 
 
   // olapp.source
@@ -905,7 +930,7 @@ olapp.tools.measure = {
   tooltip: null,       // current tooltip
   tooltips: [],
 
-  startMeasure: function (geomType) {
+  startMeasure: function (geomType, callbackDrawStart, callbackDrawEnd) {
     this.layer = this.createMeasureLayer();
     olapp.map.addLayer(this.layer);
 
@@ -914,6 +939,8 @@ olapp.tools.measure = {
 
     var listener = null;
     this.draw.on('drawstart', function(evt) {
+      if (callbackDrawStart) callbackDrawStart();
+
       this.addMeasureTooltip();
       listener = evt.feature.getGeometry().on('change', function(evt) {
         var geom = evt.target;
@@ -931,6 +958,8 @@ olapp.tools.measure = {
     }, this);
 
     this.draw.on('drawend', function(evt) {
+      if (callbackDrawEnd) callbackDrawEnd();
+
       this.tooltipElem.className = 'tooltip tooltip-static';
       this.tooltip.setOffset([0, -7]);
 

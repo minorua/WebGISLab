@@ -112,13 +112,26 @@
     </div>
     <h4>Measure Tool</h4>
   </div>
-  <div class="dlg-body btn-group" data-toggle="buttons">
-    <label class="btn btn-default active">
-      <input type="radio" name="options" id="measure_length" autocomplete="off" checked> Length
-    </label>
-    <label class="btn btn-default">
-      <input type="radio" name="options" id="measure_area" autocomplete="off"> Area
-    </label>
+  <div class="dlg-body ">
+    <div class="btn-group" data-toggle="buttons">
+      <label class="btn btn-default active">
+        <input type="radio" name="options" id="measure_length" autocomplete="off" checked> Length
+      </label>
+      <label class="btn btn-default">
+        <input type="radio" name="options" id="measure_area" autocomplete="off"> Area
+      </label>
+    </div>
+    <div>
+      <button class="btn btn-default" id="measure_redo" title="Redo">
+        <span class="glyphicon glyphicon-arrow-left"></span>
+      </button>
+      <button class="btn btn-default" id="measure_fin" title="Finish">
+        <span class="glyphicon glyphicon-ok-circle"></span>
+      </button>
+      <button class="btn btn-default" id="measure_clear" title="Clear">
+        <span class="glyphicon glyphicon-remove-circle"></span>
+      </button>
+    </div>
   </div>
 </div>
 

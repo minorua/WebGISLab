@@ -129,6 +129,12 @@ a.btn-blendmode span.active {
 #dlg_measure .dlg-body {
   padding: 5px;
 }
+#dlg_measure .btn {
+  outline: none;
+}
+#dlg_measure .btn-group {
+  margin-bottom: 5px;
+}
 
 /* tooltip for measure tool */
 .tooltip {
