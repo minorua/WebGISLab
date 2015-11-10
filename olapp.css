@@ -19,6 +19,13 @@ html, body {
   background-color: rgba(255, 255, 255, 0.6)
 }
 
+* {
+  border-radius: 0 !important;
+}
+.list-group-item {
+  cursor: pointer;
+}
+
 /* nav bar */
 nav .container {
   width: 100%;
@@ -56,9 +63,6 @@ nav .container {
   list-style-type: none;
   margin: 5px 0 0 0;
   width: 100%;
-}
-.list-group-item {
-  cursor: pointer;
 }
 a.btn {
   color: gray;
