@@ -25,6 +25,9 @@ html, body {
 .list-group-item {
   cursor: pointer;
 }
+.btn.disabled {
+  cursor: auto;
+}
 
 /* nav bar */
 nav .container {
