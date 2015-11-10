@@ -944,16 +944,14 @@ olapp.tools.measure = {
       this.addMeasureTooltip();
       listener = evt.feature.getGeometry().on('change', function(evt) {
         var geom = evt.target;
-        var output, tooltipCoord;
+        var output;
         if (geom instanceof ol.geom.Polygon) {
           output = olapp.tools.geom.formatArea(geom);
-          tooltipCoord = geom.getInteriorPoint().getCoordinates();
         } else if (geom instanceof ol.geom.LineString) {
           output = olapp.tools.geom.formatLength(geom);
-          tooltipCoord = geom.getLastCoordinate();
         }
         this.tooltipElem.innerHTML = output;
-        this.tooltip.setPosition(tooltipCoord);
+        this.tooltip.setPosition(geom.getLastCoordinate());
       }, this);
     }, this);
 
@@ -961,6 +959,10 @@ olapp.tools.measure = {
       if (callbackDrawEnd) callbackDrawEnd();
 
       this.tooltipElem.className = 'tooltip tooltip-static';
+      var geom = evt.feature.getGeometry();
+      if (geom instanceof ol.geom.Polygon) {
+        this.tooltip.setPosition(geom.getInteriorPoint().getCoordinates());
+      }
       this.tooltip.setOffset([0, -7]);
 
       ol.Observable.unByKey(listener);
