@@ -310,9 +310,7 @@
     });
   };
 
-  ol.source.GSIElevTile.prototype = Object.create(ol.source.XYZ.prototype);
-  ol.source.GSIElevTile.prototype.constructor = ol.source.GSIElevTile;
-
+  ol.inherits(ol.source.GSIElevTile, ol.source.XYZ);
 
   if (typeof olapp !== 'undefined') {
     var layerIds = ['relief', 'slope'];
@@ -347,8 +345,7 @@
       this.name = 'GSI Elevation Tile';
     };
 
-    olapp.source.GSIElevTile.prototype = Object.create(olapp.source.Base.prototype);
-    olapp.source.GSIElevTile.prototype.constructor = olapp.source.Base;
+    ol.inherits(olapp.source.GSIElevTile, olapp.source.Base);
 
     olapp.source.GSIElevTile.prototype.list = function () {
       var listItems = [];

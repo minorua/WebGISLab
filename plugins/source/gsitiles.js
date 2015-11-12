@@ -116,8 +116,7 @@
     this.name = 'GSI Tiles';
   };
 
-  olapp.source.GSITiles.prototype = Object.create(olapp.source.Base.prototype);
-  olapp.source.GSITiles.prototype.constructor = olapp.source.GSITiles;
+  ol.inherits(olapp.source.GSITiles, olapp.source.Base);
 
   olapp.source.GSITiles.prototype.list = function () {
     var listItems = [];

@@ -43,8 +43,7 @@
     this.name = 'Natural Earth (1:110m)';
   };
 
-  olapp.source.NaturalEarth.prototype = Object.create(olapp.source.Base.prototype);
-  olapp.source.NaturalEarth.prototype.constructor = olapp.source.NaturalEarth;
+  ol.inherits(olapp.source.NaturalEarth, olapp.source.Base);
 
   olapp.source.NaturalEarth.prototype.list = function () {
     var listItems = [];
