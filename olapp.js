@@ -370,6 +370,8 @@ var olapp = {
     });
 
     map.on('click', function (evt) {
+      var pt = map.getEventCoordinate(evt.originalEvent);
+      console.log('Clicked', pt, core.transformToWgs84(pt));
       gui.displayFeatureInfo(evt.pixel);
     });
 
