@@ -119,7 +119,7 @@ var olapp = {
   };
 
   core._loadText = function (text, formatConstructors) {
-    var transform = ol.proj.getTransform('EPSG:4326', 'EPSG:3857');
+    var transform = core.transformFromWgs84;
 
     for (var i = 0; i < formatConstructors.length; i++) {
       var format = new formatConstructors[i]();
@@ -898,8 +898,8 @@ olapp.tools.geom.formatLength = function(line) {
 };
 
 olapp.tools.geom.formatArea = function(polygon) {
-  var sourceProj = olapp.map.getView().getProjection();
-  var geom = polygon.clone().transform(sourceProj, 'EPSG:4326');
+  var geom = polygon.clone();
+  geom.applyTransform(olapp.core.transformToWgs84);
   var coordinates = geom.getLinearRing(0).getCoordinates();
   var area = Math.abs(olapp.core.wgs84Sphere.geodesicArea(coordinates));
   if (area > 1000000) {
@@ -1062,8 +1062,7 @@ olapp.tools.geocoding.Nominatim = {
               license = json[0].licence;
           if(confirm('Jump to ' + dispName + ' (' + lon + ', ' + lat + ') ?\n  Search result provided by Nominatim.')) {
             // TODO: callback(lon, lat);
-            var target = ol.proj.transform([lon, lat], 'EPSG:4326', 'EPSG:3857');
-            olapp.map.getView().setCenter(target);
+            olapp.map.getView().setCenter(olapp.core.transformFromWgs84([lon, lat]));
             olapp.map.getView().setResolution(olapp.tools.projection.resolutionFromZoomLevel(15));
           }
         }
