@@ -15,9 +15,9 @@
   plugin.init = function () {
     var core = olapp.core;
     var dir = 'js/geodesy/';
-    core.loadScript(dir + 'vector3d.js');
-    core.loadScript(dir + 'latlon-ellipsoidal.js');
-    core.loadScript(dir + 'latlon-vincenty.js');
+    core.loadScripts([dir + 'vector3d.js',
+                      dir + 'latlon-ellipsoidal.js',
+                      dir + 'latlon-vincenty.js']);
 
     $('#measure_length').parent().prop('title',
             'Measure geodesic distances. Geodesic distance on ellipsoid is calculated by Vincenty formula.');

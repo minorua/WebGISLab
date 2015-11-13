@@ -95,6 +95,18 @@ var olapp = {
     document.getElementsByTagName('head')[0].appendChild(s);
   };
 
+  // Load multiple scripts sequentially
+  core.loadScripts = function (urls, callback) {
+    if (urls.length) {
+      core.loadScript(urls[0], function () {
+        core.loadScripts(urls.slice(1), callback);
+      });
+    }
+    else {  // No script to be loaded remains
+      if (callback) callback();
+    }
+  };
+
   core.loadLayerFromFile = function (file) {
     if (!olapp.project) alert('No project');   // TODO: assert
 
