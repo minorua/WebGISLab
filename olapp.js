@@ -79,6 +79,22 @@ var olapp = {
     return attrs[html];
   };
 
+  // Load a script if not loaded yet
+  core.loadScript = function (url, callback) {
+    if ($('script[src="' + url + '"]').length) {
+      // already loaded
+      console.log('Already loaded:', url);
+      if (callback) callback();
+      return;
+    }
+
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    if (callback) s.onload = callback;
+    s.src = url;
+    document.getElementsByTagName('head')[0].appendChild(s);
+  };
+
   core.loadLayerFromFile = function (file) {
     if (!olapp.project) alert('No project');   // TODO: assert
 
@@ -224,12 +240,6 @@ var olapp = {
         s.src = prj;
         head.appendChild(s);
         core.project._scriptElement = s;
-
-        /* Not works with file://
-        $('head').append(s);
-        $.getScript(prj, function () {
-          olapp.gui.status("Have been loaded '" + prj + "'");
-        }); */
 
         // olapp.loadProject() will be called from the project file again.
         core.project._loadCallback = callback;
