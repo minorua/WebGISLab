@@ -36,10 +36,10 @@
       }
 
       if (lengthV > 1000) {
-        return 'Sperical: ' + (Math.round(length) / 1000) + ' km<br>' +
+        return 'Spherical: ' + (Math.round(length) / 1000) + ' km<br>' +
                'Ellipsoidal: ' + ((Math.round(lengthV * 10) / 10 / 1000).toFixed(4)) + ' km';
       } else {
-        return 'Sperical: ' + (Math.round(length)) + ' m<br>' +
+        return 'Spherical: ' + (Math.round(length)) + ' m<br>' +
                'Ellipsoidal: ' + (Math.round(lengthV * 10) / 10) + ' m';
       }
     };
