@@ -7,7 +7,7 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 20,
     zoom: 8
   }),
-  plugins: ['source/gsitiles.js', 'source/gsielevtile.js'],
+  plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'tool/measure-vincenty.js'],
   init: function (project) {
     var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
