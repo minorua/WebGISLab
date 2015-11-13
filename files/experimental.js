@@ -3,9 +3,9 @@ olapp.loadProject(new olapp.Project({
   description: '',
   view: new ol.View({
     projection: 'EPSG:3857',
-    center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
-    maxZoom: 18,
-    zoom: 5
+    center: ol.proj.transform([135, 34.5], 'EPSG:4326', 'EPSG:3857'),
+    maxZoom: 20,
+    zoom: 8
   }),
   plugins: ['source/gsitiles.js', 'source/gsielevtile.js'],
   init: function (project) {
