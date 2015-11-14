@@ -98,14 +98,6 @@
 
   var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
-  var transform = function (extent) {
-    return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
-  };
-
-  var extents = {
-    japan: transform([122.7, 20.4, 154.8, 45.6])
-  };
-
 
   /*
   olapp.source.GSITiles
@@ -133,7 +125,9 @@
     if (layerIds.indexOf(id) === -1) return null;
 
     var lyr = layers[id],
-        url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format;
+        url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format,
+        destProj = olapp.project.view.getProjection(),
+        extentJp = ol.proj.transformExtent([122.7, 20.4, 154.8, 45.6], 'EPSG:4326', destProj);
 
     // source options
     var options = {
@@ -159,7 +153,7 @@
       };
       // options for Japanese map
       var options2 = {
-        extent: extents.japan,
+        extent: extentJp,
         source: source,
         maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zminJp - 0.1)
       };
@@ -175,7 +169,7 @@
     else {
       // Create a layer
       options = {
-        extent: extents.japan,
+        extent: extentJp,
         maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1),
         source: source
       };

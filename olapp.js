@@ -282,15 +282,13 @@ var olapp = {
       if (prj.plugins.length > 0) {
         // Load plugins
         plugin.load(prj.plugins, function () {
-          // Initialize project after plugins are loaded.
-          if (prj.init !== undefined) prj.init(prj);
+          // Set the project to the application after the plugins are loaded.
           core.project.set(prj);
           projectLoaded();
         });
         return;
       }
 
-      if (prj.init !== undefined) prj.init(prj);
       core.project.set(prj);
       projectLoaded();
     },
@@ -300,7 +298,9 @@ var olapp = {
       core.project.clear();
 
       olapp.project = project;
+      if (project.init !== undefined) project.init(project);
       gui.setProjectTitle(project.title);
+
       if (project.view === undefined) {
         alert('The project has no view.');
         core.transformToWgs84 = core.transformFromWgs84 = undefined;

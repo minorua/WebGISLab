@@ -327,14 +327,6 @@
       }
     };
 
-    var transform = function (extent) {
-      return ol.proj.transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
-    };
-
-    var extents = {
-      japan: transform([122.7, 20.4, 154.8, 45.6])
-    };
-
 
     /*
     olapp.source.GSIElevTile
@@ -377,8 +369,10 @@
       };
 
       // layer options
+      var destProj = olapp.project.view.getProjection(),
+          extentJp = ol.proj.transformExtent([122.7, 20.4, 154.8, 45.6], 'EPSG:4326', destProj);
       options = {
-        extent: extents.japan,
+        extent: extentJp,
         source: new ol.source.GSIElevTile(options)
       };
       if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
