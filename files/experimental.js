@@ -44,8 +44,8 @@ olapp.loadProject(new olapp.Project({
 
     // EXPERIMENTAL vector tile - experimental_rdcl
     var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";
-    layer = new ol.layer.Vector({
-      source: new ol.source.TileVector({
+    layer = new ol.layer.VectorTile({
+      source: new ol.source.VectorTile({
         attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
@@ -116,8 +116,8 @@ olapp.loadProject(new olapp.Project({
     };
 
     attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
-    layer = new ol.layer.Vector({
-      source: new ol.source.TileVector({
+    layer = new ol.layer.VectorTile({
+      source: new ol.source.VectorTile({
         attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
         projection: 'EPSG:3857',
