@@ -12,7 +12,7 @@ olapp.loadProject(new olapp.Project({
     var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
     // GSI Tiles (source/gsitiles.js)
-    var gsitiles = new olapp.source.GSITiles, layer;
+    var gsitiles = new olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
     project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
     project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
@@ -23,9 +23,10 @@ olapp.loadProject(new olapp.Project({
     project.addLayer(gsielevtile.createLayer('slope', {visible: false}));   // 傾斜区分図
 
     // Seamless Digital Geological Map of Japan (1:200,000)
-    var gsjlayer = new ol.layer.Tile({});
-    gsjlayer.setVisible(false);
-    gsjlayer.title = 'シームレス地質図 (詳細版)';
+    var gsjlayer = new ol.layer.Tile({
+      title: 'シームレス地質図 (詳細版)',
+      visible: false
+    });
     project.addLayer(gsjlayer);
 
     var url = 'https://gbank.gsj.jp/seamless/tilemap/detailed/WMTSCapabilities.xml';
@@ -44,7 +45,7 @@ olapp.loadProject(new olapp.Project({
 
     // EXPERIMENTAL vector tile - experimental_rdcl
     var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";
-    layer = new ol.layer.VectorTile({
+    project.addLayer(new ol.layer.VectorTile({
       source: new ol.source.VectorTile({
         attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
@@ -64,11 +65,10 @@ olapp.loadProject(new olapp.Project({
           })
         })];
       },
-      maxResolution: resolutionFromZoomLevel(16 - 0.1)
-    });
-    layer.setVisible(false);
-    layer.title = '道路中心線 (z>=16)';
-    project.addLayer(layer);
+      maxResolution: resolutionFromZoomLevel(16 - 0.1),
+      title: '道路中心線 (z>=16)',
+      visible: false
+    }));
 
     // EXPERIMENTAL vector tile - experimental_fgd
     var styleMap = {
@@ -118,7 +118,7 @@ olapp.loadProject(new olapp.Project({
     };
 
     attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
-    layer = new ol.layer.VectorTile({
+    project.addLayer(new ol.layer.VectorTile({
       source: new ol.source.VectorTile({
         attributions: [olapp.core.getAttribution(attr)],
         format: new ol.format.GeoJSON({defaultProjection: 'EPSG:4326'}),
@@ -130,10 +130,9 @@ olapp.loadProject(new olapp.Project({
         url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_fgd/{z}/{x}/{y}.geojson'
       }),
       style: featureStyleFunction,
-      maxResolution: resolutionFromZoomLevel(18 - 0.1)
-    });
-    layer.setVisible(false);
-    layer.title = '基盤地図情報（基本項目）(z>=18)';
-    project.addLayer(layer);
+      maxResolution: resolutionFromZoomLevel(18 - 0.1),
+      visible: false,
+      title: '基盤地図情報（基本項目）(z>=18)'
+    }));
   }
 }));

@@ -160,22 +160,20 @@
 
       // Create two layers and a layer group that binds the layers
       options = {
-        layers: [new ol.layer.Tile(options1), new ol.layer.Tile(options2)]
+        layers: [new ol.layer.Tile(options1), new ol.layer.Tile(options2)],
+        title: layers[id].name
       };
-      var group = new ol.layer.Group($.extend(options, layerOptions));
-      group.title = layers[id].name;
-      return group;
+      return new ol.layer.Group($.extend(options, layerOptions));
     }
     else {
       // Create a layer
       options = {
         extent: extentJp,
         maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1),
-        source: source
+        source: source,
+        title: layers[id].name
       };
-      var layer = new ol.layer.Tile($.extend(options, layerOptions));
-      layer.title = layers[id].name;
-      return layer;
+      return new ol.layer.Tile($.extend(options, layerOptions));
     }
   };
 

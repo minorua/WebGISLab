@@ -115,7 +115,7 @@ var olapp = {
       var format = file.name.split('.').pop();
       var layer = core.loadText(reader.result, file.name, format);
       if (layer) {
-        layer.title = file.name;
+        layer.set('title', file.name);
         core.project.addLayer(layer);
         map.getView().fit(layer.getSource().getExtent(), map.getSize());
       }
@@ -209,7 +209,7 @@ var olapp = {
     // Add a layer to current project, map and layer list
     addLayer: function (layer) {
       olapp.project.addLayer(layer);    // layer.id is set
-      mapLayers[layer.id] = layer;
+      mapLayers[layer.get('id')] = layer;
       map.addLayer(layer);
       gui.addLayer(layer);
     },
@@ -314,7 +314,7 @@ var olapp = {
 
       // Add layers to map and layer list
       project.mapLayers.forEach(function (layer) {
-        mapLayers[layer.id] = layer;
+        mapLayers[layer.get('id')] = layer;
         map.addLayer(layer);
         gui.addLayer(layer);
       });
@@ -434,8 +434,8 @@ var olapp = {
   gui.addLayer = function (layer) {
     var checked = (layer.getVisible()) ? ' checked' : '';
     var html =
-'<div class="list-group-item" id="' + layer.id + '">' +
-'  <input type="checkbox"' + checked + '>' + layer.title +
+'<div class="list-group-item" id="' + layer.get('id') + '">' +
+'  <input type="checkbox"' + checked + '>' + layer.get('title') +
 '  <a href="#" class="btn" style="float:right; padding:2px;" title="Expand/Collapse layer panel">' +
 '    <span class="glyphicon glyphicon-chevron-down"></span>' +
 '  </a>' +
@@ -852,17 +852,17 @@ olapp.Project.prototype = {
   constructor: olapp.Project,
 
   addLayer: function (layer) {
-    if (layer.title === undefined) layer.title = 'no title';
-    if (layer.blendMode === undefined) layer.blendMode = 'source-over';
+    if (layer.get('title') === undefined) layer.set('title', 'no title');
+    if (layer.get('blendMode') === undefined) layer.set('blendMode', 'source-over');
 
     layer.on('precompose', function (evt) {
-      evt.context.globalCompositeOperation = this.blendMode;
+      evt.context.globalCompositeOperation = this.get('blendMode');
     });
     layer.on('postcompose', function (evt) {
       evt.context.globalCompositeOperation = 'source-over';
     });
 
-    layer.id = this.getNextLayerId();
+    layer.set('id', this.getNextLayerId());
     this.mapLayers.push(layer);
   },
 

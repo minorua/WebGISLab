@@ -373,13 +373,12 @@
           extentJp = ol.proj.transformExtent([122.7, 20.4, 154.8, 45.6], 'EPSG:4326', destProj);
       options = {
         extent: extentJp,
-        source: new ol.source.GSIElevTile(options)
+        source: new ol.source.GSIElevTile(options),
+        title: layers[id].name
       };
       if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
 
-      var layer = new ol.layer.Tile($.extend(options, layerOptions));
-      layer.title = layers[id].name;
-      return layer;
+      return new ol.layer.Tile($.extend(options, layerOptions));
     };
 
     // register this source

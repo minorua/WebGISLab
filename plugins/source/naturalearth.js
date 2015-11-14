@@ -60,9 +60,9 @@
     if (layerIds.indexOf(id) === -1) return null;
 
     var layer = new ol.layer.Vector({
-      style: olapp.core.styleFunction
+      style: olapp.core.styleFunction,
+      title: layers[id].name
     });
-    layer.title = layers[id].name;
 
     var url = 'files/ne/' + layers[id].filename;
     olapp.core.project.loadLayerSource(layer, url);
