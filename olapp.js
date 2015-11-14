@@ -82,7 +82,6 @@ var olapp = {
   // Load a script if not loaded yet
   core.loadScript = function (url, callback) {
     if ($('script[src="' + url + '"]').length) {
-      // already loaded
       console.log('Already loaded:', url);
       if (callback) callback();
       return;
@@ -815,10 +814,13 @@ var olapp = {
       loadingPlugins.push(pluginPath);
     });
 
-    plugin._loadingSets.push({
-      plugins: loadingPlugins,
-      callback: callback
-    });
+    if (loadingPlugins.length == 0) callback();
+    else {
+      plugin._loadingSets.push({
+        plugins: loadingPlugins,
+        callback: callback
+      });
+    }
   };
 
 })();
