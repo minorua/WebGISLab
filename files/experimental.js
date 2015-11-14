@@ -56,6 +56,7 @@ olapp.loadProject(new olapp.Project({
         url: 'http://cyberjapandata.gsi.go.jp/xyz/experimental_rdcl/{z}/{x}/{y}.geojson'
       }),
       style: function(feature, resolution) {
+        feature.getGeometry().applyTransform(olapp.core.transformFromWgs84);    // temporary fix for 3.11.1
         return [new ol.style.Style({
           stroke: new ol.style.Stroke({
             color: 'orange', 
@@ -85,6 +86,7 @@ olapp.loadProject(new olapp.Project({
     var featureStyleFunction = function (feature, resolution) {
       if (feature.values_['vis'] == '非表示') return [];
 
+      feature.getGeometry().applyTransform(olapp.core.transformFromWgs84);    // temporary fix for 3.11.1
       var geomType = feature.getGeometry().getType();
       if (geomType == 'LineString') {
         var className = feature.values_['class'],
