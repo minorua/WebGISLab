@@ -20,7 +20,7 @@
                       dir + 'latlon-vincenty.js']);
 
     $('#measure_length').parent().prop('title',
-            'Measure geodesic distances. Geodesic distance on ellipsoid is calculated by Vincenty formula.');
+            'Measure geodesic distances. Two geodesic distances (on sphere and ellipsoid) are computed. The latter is calculated by Vincenty formula.');
 
     // override length calculation function
     olapp.tools.geom.formatLength = function(line) {
@@ -36,11 +36,11 @@
       }
 
       if (lengthV > 1000) {
-        return 'Spherical: ' + (Math.round(length) / 1000) + ' km<br>' +
-               'Ellipsoidal: ' + ((Math.round(lengthV * 10) / 10 / 1000).toFixed(4)) + ' km';
+        return 'Sphere: ' + ((Math.round(length * 10) / 10 / 1000).toFixed(4)) + ' km<br>' +
+               'Ellipsoid: ' + ((Math.round(lengthV * 10) / 10 / 1000).toFixed(4)) + ' km';
       } else {
-        return 'Spherical: ' + (Math.round(length)) + ' m<br>' +
-               'Ellipsoidal: ' + (Math.round(lengthV * 10) / 10) + ' m';
+        return 'Sphere: ' + (Math.round(length * 10) / 10) + ' m<br>' +
+               'Ellipsoid: ' + (Math.round(lengthV * 10) / 10) + ' m';
       }
     };
   };
