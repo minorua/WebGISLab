@@ -814,7 +814,9 @@ var olapp = {
       loadingPlugins.push(pluginPath);
     });
 
-    if (loadingPlugins.length == 0) callback();
+    if (loadingPlugins.length == 0) {
+      if (callback) callback();
+    }
     else {
       plugin._loadingSets.push({
         plugins: loadingPlugins,
