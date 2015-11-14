@@ -4,25 +4,34 @@
 
 ## Demos
 
-* Default project: http://minorua.github.io/WebGISLab/index.html
-    - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
+* Default Project: http://minorua.github.io/WebGISLab/index.html
+    - レイヤ
+        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
 
-* Experimental project: http://minorua.github.io/WebGISLab/index.html?project=experimental
-    - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
-    - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
-    - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図, 傾斜区分図
-    - [20万分の1日本シームレス地質図](https://gbank.gsj.jp/seamless/) (WMTS)
+* Experimental Project: http://minorua.github.io/WebGISLab/index.html?project=experimental
+    - レイヤ
+        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
+        - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
+        - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図, 傾斜区分図
+        - [20万分の1日本シームレス地質図](https://gbank.gsj.jp/seamless/) (WMTS)
+    - 楕円体面上の距離計測 ([Vincentyの式](https://github.com/chrisveness/geodesy))
+
+* Experimental UTM53 Project: http://minorua.github.io/WebGISLab/index.html?project=experimental_utm53
+    - レイヤ
+        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図)
+        - ラスタタイルの投影変換 (OL >= 3.11)
 
 
 ## Requirements
 
-次の機能・特徴が欲しい
+次の機能・特徴を備えたい
+
 - レイヤリストまたはレイヤツリー
-    - チェックボックスで表示・非表示切り替え
+    - チェックボックスによる表示・非表示切り替え
     - レイヤ順の並べ替え
-    - 透過性の調整と混合
-    - レイヤ情報表示
-    - レイヤ領域へのズーム
+    - 透過性の調整と混合モード切り替え
+    - レイヤ情報の表示
+    - レイヤ領域へズーム
     - レイヤの削除
 - 属性テーブル
     - 地物へのズーム
@@ -39,6 +48,7 @@
 - Natural Earthデータレイヤの追加
     - 小スケールデータの一部
     - デフォルトプロジェクトで利用
+    - スタイルの変更
 - 地理院標高タイルの利用
     - 段彩図、傾斜区分図レイヤの追加
         - 凡例
@@ -55,10 +65,10 @@
     - GeoJSON
     - JPGIS
         - 国土数値情報 (JPGIS 2.1)
-- 読み込まれたデータのHTML5 ローカルストレージへの保存
+- 読み込まれたデータのHTML5 ローカルストレージへの保存とダウンロード
 - プロジェクトの保存と読み込み
     - ローカルストレージとファイルダウンロード
-    - Java Scriptファイルにして初期プロジェクトとして読み込み可能に→プロジェクトの配布
+    - Java Scriptファイルにして初期プロジェクトとして読み込み可能に
 - 3Dビューアの起動 (Cesium)
     - ローカルストレージデータの共有
 - 距離・面積の計測ツール
