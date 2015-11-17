@@ -557,7 +557,7 @@ var olapp = {
 
         item.append(html);
 
-        if (mapLayers[layerId].blendMode == 'multiply') {
+        if (mapLayers[layerId].get('blendMode') == 'multiply') {
           item.find('.btn-blendmode span').addClass('active');
         }
 
@@ -588,8 +588,8 @@ var olapp = {
         item.find('.btn-blendmode').click(function (e) {
           e.stopPropagation();
 
-          var blendMode = (mapLayers[layerId].blendMode == 'source-over') ? 'multiply' : 'source-over';
-          mapLayers[layerId].blendMode = blendMode;
+          var blendMode = (mapLayers[layerId].get('blendMode') == 'source-over') ? 'multiply' : 'source-over';
+          mapLayers[layerId].set('blendMode', blendMode);
 
           var target = $(this);
           if (target.prop('tagName') == 'A') target = target.children();
