@@ -1,6 +1,6 @@
 # Welcome to WebGIS Lab
 
-目標: デスクトップGISのような操作性のHTML5 WebGISアプリケーション
+目標: デスクトップGISのような画面構成をもち多機能で軽量な(使いたいと思った時にすぐに使える)HTML5 WebGISアプリケーション
 
 ## Demos
 
@@ -19,7 +19,7 @@
 * Experimental UTM53 Project: http://minorua.github.io/WebGISLab/index.html?project=experimental_utm53
     - レイヤ
         - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図)
-        - ラスタタイルの投影変換 (OL >= 3.11)
+    - ラスタタイルの投影変換 (OL >= 3.11)
 
 
 ## Requirements
