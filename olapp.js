@@ -62,7 +62,6 @@ var olapp = {
           collapsible: false
         })
       }),
-      renderer: ['canvas', 'dom'],    // dom
       target: 'map'
     });
     olapp.map = map;
@@ -175,6 +174,67 @@ var olapp = {
       return layer;
     }
     return null;
+  };
+
+  var _canvasImageUrl;
+
+  core.saveMapImage = function (filename) { //, width, height) {
+    var saveBlob = function (blob) {
+      if (window.navigator.msSaveBlob !== undefined) {  // ie
+        window.navigator.msSaveBlob(blob, filename);
+      }
+      else {
+        // create object url
+        if (_canvasImageUrl) URL.revokeObjectURL(_canvasImageUrl);
+        _canvasImageUrl = URL.createObjectURL(blob);
+
+        // a link to save the image
+        var e = document.createElement('a');
+        e.download = filename;
+        e.id = 'save_link';
+        e.innerHTML = 'Save';
+        e.href = _canvasImageUrl;
+        e.style.display = 'none';
+        $('body').append(e);
+
+        bootbox.confirm('Are you sure you want to save the map canvas image?', function (result) {
+          var link = $('#save_link');
+          if (result) link.get(0).click();
+          link.remove();
+        });
+      }
+    };
+
+    var canvas = $('#map canvas').get(0);
+    try {
+      if (canvas.toBlob !== undefined) {
+        canvas.toBlob(saveBlob);
+      }
+      else {    // !HTMLCanvasElement.prototype.toBlob
+        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement.toBlob
+        var binStr = atob(canvas.toDataURL('image/png').split(',')[1]),
+            len = binStr.length,
+            arr = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+          arr[i] = binStr.charCodeAt(i);
+        }
+        saveBlob(new Blob([arr], {type: 'image/png'}));
+      }
+    }
+    catch (e) {
+      var msgSuffix = '';
+      if (e instanceof DOMException) msgSuffix = "<br><br>Probably, at least one layer that doesn't permit cross-origin access has been rendered to the map canvas.";
+      bootbox.dialog({
+        title: 'Failed to save the map image',
+        message: e.message + msgSuffix,
+        buttons: {
+          close: {
+            label: 'Close',
+            callback: function () {}
+          }
+        }
+      });
+    }
   };
 
   core.styleFunction = function (feature, resolution) {
@@ -367,6 +427,11 @@ var olapp = {
   // olapp.gui
   gui.init = function (map) {
     gui._originalTitle = document.title;
+
+    // menu bar
+    $('#save_image').click(function () {
+      core.saveMapImage('mapimage.png');
+    });
 
     // layer list panel
     $('#trigger').click(function () {

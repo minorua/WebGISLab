@@ -132,6 +132,7 @@
     // source options
     var options = {
       attributions: [olapp.core.getAttribution(attr)],
+      crossOrigin: 'anonymous',
       projection: 'EPSG:3857',
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: lyr.zmin,
