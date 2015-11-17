@@ -310,6 +310,16 @@ var olapp = {
         var projection = project.view.getProjection();
         core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
         core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
+
+        var urlParams = olapp.core.urlParams();
+        if (urlParams.lat !== undefined && urlParams.lon !== undefined) {
+          var lonLat = [parseFloat(urlParams.lon), parseFloat(urlParams.lat)];
+          if (!isNaN(lonLat[0]) && !isNaN(lonLat[1])) project.view.setCenter(core.transformFromWgs84(lonLat));
+        }
+        if (urlParams.z !== undefined) {
+          var zoom = parseInt(urlParams.z);
+          if (!isNaN(zoom)) project.view.setZoom(zoom);
+        }
       }
 
       // Add layers to map and layer list
