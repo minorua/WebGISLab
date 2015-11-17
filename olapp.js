@@ -306,6 +306,7 @@ var olapp = {
       }
       else {
         map.setView(project.view);
+
         var projection = project.view.getProjection();
         core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
         core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
@@ -396,9 +397,10 @@ var olapp = {
       gui.displayFeatureInfo(evt.pixel);
     });
 
-    map.getView().on('change:resolution', function (evt) {
-      var z = map.getView().getZoom();
-      console.log('z: ' + z);
+    map.on('moveend', function (evt) {
+      var view = map.getView();
+      var center = core.transformToWgs84(view.getCenter());
+      window.location.hash = '#lat=' + center[1].toFixed(6) + '&lon=' + center[0].toFixed(6) + '&z=' + view.getZoom();
     });
 
     // Accept file drop
