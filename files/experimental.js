@@ -7,7 +7,7 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 18,
     zoom: 5
   }),
-  plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'tool/measure-vincenty.js'],
+  plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'tool/measure-vincenty.js'],
   init: function (project) {
     var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
@@ -23,25 +23,8 @@ olapp.loadProject(new olapp.Project({
     project.addLayer(gsielevtile.createLayer('slope', {visible: false}));   // 傾斜区分図
 
     // Seamless Digital Geological Map of Japan (1:200,000)
-    var gsjlayer = new ol.layer.Tile({
-      title: 'シームレス地質図 (詳細版)',
-      visible: false
-    });
-    project.addLayer(gsjlayer);
-
-    var url = 'https://gbank.gsj.jp/seamless/tilemap/detailed/WMTSCapabilities.xml';
-    $.ajax(url).then(function(response) {
-      var parser = new ol.format.WMTSCapabilities();
-      var result = parser.read(response);
-      var options = ol.source.WMTS.optionsFromCapabilities(result, {
-        layer: 'g',
-        matrixSet: 'g_set',
-        requestEncoding: 'REST'
-      });
-      var attr = "<a href='https://gbank.gsj.jp/seamless/' target='_blank'>シームレス地質図</a>";
-      options.attributions = [olapp.core.getAttribution(attr)];
-      gsjlayer.setSource(new ol.source.WMTS(options));
-    });
+    var gsj = new olapp.source.GSJ;
+    project.addLayer(gsj.createLayer('g', {visible: false}));  // シームレス地質図 (詳細版)
 
     // EXPERIMENTAL vector tile - experimental_rdcl
     var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";
