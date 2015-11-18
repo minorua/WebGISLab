@@ -429,6 +429,41 @@ var olapp = {
     gui._originalTitle = document.title;
 
     // menu bar
+    $('#prj_new').click(function () {
+      core.project.load(new olapp.Project());
+    });
+
+    $('#prj_open').click(function () {
+    });
+
+    $('#prj_save').click(function () {
+    });
+
+    $('#prj_saveas').click(function () {
+    });
+
+    $('#prj_properties').click(function () {
+      var project = olapp.project;
+      var html =
+'<table class="prj-properties">' +
+'<tr><td>Title</td><td>' + project.title + '</td></tr>' +
+'<tr><td>CRS</td><td>' + project.view.getProjection().getCode() + '</td></tr>' +
+'</table>';
+      bootbox.dialog({
+        title: 'Project properties',
+        message: html,
+        buttons: {
+          close: {
+            label: 'Close',
+            callback: function () {}
+          }
+        }
+      });
+    });
+
+    $('#print').click(function () {
+    });
+
     $('#save_image').click(function () {
       core.saveMapImage('mapimage.png');
     });
@@ -917,10 +952,13 @@ var olapp = {
 //       init: function (project). A function to initialize project. Required.
 //         - project: project-self.
 olapp.Project = function (options) {
+  options = options || {};
   // for (var k in options) { this[k] = options[k]; }
   this.title = options.title || '';
   this.description = options.description || '';
   this.view = options.view;
+  if (this.view === undefined) this.view = new ol.View();
+
   this.plugins = options.plugins || [];
   this.init = options.init;
 

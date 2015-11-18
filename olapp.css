@@ -91,6 +91,23 @@ a.btn-blendmode span.active {
 }
 
 
+/* project properties */
+.prj-properties {
+
+}
+
+.prj-properties td:first-child {
+  width: 60px;
+}
+
+.prj-properties td:last-child {
+  font-weight: bold;
+}
+
+.prj-properties tr:nth-child(odd) {
+}
+
+
 /* add layer dialog */
 #dlg_addlayer {
 
