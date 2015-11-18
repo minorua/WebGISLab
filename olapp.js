@@ -862,7 +862,7 @@ var olapp = {
 
   source.get = function (name) {
     if (source[name] === undefined) return null;
-    return new source[name];
+    return source[name];
   };
 
   source.groupNames = function () {
