@@ -4,16 +4,13 @@ var projectsToTest = [
   {title: 'Experimental UTM53 Project', filename: 'files/experimental_utm53.js'}
 ];
 
-function testNextProject() {
-  if (projectsToTest.length == 0) return;
-  var project = projectsToTest.shift();
+projectsToTest.forEach(function (project) {
   QUnit.test('Project loading:' + project.title, function(assert) {
     var done = assert.async();
     olapp.loadProject(project.filename, function () {
-      assert.ok(Object.keys(olapp.project.mapLayers).length > 0, "Loaded!");
+      assert.ok(olapp.project.title == project.title, project.title + " loaded");
+      assert.ok(Object.keys(olapp.project.mapLayers).length > 0);
       done();
-      testNextProject();
     });
   });
-}
-testNextProject();
+});
