@@ -1259,7 +1259,7 @@ olapp.createDefaultProject = function () {
 
       // Natural Earth data
       var ne = new olapp.source.NaturalEarth;
-      project.addLayer(ne.createLayer('cl'));       // Coastline
+      project.addLayer(ne.createLayer('cl', {visible: false}));       // Coastline
     }
   });
 };

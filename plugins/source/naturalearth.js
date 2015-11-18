@@ -59,11 +59,11 @@
   olapp.source.NaturalEarth.prototype.createLayer = function (id, layerOptions) {
     if (layerIds.indexOf(id) === -1) return null;
 
-    var layer = new ol.layer.Vector({
+    var options = {
       style: olapp.core.styleFunction,
       title: layers[id].name
-    });
-
+    };
+    var layer = new ol.layer.Vector($.extend(options, layerOptions));
     var url = 'files/ne/' + layers[id].filename;
     olapp.core.project.loadLayerSource(layer, url);
 
