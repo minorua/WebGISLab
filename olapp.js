@@ -1163,19 +1163,32 @@ olapp.tools.measure = {
   },
 
   createInteraction: function (geomType, measureLayer) {
+    var options = {
+      fill: new ol.style.Fill({
+        color: 'rgba(255, 255, 255, 0.2)'
+      }),
+      stroke: new ol.style.Stroke({
+        color: 'rgba(0, 0, 0, 0.5)',
+        lineDash: [10, 10],
+        width: 2
+      })
+    };
+    var isTouchDevice = ('ontouchstart' in window);
+    if (isTouchDevice) {
+      options.image = new ol.style.RegularShape({
+        stroke: new ol.style.Stroke({
+          color: '#000',
+          width: 1
+        }),
+        points: 4,
+        radius: 6,
+        radius2: 0
+      });
+    }
     return new ol.interaction.Draw({
       source: measureLayer.getSource(),
       type: geomType,
-      style: new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(255, 255, 255, 0.2)'
-        }),
-        stroke: new ol.style.Stroke({
-          color: 'rgba(0, 0, 0, 0.5)',
-          lineDash: [10, 10],
-          width: 2
-        })
-      })
+      style: new ol.style.Style(options)
     });
   }
 
