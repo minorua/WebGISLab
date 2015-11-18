@@ -12,11 +12,11 @@ olapp.loadProject(new olapp.Project({
   plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
   init: function (project) {
     // Natural Earth data
-    var ne = new olapp.source.NaturalEarth;
+    var ne = olapp.source.NaturalEarth;
     project.addLayer(ne.createLayer('cl'));       // Coastline
 
     // GSI Tiles
-    var gsitiles = new olapp.source.GSITiles;
+    var gsitiles = olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
     project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
   }

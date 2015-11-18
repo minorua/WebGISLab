@@ -34,29 +34,9 @@
     }
   };
 
-  /*
-  olapp.source.NaturalEarth
-    inherits from olapp.source.Base
-  */
-  olapp.source.NaturalEarth = function () {
-    olapp.source.Base.call(this);
-    this.name = 'Natural Earth (1:110m)';
-  };
-
-  ol.inherits(olapp.source.NaturalEarth, olapp.source.Base);
-
-  olapp.source.NaturalEarth.prototype.list = function () {
-    var listItems = [];
-    layerIds.forEach(function (id) {
-      listItems.push({
-        id: id,
-        name: layers[id].name
-      });
-    });
-    return listItems;
-  };
-
-  olapp.source.NaturalEarth.prototype.createLayer = function (id, layerOptions) {
+  /* olapp.source.NaturalEarth */
+  olapp.source.NaturalEarth = new olapp.Source('Natural Earth (1:110m)', layerIds, layers);
+  olapp.source.NaturalEarth.createLayer = function (id, layerOptions) {
     if (layerIds.indexOf(id) === -1) return null;
 
     var options = {

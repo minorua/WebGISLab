@@ -20,7 +20,7 @@ olapp - An OpenLayers application
 .loadProject()  - Load a project.
 
 .Project
-.source.Base
+.Source
 */
 var olapp = {
   core: {},
@@ -1003,20 +1003,36 @@ olapp.Project.prototype = {
 
 
 /*
-olapp.source.Base
+olapp.Source
 
-.list()             - Get layer list in HTML.
-.createLayer(subId) - Create a layer from a sub-source identified by id.
+.list()          - Get layer list in HTML.
+.createLayer(id) - Create a layer with a source identified by id.
 */
-olapp.source.Base = function () {};
+olapp.Source = function (name, layerIds, layers) {
+  this.name = name;
+  this.layerIds = layerIds || [];
+  this.layers = layers || {};
+};
 
-olapp.source.Base.prototype = {
+olapp.Source.prototype = {
 
-  constructor: olapp.source.Base,
+  constructor: olapp.Source,
 
-  list: function () {},
+  list: function () {
+    var listItems = [];
+    this.layerIds.forEach(function (id) {
+      listItems.push({
+        id: id,
+        name: this.layers[id].name
+      });
+    }, this);
+    return listItems;
+  },
 
-  createLayer: function (id, layerOptions) {}
+  createLayer: function (id, layerOptions) {
+    console.log(this.name, 'createLayer method is not implemented');
+    return null;
+  }
 
 };
 
@@ -1303,13 +1319,13 @@ olapp.createDefaultProject = function () {
     plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
     init: function (project) {
       // GSI Tiles (source/gsitiles.js)
-      var gsitiles = new olapp.source.GSITiles;
+      var gsitiles = olapp.source.GSITiles;
       project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
       project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
       project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
 
       // Natural Earth data
-      var ne = new olapp.source.NaturalEarth;
+      var ne = olapp.source.NaturalEarth;
       project.addLayer(ne.createLayer('cl', {visible: false}));       // Coastline
     }
   });

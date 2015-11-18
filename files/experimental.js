@@ -12,18 +12,18 @@ olapp.loadProject(new olapp.Project({
     var resolutionFromZoomLevel = olapp.tools.projection.resolutionFromZoomLevel;
 
     // GSI Tiles (source/gsitiles.js)
-    var gsitiles = new olapp.source.GSITiles;
+    var gsitiles = olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
     project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
     project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
 
     // GSI elevation tile (source/gsielevtile.js)
-    var gsielevtile = new olapp.source.GSIElevTile;
+    var gsielevtile = olapp.source.GSIElevTile;
     project.addLayer(gsielevtile.createLayer('relief', {visible: false}));  // 段彩図
     project.addLayer(gsielevtile.createLayer('slope', {visible: false}));   // 傾斜区分図
 
     // Seamless Digital Geological Map of Japan (1:200,000)
-    var gsj = new olapp.source.GSJ;
+    var gsj = olapp.source.GSJ;
     project.addLayer(gsj.createLayer('g', {visible: false}));  // シームレス地質図 (詳細版)
 
     // EXPERIMENTAL vector tile - experimental_rdcl

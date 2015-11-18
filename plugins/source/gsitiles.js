@@ -98,30 +98,9 @@
 
   var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
-
-  /*
-  olapp.source.GSITiles
-    inherits from olapp.source.Base
-  */
-  olapp.source.GSITiles = function () {
-    olapp.source.Base.call(this);
-    this.name = 'GSI Tiles';
-  };
-
-  ol.inherits(olapp.source.GSITiles, olapp.source.Base);
-
-  olapp.source.GSITiles.prototype.list = function () {
-    var listItems = [];
-    layerIds.forEach(function (id) {
-      listItems.push({
-        id: id,
-        name: layers[id].name
-      });
-    });
-    return listItems;
-  };
-
-  olapp.source.GSITiles.prototype.createLayer = function (id, layerOptions) {
+  /* olapp.source.GSITiles */
+  olapp.source.GSITiles = new olapp.Source('GSI Tiles', layerIds, layers);
+  olapp.source.GSITiles.createLayer = function (id, layerOptions) {
     if (layerIds.indexOf(id) === -1) return null;
 
     var lyr = layers[id],

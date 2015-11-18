@@ -327,30 +327,9 @@
       }
     };
 
-
-    /*
-    olapp.source.GSIElevTile
-      inherits from olapp.source.Base
-    */
-    olapp.source.GSIElevTile = function () {
-      olapp.source.Base.call(this);
-      this.name = 'GSI Elevation Tile';
-    };
-
-    ol.inherits(olapp.source.GSIElevTile, olapp.source.Base);
-
-    olapp.source.GSIElevTile.prototype.list = function () {
-      var listItems = [];
-      layerIds.forEach(function (id) {
-        listItems.push({
-          id: id,
-          name: layers[id].name
-        });
-      });
-      return listItems;
-    };
-
-    olapp.source.GSIElevTile.prototype.createLayer = function (id, layerOptions) {
+    /* olapp.source.GSIElevTile */
+    olapp.source.GSIElevTile = new olapp.Source('GSI Elevation Tile', layerIds, layers);
+    olapp.source.GSIElevTile.createLayer = function (id, layerOptions) {
       if (layerIds.indexOf(id) === -1) return null;
 
       var lyr = layers[id];

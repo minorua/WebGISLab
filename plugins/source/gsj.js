@@ -21,29 +21,9 @@
     }
   };
 
-  /*
-  olapp.source.GSJ
-    inherits from olapp.source.Base
-  */
-  olapp.source.GSJ = function () {
-    olapp.source.Base.call(this);
-    this.name = 'GSJ';
-  };
-
-  ol.inherits(olapp.source.GSJ, olapp.source.Base);
-
-  olapp.source.GSJ.prototype.list = function () {
-    var listItems = [];
-    layerIds.forEach(function (id) {
-      listItems.push({
-        id: id,
-        name: layers[id].name
-      });
-    });
-    return listItems;
-  };
-
-  olapp.source.GSJ.prototype.createLayer = function (id, layerOptions) {
+  /* olapp.source.GSJ */
+  olapp.source.GSJ = new olapp.Source('GSJ', layerIds, layers);
+  olapp.source.GSJ.createLayer = function (id, layerOptions) {
     if (layerIds.indexOf(id) === -1) return null;
 
     var options = {
