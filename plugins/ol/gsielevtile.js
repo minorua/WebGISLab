@@ -43,9 +43,7 @@
   ol.source.GSIElevTile = function (options) {
     ol.source.XYZ.call(this, options);
 
-    var mode = options.mode;
-    if (mode != 'slope') mode = 'relief';
-
+    var mode = options.mode || 'relief';
     var colorMap = options.colorMap || defaultColorMap[mode];
     var colorInterpolation = (options.colorInterpolation == 'linear') ? 1 : 0;  // 0: discrete, 1: linear
 
@@ -142,43 +140,65 @@
       };
 
       var myColorMap = [], winFunc;
+      // 3 x 3 window (w)
+      //  0 1 2
+      //  3 4 5
+      //  6 7 8
       if (mode == 'slope') {
         // Create a color map (integer key from 0 to 90).
         for (var i = 0; i <= 90; i++) {
           myColorMap.push(this.getColor(i, 0));
         }
 
-        // Function to calculate slope angle
-        //   3 x 3 window (w)
-        //     0 1 2
-        //     3 4 5
-        //     6 7 8
-        //   refs. https://github.com/OSGeo/gdal/blob/2.0/gdal/apps/gdaldem.cpp
         var rad2deg = 180 / Math.PI;
+        // ref. https://github.com/OSGeo/gdal/blob/2.0/gdal/apps/gdaldem.cpp#L644
         winFunc = function (w, ewres, nsres) {
-          var dx = ((w[0] + 2 * w[3] + w[6]) - (w[2] + 2 * w[5] + w[8])) / ewres,
-              dy = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
-          return Math.atan(Math.sqrt(dx * dx + dy * dy) / 8) * rad2deg;
+          var x = ((w[0] + 2 * w[3] + w[6]) - (w[2] + 2 * w[5] + w[8])) / ewres,
+              y = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
+          return Math.atan(Math.sqrt(x * x + y * y) / 8) * rad2deg;
         };
       }
+      else if (mode == 'hillshade') {
+        for (var i = 0; i < 256; i++) {
+          myColorMap.push({r: i, g: i, b: i});
+        }
 
-      var drawFunc = function (context, x, y, value) {
-        var color = myColorMap[parseInt(value)];
-        if (color !== undefined) {
-          d[0] = color.r;
-          d[1] = color.g;
-          d[2] = color.b;
-          context.putImageData(pixel, x, y);
-        } /* else {
-          console.log('Wrong value:', x, y, value);
-        } */
-      };
+        var azimuth = 315;
+        var angle_altitude = 45;
+
+        var half_pi = Math.PI / 2;
+        var sin_alt = Math.sin(angle_altitude * deg2rad);
+        var cos_alt = Math.cos(angle_altitude * deg2rad);
+        var az = azimuth * deg2rad;
+
+        // ref. https://github.com/OSGeo/gdal/blob/2.0/gdal/apps/gdaldem.cpp#L463
+        winFunc = function (w, ewres, nsres) {
+          var x = ((w[0] + 2 * w[3] + w[6]) - (w[2] + 2 * w[5] + w[8])) / ewres,
+              y = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
+          var slope = half_pi - Math.atan(Math.sqrt(x * x + y * y));
+          var aspect = Math.atan2(-y, x);
+          var shade = sin_alt * Math.sin(slope) + cos_alt * Math.cos(slope) * Math.cos(az - half_pi - aspect);
+          return 255 * ((shade > 0) ? shade : 0);
+        };
+      }
 
       this.render = function (canvas, data, url) {
         var context = canvas.getContext('2d');
         var pixel = context.createImageData(1, 1);
         var d  = pixel.data;
         d[3] = 255;   // alpha
+
+        var drawFunc = function (x, y, value) {
+          var color = myColorMap[parseInt(value)];
+          if (color !== undefined) {
+            d[0] = color.r;
+            d[1] = color.g;
+            d[2] = color.b;
+            context.putImageData(pixel, x, y);
+          } /* else {
+            console.log('Wrong value:', x, y, value);
+          } */
+        };
 
         // Get zoom level, x and y from the tile url
         //  url example: http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt
@@ -230,7 +250,7 @@
                  line2[x - 1], line2[x], line2[x + 1]];
             ewres = xres[y];
             nsres = (yres[y - 1] + yres[y]) / 2;
-            drawFunc(context, x, y, winFunc(w, ewres, nsres));
+            drawFunc(x, y, winFunc(w, ewres, nsres));
           }
         }
 
@@ -243,7 +263,7 @@
                line2[x - 1], line2[x], line2[x + 1]];
           ewres = xres[y];
           nsres = yres[y] / 2;
-          drawFunc(context, x, y, winFunc(w, ewres, nsres));
+          drawFunc(x, y, winFunc(w, ewres, nsres));
 
           y = 255;
           line0 = z[y - 1]; line1 = line2 = z[y];
@@ -252,7 +272,7 @@
                line2[x - 1], line2[x], line2[x + 1]];
           ewres = xres[y];
           nsres = yres[y - 1] / 2;
-          drawFunc(context, x, y, winFunc(w, ewres, nsres));
+          drawFunc(x, y, winFunc(w, ewres, nsres));
         }
 
         for (y = 1; y < 255; y++) {
@@ -263,7 +283,7 @@
                line2[x], line2[x], line2[x + 1]];
           ewres = xres[y] / 2;
           nsres = (yres[y - 1] + yres[y]) / 2;
-          drawFunc(context, x, y, winFunc(w, ewres, nsres));
+          drawFunc(x, y, winFunc(w, ewres, nsres));
 
           x = 255;
           w = [line0[x - 1], line0[x], line0[x],
@@ -271,7 +291,7 @@
                line2[x - 1], line2[x], line2[x]];
           ewres = xres[y] / 2;
           nsres = (yres[y - 1] + yres[y]) / 2;
-          drawFunc(context, x, y, winFunc(w, ewres, nsres));
+          drawFunc(x, y, winFunc(w, ewres, nsres));
         }
 
         // Draw four corners
@@ -284,13 +304,13 @@
         w = [line0[x], line0[x], line0[x + 1],
              line1[x], line1[x], line1[x + 1],
              line2[x], line2[x], line2[x + 1]];
-        drawFunc(context, x, y, winFunc(w, ewres, nsres));
+        drawFunc(x, y, winFunc(w, ewres, nsres));
 
         x = 255;
         w = [line0[x - 1], line0[x], line0[x],
              line1[x - 1], line1[x], line1[x],
              line2[x - 1], line2[x], line2[x]];
-        drawFunc(context, x, y, winFunc(w, ewres, nsres));
+        drawFunc(x, y, winFunc(w, ewres, nsres));
 
         y = 255;
         line0 = z[y - 1]; line1 = line2 = z[y];
@@ -301,13 +321,13 @@
         w = [line0[x], line0[x], line0[x + 1],
              line1[x], line1[x], line1[x + 1],
              line2[x], line2[x], line2[x + 1]];
-        drawFunc(context, x, y, winFunc(w, ewres, nsres));
+        drawFunc(x, y, winFunc(w, ewres, nsres));
 
         x = 255;
         w = [line0[x - 1], line0[x], line0[x],
              line1[x - 1], line1[x], line1[x],
              line2[x - 1], line2[x], line2[x]];
-        drawFunc(context, x, y, winFunc(w, ewres, nsres));
+        drawFunc(x, y, winFunc(w, ewres, nsres));
       };
     }
 

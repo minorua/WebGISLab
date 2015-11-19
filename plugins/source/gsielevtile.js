@@ -13,7 +13,7 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
 
   var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'heyja'];
   var layers = {
-    'hillshade': {      // TODO: implement
+    'hillshade': {
       name: '陰影図 (標高タイル)',
       zmin: 0,
       zmax: 14
