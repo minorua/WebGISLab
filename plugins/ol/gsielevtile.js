@@ -46,53 +46,84 @@
     var mode = options.mode;
     if (mode != 'slope') mode = 'relief';
 
-    var colorMap = options.colorMap || defaultColorMap[mode],
-        colorMapLength = colorMap.length;
+    var colorMap = options.colorMap || defaultColorMap[mode];
     var colorInterpolation = (options.colorInterpolation == 'linear') ? 1 : 0;  // 0: discrete, 1: linear
 
-    // Get color for passed value from the color map.
-    var lastColorIndex = 0;
-    var getColor = function (val, startIndex) {
-      // Start look-up from last color index - 1 if startIndex not specified.
-      // For quick look-up. Not completely accurate.
-      var i = Math.max(1, (startIndex !== undefined) ? startIndex : lastColorIndex - 1);
-      for (; i < colorMapLength; i++) {
-        if (val < colorMap[i][0]) {
-          var c0 = colorMap[i - 1],
-              c1 = colorMap[i],
-              p = (val - c0[0]) / (c1[0] - c0[0]);
+    this.setup(mode, colorMap, colorInterpolation);
+  };
 
-          lastColorIndex = i - 1;
+  ol.inherits(ol.source.GSIElevTile, ol.source.XYZ);
 
-          if (colorInterpolation == 0) return [c1[1], c1[2], c1[3]];    // discrete
+  // Get color for passed value from the color map.
+  ol.source.GSIElevTile.prototype.getColor = function (val, startIndex) {
+    for (var i = Math.max(1, startIndex || 0), l = this.colorMap.length; i < l; i++) {
+      if (val < this.colorMap[i][0]) {
+        var c0 = this.colorMap[i - 1],
+            c1 = this.colorMap[i],
+            p = (val - c0[0]) / (c1[0] - c0[0]);
 
+        if (this.colorInterpolation == 0) {
+          // discrete
+          return {
+            r: c1[1],
+            g: c1[2],
+            b: c1[3],
+            index: i - 1
+          };
+        }
+        else {
           // linear interpolation
-          return [
-            Math.min(255, (c1[1] - c0[1]) * p + c0[1]),
-            Math.min(255, (c1[2] - c0[2]) * p + c0[2]),
-            Math.min(255, (c1[3] - c0[3]) * p + c0[3])
-          ];
+          return {
+            r: Math.min(255, (c1[1] - c0[1]) * p + c0[1]),
+            g: Math.min(255, (c1[2] - c0[2]) * p + c0[2]),
+            b: Math.min(255, (c1[3] - c0[3]) * p + c0[3]),
+            index: i - 1
+          };
         }
       }
-      lastColorIndex = 0;
-      return [0, 0, 0];
+    }
+    return {r: 0, g: 0, b: 0, index: 0};
 
-      // an old function for elevation
-      return [
-        Math.min(parseInt(255 * val / 2000), 255),        // red
-        Math.min(255 - parseInt(255 * val / 2000), 255),  // green
-        Math.min(200 - parseInt(200 * val / 2000), 255)   // blue
-      ];
+    // an old function for elevation
+    return {
+      r: Math.min(parseInt(255 * val / 2000), 255),        // red
+      g: Math.min(255 - parseInt(255 * val / 2000), 255),  // green
+      b: Math.min(200 - parseInt(200 * val / 2000), 255)   // blue
     };
+  };
 
-    var render;
-    if (mode == 'slope') {
-      // Create a color map (integer key from 0 to 90).
-      var slopeColorMap = [];
-      for (var i = 0; i <= 90; i++) {
-        slopeColorMap.push(getColor(i, 0));
-      }
+  ol.source.GSIElevTile.prototype.setup = function (mode, colorMap, colorInterpolation) {
+    this.mode = mode;
+    this.colorMap = colorMap;
+    this.colorInterpolation = colorInterpolation;
 
+    var scope = this;
+    if (mode == 'relief') {
+      this.render = function (canvas, data, url) {
+        var context = canvas.getContext('2d');
+        var pixel = context.createImageData(1, 1);
+        var d  = pixel.data;
+        d[3] = 255;   // alpha
+
+        var lines = data.split('\n'), x, y, vals, lastColorIndex, color;
+        for (y = 0; y < 256; y++) {
+          vals = lines[y].split(',');
+          lastColorIndex = 0;
+          for (x = 0; x < 256; x++) {
+            // Start look-up from last color index - 1.
+            // For quick look-up. Not completely accurate.
+            color = scope.getColor(parseFloat(vals[x]) || 0, lastColorIndex - 1);   // 'e' -> 0
+            d[0] = color.r;
+            d[1] = color.g;
+            d[2] = color.b;
+            context.putImageData(pixel, x, y);
+
+            lastColorIndex = color.index;
+          }
+        }
+      };
+    }
+    else {
       var R = 6378137;
       var TSIZE1 = Math.PI * R;   // 20037508.342789244
       var transform = ol.proj.getTransform('EPSG:3857', 'EPSG:4326');
@@ -110,26 +141,46 @@
         return R * Math.cos(lat * deg2rad);
       };
 
-      // Function to calculate slope angle
-      //   3 x 3 window (w)
-      //     0 1 2
-      //     3 4 5
-      //     6 7 8
-      //   refs. https://github.com/OSGeo/gdal/blob/2.0/gdal/apps/gdaldem.cpp
-      var rad2deg = 180 / Math.PI;
-      var slopeFunc = function (w, ewres, nsres) {
-        var dx = ((w[0] + 2 * w[3] + w[6]) - (w[2] + 2 * w[5] + w[8])) / ewres,
-            dy = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
-        return Math.atan(Math.sqrt(dx * dx + dy * dy) / 8) * rad2deg;
+      var myColorMap = [], winFunc;
+      if (mode == 'slope') {
+        // Create a color map (integer key from 0 to 90).
+        for (var i = 0; i <= 90; i++) {
+          myColorMap.push(this.getColor(i, 0));
+        }
+
+        // Function to calculate slope angle
+        //   3 x 3 window (w)
+        //     0 1 2
+        //     3 4 5
+        //     6 7 8
+        //   refs. https://github.com/OSGeo/gdal/blob/2.0/gdal/apps/gdaldem.cpp
+        var rad2deg = 180 / Math.PI;
+        winFunc = function (w, ewres, nsres) {
+          var dx = ((w[0] + 2 * w[3] + w[6]) - (w[2] + 2 * w[5] + w[8])) / ewres,
+              dy = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
+          return Math.atan(Math.sqrt(dx * dx + dy * dy) / 8) * rad2deg;
+        };
+      }
+
+      var drawFunc = function (context, x, y, value) {
+        var color = myColorMap[parseInt(value)];
+        if (color !== undefined) {
+          d[0] = color.r;
+          d[1] = color.g;
+          d[2] = color.b;
+          context.putImageData(pixel, x, y);
+        } /* else {
+          console.log('Wrong value:', x, y, value);
+        } */
       };
 
-      render = function (canvas, data, url) {
+      this.render = function (canvas, data, url) {
         var context = canvas.getContext('2d');
         var pixel = context.createImageData(1, 1);
         var d  = pixel.data;
         d[3] = 255;   // alpha
 
-        // Get zoom level, x and y from url
+        // Get zoom level, x and y from the tile url
         //  url example: http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt
         var names = url.split('/'),
             my = parseInt(names.pop().split('.')[0]),
@@ -141,6 +192,16 @@
             tileUpperY = TSIZE1 - my * tileSize,
             xpixels = 256 * Math.pow(2, zoom);           // world width in pixels
 
+        // Parse the tile data
+        var lines = data.split('\n'), vals = [], x, y, z = [];
+        for (y = 0; y < 256; y++) {
+          vals = lines[y].split(',');
+          for (x = 0; x < 256; x++) {
+            vals[x] = parseFloat(vals[x]);    // 'e' -> 0
+          }
+          z.push(vals);
+        }
+
         // latitude at y (pixel) in this tile
         var getLatitude = function (y) {
           var lonLat = transform([0, tileUpperY - y * tileRes]);
@@ -148,8 +209,7 @@
         };
 
         // Calculate xres and yres
-        var x, y,
-            xres = [],  // n=256
+        var xres = [],  // n=256
             yres = [];  // n=255
         var lat0, lat1 = getLatitude(0.5);        // lat at the top line
         for (y = 0; y < 255; y++) {
@@ -160,29 +220,8 @@
         }
         xres.push(2 * Math.PI * parallelRadius(lat1) / xpixels);
 
-        var lines = data.split('\n'), vals = [], z = [];
-        for (y = 0; y < 256; y++) {
-          vals = lines[y].split(',');
-          for (x = 0; x < 256; x++) {
-            vals[x] = parseFloat(vals[x]);    // 'e' -> 0
-          }
-          z.push(vals);
-        }
-
-        var drawFunc = function (x, y, slope) {
-          var rgb = slopeColorMap[parseInt(slope)];
-          if (rgb !== undefined) {
-            d[0] = rgb[0];
-            d[1] = rgb[1];
-            d[2] = rgb[2];
-            context.putImageData(pixel, x, y);
-          } else {
-            // console.log('Wrong slope value:', x, y, slope);
-          }
-        };
-
-        var w, ewres, nsres;
-        var line0, line1, line2;
+        // Draw
+        var w, ewres, nsres, line0, line1, line2;
         for (y = 1; y < 255; y++) {
           line0 = z[y - 1]; line1 = z[y]; line2 = z[y + 1];
           for (x = 1; x < 255; x++) {
@@ -191,11 +230,11 @@
                  line2[x - 1], line2[x], line2[x + 1]];
             ewres = xres[y];
             nsres = (yres[y - 1] + yres[y]) / 2;
-            drawFunc(x, y, slopeFunc(w, ewres, nsres));
+            drawFunc(context, x, y, winFunc(w, ewres, nsres));
           }
         }
 
-        // Compute edges
+        // Draw edges
         for (x = 1; x < 255; x++) {
           y = 0;
           line0 = line1 = z[y]; line2 = z[y + 1];
@@ -204,7 +243,7 @@
                line2[x - 1], line2[x], line2[x + 1]];
           ewres = xres[y];
           nsres = yres[y] / 2;
-          drawFunc(x, y, slopeFunc(w, ewres, nsres));
+          drawFunc(context, x, y, winFunc(w, ewres, nsres));
 
           y = 255;
           line0 = z[y - 1]; line1 = line2 = z[y];
@@ -213,7 +252,7 @@
                line2[x - 1], line2[x], line2[x + 1]];
           ewres = xres[y];
           nsres = yres[y - 1] / 2;
-          drawFunc(x, y, slopeFunc(w, ewres, nsres));
+          drawFunc(context, x, y, winFunc(w, ewres, nsres));
         }
 
         for (y = 1; y < 255; y++) {
@@ -224,7 +263,7 @@
                line2[x], line2[x], line2[x + 1]];
           ewres = xres[y] / 2;
           nsres = (yres[y - 1] + yres[y]) / 2;
-          drawFunc(x, y, slopeFunc(w, ewres, nsres));
+          drawFunc(context, x, y, winFunc(w, ewres, nsres));
 
           x = 255;
           w = [line0[x - 1], line0[x], line0[x],
@@ -232,10 +271,10 @@
                line2[x - 1], line2[x], line2[x]];
           ewres = xres[y] / 2;
           nsres = (yres[y - 1] + yres[y]) / 2;
-          drawFunc(x, y, slopeFunc(w, ewres, nsres));
+          drawFunc(context, x, y, winFunc(w, ewres, nsres));
         }
 
-        // Compute four corners
+        // Draw four corners
         y = 0;
         line0 = line1 = z[y]; line2 = z[y + 1];
         ewres = xres[y] / 2;
@@ -245,13 +284,13 @@
         w = [line0[x], line0[x], line0[x + 1],
              line1[x], line1[x], line1[x + 1],
              line2[x], line2[x], line2[x + 1]];
-        drawFunc(x, y, slopeFunc(w, ewres, nsres));
+        drawFunc(context, x, y, winFunc(w, ewres, nsres));
 
         x = 255;
         w = [line0[x - 1], line0[x], line0[x],
              line1[x - 1], line1[x], line1[x],
              line2[x - 1], line2[x], line2[x]];
-        drawFunc(x, y, slopeFunc(w, ewres, nsres));
+        drawFunc(context, x, y, winFunc(w, ewres, nsres));
 
         y = 255;
         line0 = z[y - 1]; line1 = line2 = z[y];
@@ -262,33 +301,13 @@
         w = [line0[x], line0[x], line0[x + 1],
              line1[x], line1[x], line1[x + 1],
              line2[x], line2[x], line2[x + 1]];
-        drawFunc(x, y, slopeFunc(w, ewres, nsres));
+        drawFunc(context, x, y, winFunc(w, ewres, nsres));
 
         x = 255;
         w = [line0[x - 1], line0[x], line0[x],
              line1[x - 1], line1[x], line1[x],
              line2[x - 1], line2[x], line2[x]];
-        drawFunc(x, y, slopeFunc(w, ewres, nsres));
-      };
-    } else {  // mode == 'relief'
-      render = function (canvas, data, url) {
-        var context = canvas.getContext('2d');
-        var pixel = context.createImageData(1, 1);
-        var d  = pixel.data;
-        d[3] = 255;   // alpha
-
-        var lines = data.split('\n'), x, y, vals, rgb;
-        for (y = 0; y < 256; y++) {
-          vals = lines[y].split(',');
-          lastColorIndex = 0;
-          for (x = 0; x < 256; x++) {
-            rgb = getColor(parseFloat(vals[x]) || 0);   // 'e' -> 0
-            d[0] = rgb[0];
-            d[1] = rgb[1];
-            d[2] = rgb[2];
-            context.putImageData(pixel, x, y);
-          }
-        }
+        drawFunc(context, x, y, winFunc(w, ewres, nsres));
       };
     }
 
@@ -299,12 +318,10 @@
       $.ajax({
         url: src,
         success: function (data) {
-          render(canvas, data, src);
+          scope.render(canvas, data, src);
           imageTile.getImage().src = canvas.toDataURL();
         }
       });
     });
   };
-
-  ol.inherits(ol.source.GSIElevTile, ol.source.XYZ);
 })();

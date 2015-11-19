@@ -11,8 +11,13 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
     description: 'Adds olapp.source.GSIElevTile.'
   };
 
-  var layerIds = ['relief', 'slope'];
+  var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'heyja'];
   var layers = {
+    'hillshade': {      // TODO: implement
+      name: '陰影図 (標高タイル)',
+      zmin: 0,
+      zmax: 14
+    },
     'relief': {
       name: '段彩図 (標高タイル)',
       zmin: 0,
@@ -22,6 +27,16 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
       name: '傾斜区分図 (標高タイル) (z>=10)',
       zmin: 10,
       zmax: 14
+    },
+    'relief_low': {     // TODO: implement (-10m～30m)
+      name: '低標高向けカラー標高図 (標高タイル)',
+      zmin: 0,
+      zmax: 14
+    },
+    'heyja': {     // TODO: implement (傾斜が一定以上の部分を塗りつぶす)
+      name: '傾斜地塗りつぶし図 (標高タイル)',
+      zmin: 0,
+      zmax: 10     //
     }
   };
 
