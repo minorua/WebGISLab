@@ -30,34 +30,39 @@ var bar_width, bar_height;
 var colorMap;
 var linear;
 
-function getColor(val, linear) {
-  for (var i = 0; i < colorMap.length; i++) {
-    if (val < colorMap[i][0]) {
-      var c0 = colorMap[i - 1],
-          c1 = colorMap[i],
-          p = (val - c0[0]) / (c1[0] - c0[0]);
+function getColor (val, linear) {
+  if (val < colorMap[0][0]) return undefined;
 
-      if (!linear) {
-        // discrete
-        return {
-          r: parseInt(c1[1]),
-          g: parseInt(c1[2]),
-          b: parseInt(c1[3]),
-          index: i - 1
-        };
-      }
-      else {
-        // linear interpolation
-        return {
-          r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
-          g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
-          b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
-          index: i - 1
-        };
-      }
+  for (var i = 0, l = colorMap.length; i < l; i++) {
+    if (val < colorMap[i][0]) {
+      if (linear) return _getColorLinear(i - 1, i, val);
+      return _getColorDiscrete(i - 1);
+      
     }
   }
-  return {r: 0, g: 0, b: 0, index: 0};
+  return _getColorDiscrete(i - 1);
+}
+
+function _getColorDiscrete (index) {
+  var c = colorMap[index];
+  return {
+    r: parseInt(c[1]),
+    g: parseInt(c[2]),
+    b: parseInt(c[3]),
+    index: index
+  };
+}
+
+function _getColorLinear (index0, index1, value) {
+  var c0 = colorMap[index0],
+      c1 = colorMap[index1],
+      p = (value - c0[0]) / (c1[0] - c0[0]);
+  return {
+    r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
+    g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
+    b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
+    index: index0
+  };
 }
 
 function drawGradation () {
