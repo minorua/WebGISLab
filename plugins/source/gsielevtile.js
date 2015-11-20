@@ -11,7 +11,7 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
     description: 'Adds olapp.source.GSIElevTile.'
   };
 
-  var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'heyja'];
+  var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'slope_heyja'];
   var layers = {
     'hillshade': {
       name: '陰影図 (標高タイル)',
@@ -28,12 +28,12 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
       zmin: 10,
       zmax: 14
     },
-    'relief_low': {     // TODO: implement (-10m～30m)
+    'relief_low': {
       name: '低標高向けカラー標高図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
-    'heyja': {     // TODO: implement (傾斜が一定以上の部分を塗りつぶす)
+    'slope_heyja': {     // TODO: implement (傾斜が一定以上の部分を塗りつぶす)
       name: '傾斜地塗りつぶし図 (標高タイル)',
       zmin: 0,
       zmax: 10     //
@@ -47,11 +47,29 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
 
     var lyr = layers[id];
     var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
+    var mode = id.split('_')[0];
+    var colorMap, colorInterpolation;
+
+    if (id == 'relief_low') {
+      colorMap = [
+        [  -5, 255,   0, 196],
+        [   0, 115,   0, 255],
+        [   0, 234, 246, 253],
+        [0.01, 234, 246, 253],
+        [0.01,  50,   0, 255],
+        [ 0.5, 115, 178, 255],
+        [   1, 114, 212, 254],
+        [  10,  71, 234,   0]
+      ];
+      colorInterpolation = 'linear';
+    }
 
     // source options
     var options = {
       attributions: [olapp.core.getAttribution(attr)],
-      mode: id,
+      mode: mode,
+      colorMap: colorMap,
+      colorInterpolation: colorInterpolation,
       projection: 'EPSG:3857',
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: lyr.zmin,
