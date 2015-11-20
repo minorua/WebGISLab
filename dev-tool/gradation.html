@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+<title>Gradation Checker</title>
+<script src="../js/jquery-1.11.3.min.js" type="text/javascript"></script>
+</head>
+<body>
+<h3>Gradation Checker</h3>
+<form>
+<label for="bar_height">Bar height</label>
+<input type="text" id="bar_height" value="256"><br><br>
+
+<input type="radio" id="discrete" name="interpolation" value="discrete" checked>
+<label for="discrete">Discrete</label><br>
+<input type="radio" id="linear" name="interpolation" value="linear">
+<label for="linear">Linear</label><br><br>
+
+<label for="inputbox">Color Map</label><br>
+<textarea id="inputbox" style="width: 256px; height: 300px; float: left; margin: 16px;"></textarea>
+</form>
+<canvas id="gradation" width="128" height="256" style="border: 1px solid black; float: left; margin: 16px;"></canvas>
+<div id="output"></div>
+
+<script type="text/javascript">
+var canvas = $('canvas').get(0);
+
+var bar_width, bar_height;
+var colorMap;
+var linear;
+
+function getColor(val, linear) {
+  for (var i = 0; i < colorMap.length; i++) {
+    if (val < colorMap[i][0]) {
+      var c0 = colorMap[i - 1],
+          c1 = colorMap[i],
+          p = (val - c0[0]) / (c1[0] - c0[0]);
+
+      if (!linear) {
+        // discrete
+        return {
+          r: parseInt(c1[1]),
+          g: parseInt(c1[2]),
+          b: parseInt(c1[3]),
+          index: i - 1
+        };
+      }
+      else {
+        // linear interpolation
+        return {
+          r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
+          g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
+          b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
+          index: i - 1
+        };
+      }
+    }
+  }
+  return {r: 0, g: 0, b: 0, index: 0};
+}
+
+function drawGradation () {
+  bar_width = $('canvas').width(),
+  bar_height = $('canvas').height();
+
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, bar_width, bar_height);
+
+  try {
+    colorMap = eval($('textarea').val());
+    var min = colorMap[0][0],
+        max = colorMap[colorMap.length - 1][0],
+        range = max - min;
+  }
+  catch (e) {
+    return;
+  }
+  linear = $('#linear').prop('checked');
+
+  var val, col;
+  for (var i = 0; i < bar_height; i++) {
+    val = min + range * (i / (bar_height - 1));
+    col = getColor(val, linear);
+    ctx.strokeStyle = 'rgb(' + [col.r, col.g, col.b].join(',') + ')';
+    ctx.beginPath();
+    ctx.moveTo(0, i);
+    ctx.lineTo(bar_width, i);
+    ctx.stroke();
+  }
+}
+
+$('#bar_height').on('change keyup paste', function () {
+  $('canvas').height(parseInt($(this).val()));
+  drawGradation();
+});
+$('input:radio').change(drawGradation);
+$('input:text').on('change keyup paste', drawGradation);
+$('textarea').on('change keyup paste', drawGradation);
+$('canvas').mousemove(function (event) {
+  try {
+    var min = colorMap[0][0],
+        max = colorMap[colorMap.length - 1][0],
+        range = max - min;
+  }
+  catch (e) {
+    return;
+  }
+
+  var val = min + range * (event.offsetY / (bar_height - 1));
+  var col = getColor(val, linear);
+
+  $('#output').html([
+    'y: ' + event.offsetY,
+    'value: ' + val.toFixed(2),
+    'red: ' + col.r,
+    'green: ' + col.g,
+    'blue: ' + col.b,
+    'index: ' + col.index].join('<br>'));
+});
+
+</script>
+</body>
+</html>
