@@ -2,17 +2,19 @@
 
 目標: デスクトップGISのような画面構成をもち多機能で軽量な(使いたいと思った時にすぐに使える)HTML5 WebGISアプリケーション
 
-## Demos
+## Demo Projects
 
 * Default Project: http://minorua.github.io/WebGISLab/index.html
     - レイヤ
         - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
+            - 他のレイヤ(一部)も追加可能
 
 * Experimental Project: http://minorua.github.io/WebGISLab/index.html?project=experimental
     - レイヤ
-        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図, 写真)
+        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図)
         - 地理院ベクトルタイル ([道路中心線](https://github.com/gsi-cyberjapan/vector-tile-experiment), [基盤地図情報（基本項目）](https://github.com/gsi-cyberjapan/experimental_fgd))
-        - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた段彩図, 傾斜区分図
+        - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)を用いた傾斜区分図
+            - 他に段彩図(カラー標高図), 陰影図, 急傾斜地図を追加可能
         - [20万分の1日本シームレス地質図](https://gbank.gsj.jp/seamless/) (WMTS)
     - 楕円体面上の距離計測 ([Vincentyの式](https://github.com/chrisveness/geodesy))
 

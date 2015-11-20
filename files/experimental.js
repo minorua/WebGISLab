@@ -15,11 +15,9 @@ olapp.loadProject(new olapp.Project({
     var gsitiles = olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
     project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
-    project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
 
     // GSI elevation tile (source/gsielevtile.js)
     var gsielevtile = olapp.source.GSIElevTile;
-    project.addLayer(gsielevtile.createLayer('relief', {visible: false}));  // 段彩図
     project.addLayer(gsielevtile.createLayer('slope', {visible: false}));   // 傾斜区分図
 
     // Seamless Digital Geological Map of Japan (1:200,000)
