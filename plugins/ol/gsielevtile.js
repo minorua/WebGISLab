@@ -63,18 +63,18 @@
         if (this.colorInterpolation == 0) {
           // discrete
           return {
-            r: c1[1],
-            g: c1[2],
-            b: c1[3],
+            r: parseInt(c1[1]),
+            g: parseInt(c1[2]),
+            b: parseInt(c1[3]),
             index: i - 1
           };
         }
         else {
           // linear interpolation
           return {
-            r: Math.min(255, (c1[1] - c0[1]) * p + c0[1]),
-            g: Math.min(255, (c1[2] - c0[2]) * p + c0[2]),
-            b: Math.min(255, (c1[3] - c0[3]) * p + c0[3]),
+            r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
+            g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
+            b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
             index: i - 1
           };
         }
