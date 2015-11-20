@@ -59,7 +59,8 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
         [0.01,  50,   0, 255],
         [ 0.5, 115, 178, 255],
         [   1, 114, 212, 254],
-        [  10,  71, 234,   0]
+        [  10,  71, 234,   0],
+        [  10,  50,  50,  50]
       ];
       colorInterpolation = 'linear';
     }
