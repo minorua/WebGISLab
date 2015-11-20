@@ -11,7 +11,7 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
     description: 'Adds olapp.source.GSIElevTile.'
   };
 
-  var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'slope_heyja'];
+  var layerIds = ['hillshade', 'relief', 'slope', 'relief_low', 'slope_steep'];
   var layers = {
     'hillshade': {
       name: '陰影図 (標高タイル)',
@@ -33,10 +33,10 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
       zmin: 0,
       zmax: 14
     },
-    'slope_heyja': {     // TODO: implement (傾斜が一定以上の部分を塗りつぶす)
-      name: '傾斜地塗りつぶし図 (標高タイル)',
+    'slope_steep': {
+      name: '急傾斜地図 (標高タイル)',
       zmin: 0,
-      zmax: 10     //
+      zmax: 14
     }
   };
 
@@ -62,6 +62,14 @@ olapp.core.loadScript('plugins/ol/gsielevtile.js', function () {
         [  10,  71, 234,   0]
       ];
       colorInterpolation = 'linear';
+    }
+    else if (id == 'slope_steep') {
+      colorMap = [
+        [ 30, 255, 255,   0],
+        [ 40, 255,   0,   0],
+        [ 50, 139,  69,  19],
+        [ 90,   0,   0,   0]
+      ];
     }
 
     // source options
