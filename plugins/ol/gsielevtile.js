@@ -54,39 +54,36 @@
 
   // Get color for passed value from the color map.
   ol.source.GSIElevTile.prototype.getColor = function (val, startIndex) {
+    if (val < this.colorMap[0][0]) return undefined;
+
     for (var i = Math.max(1, startIndex || 0), l = this.colorMap.length; i < l; i++) {
       if (val < this.colorMap[i][0]) {
-        var c0 = this.colorMap[i - 1],
-            c1 = this.colorMap[i],
-            p = (val - c0[0]) / (c1[0] - c0[0]);
-
-        if (this.colorInterpolation == 0) {
-          // discrete
-          return {
-            r: parseInt(c1[1]),
-            g: parseInt(c1[2]),
-            b: parseInt(c1[3]),
-            index: i - 1
-          };
-        }
-        else {
-          // linear interpolation
-          return {
-            r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
-            g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
-            b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
-            index: i - 1
-          };
-        }
+        if (this.colorInterpolation == 0) return this._getColorDiscrete(i - 1);
+        return this._getColorLinear(i - 1, i, val);
       }
     }
-    return {r: 0, g: 0, b: 0, index: 0};
+    return this._getColorDiscrete(i - 1);
+  };
 
-    // an old function for elevation
+  ol.source.GSIElevTile.prototype._getColorDiscrete = function (index) {
+    var c = this.colorMap[index];
     return {
-      r: Math.min(parseInt(255 * val / 2000), 255),        // red
-      g: Math.min(255 - parseInt(255 * val / 2000), 255),  // green
-      b: Math.min(200 - parseInt(200 * val / 2000), 255)   // blue
+      r: parseInt(c[1]),
+      g: parseInt(c[2]),
+      b: parseInt(c[3]),
+      index: index
+    };
+  };
+
+  ol.source.GSIElevTile.prototype._getColorLinear = function (index0, index1, value) {
+    var c0 = this.colorMap[index0],
+        c1 = this.colorMap[index1],
+        p = (value - c0[0]) / (c1[0] - c0[0]);
+    return {
+      r: Math.min(255, parseInt((c1[1] - c0[1]) * p + c0[1])),
+      g: Math.min(255, parseInt((c1[2] - c0[2]) * p + c0[2])),
+      b: Math.min(255, parseInt((c1[3] - c0[3]) * p + c0[3])),
+      index: index0
     };
   };
 
@@ -110,13 +107,14 @@
           for (x = 0; x < 256; x++) {
             // Start look-up from last color index - 1.
             // For quick look-up. Not completely accurate.
-            color = scope.getColor(parseFloat(vals[x]) || 0, lastColorIndex - 1);   // 'e' -> 0
-            d[0] = color.r;
-            d[1] = color.g;
-            d[2] = color.b;
-            context.putImageData(pixel, x, y);
-
-            lastColorIndex = color.index;
+            color = scope.getColor(parseFloat(vals[x]) || 0, --lastColorIndex);   // 'e' -> 0
+            if (color !== undefined) {
+              d[0] = color.r;
+              d[1] = color.g;
+              d[2] = color.b;
+              context.putImageData(pixel, x, y);
+              lastColorIndex = color.index;
+            }
           }
         }
       };
