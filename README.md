@@ -20,7 +20,8 @@
 
 * Experimental UTM53 Project: http://minorua.github.io/WebGISLab/index.html?project=experimental_utm53
     - レイヤ
-        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図, 色別標高図)
+        - [地理院タイル](http://maps.gsi.go.jp/development/ichiran.html) (標準地図)
+        - [地理院標高タイル](http://maps.gsi.go.jp/development/demtile.html)
     - ラスタタイルの投影変換 (OL >= 3.11)
 
 

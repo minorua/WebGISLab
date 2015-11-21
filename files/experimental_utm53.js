@@ -9,15 +9,14 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 20,
     zoom: 8
   }),
-  plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
+  plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'tool/measure-vincenty.js'],
   init: function (project) {
-    // Natural Earth data
-    var ne = olapp.source.NaturalEarth;
-    project.addLayer(ne.createLayer('cl'));       // Coastline
-
     // GSI Tiles
     var gsitiles = olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
-    project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
+
+    // Natural Earth data
+    var ne = olapp.source.NaturalEarth;
+    project.addLayer(ne.createLayer('cl'));       // Coastline
   }
 }));
