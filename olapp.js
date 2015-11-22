@@ -276,7 +276,7 @@ var olapp = {
     // Remove a layer from current project, map and layer list
     removeLayer: function (layerId) {
       var layer = mapLayers[layerId];
-      olapp.project.removeLayer(layerId)
+      olapp.project.removeLayer(layer);
       map.removeLayer(layer);
       gui.removeLayer(layerId);
       delete mapLayers[layerId];
@@ -375,12 +375,37 @@ var olapp = {
         if (!isNaN(zoom)) project.view.setZoom(zoom);
       }
 
-      // Add layers to map and layer list
+      // Register map layers
       project.mapLayers.forEach(function (layer) {
         mapLayers[layer.get('id')] = layer;
-        map.addLayer(layer);
-        gui.addLayer(layer);
       });
+
+      // Apply layer properties
+      var props = project.initialLayerProperties;
+      if (props !== undefined) {
+        for (var layerId in props) {
+          var layer = mapLayers[layerId],
+              lyrProps = props[layerId];
+          for (var k in lyrProps) {
+            layer.values_[k] = lyrProps[k];
+          }
+        }
+      }
+
+      // Add layers to map and layer list
+      if (project.initialLayerOrder === undefined) {
+        project.mapLayers.forEach(function (layer) {
+          map.addLayer(layer);
+          gui.addLayer(layer);
+        });
+      }
+      else {
+        project.initialLayerOrder.forEach(function (layerId) {
+          var layer = mapLayers[layerId];
+          map.addLayer(layer);
+          gui.addLayer(layer);
+        });
+      }
     },
 
     loadLayerSource: function (layer, url) {
@@ -412,6 +437,16 @@ var olapp = {
       // Remove the script element from DOM
       $(core.project._loadingScripts[url]).remove();
       delete core.project._loadingScripts[url];
+    },
+
+    saveToFile: function () {
+      core.loadScript('js/FileSaver.min.js', function () {
+        var blob = new Blob([olapp.project.toString()], {type: 'text/plain;charset=utf-8'});
+        saveAs(blob, "project.js");
+      });
+    },
+
+    saveToStorage: function () {
     }
 
   };
@@ -430,9 +465,29 @@ var olapp = {
     });
 
     $('#prj_save').click(function () {
-    });
-
-    $('#prj_saveas').click(function () {
+      bootbox.dialog({
+        title: 'Save Project',
+        message: 'Select file or local storage.',
+        buttons: {
+          file: {
+            label: 'Save To File',
+            className: "btn-primary",
+            callback: function () {
+              core.project.saveToFile();
+            }
+          },
+          storage: {
+            label: 'Save To Local Storage',
+            className: "btn-default",
+            callback: function () {}
+          },
+          cancel: {
+            label: 'Cancel',
+            className: "btn-default",
+            callback: function () {}
+          }
+        }
+      });
     });
 
     $('#prj_properties').click(function () {
@@ -643,13 +698,18 @@ var olapp = {
     $('#layer_list').html('');
   };
 
+  // TODO: layerOrderChanged
   gui.updateLayerOrder = function () {
-    // TODO: update layer order in project.mapLayers
+    var project = olapp.project;
+    project.mapLayers = [];
+
     var layers = map.getLayers();
     layers.clear();
+
     $('#layer_list .list-group-item').each(function (index) {
-      var id = $(this).attr('id');
-      layers.insertAt(0, mapLayers[id]);
+      var layer = mapLayers[$(this).attr('id')];
+      layers.insertAt(0, layer);
+      project.mapLayers.unshift(layer);
     });
   };
 
@@ -954,8 +1014,10 @@ olapp.Project = function (options) {
 
   this.plugins = options.plugins || [];
   this.init = options.init;
+  this.initialLayerOrder = options.layerOrder;
+  this.initialLayerProperties = options.layerProperties;
 
-  this._lastLayerId = -1;
+  this._lastLayerId = -1;     // TODO: get max layer id from layerOrder if specified
   this.mapLayers = [];
 };
 
@@ -988,8 +1050,58 @@ olapp.Project.prototype = {
     return 'L' + this._lastLayerId;
   },
 
+  layerIds: function () {
+    var ids = [];
+    this.mapLayers.forEach(function (layer) {
+      ids.push(layer.get('id'));
+    });
+    return ids;
+  },
+
+  layerProperties: function () {
+    var prop = {};
+    this.mapLayers.forEach(function (layer) {
+      prop[layer.get('id')] = {
+        visible: layer.getVisible(),
+        opacity: layer.getOpacity(),
+        blendMode: layer.get('blendMode'),
+        title: layer.get('title')
+      };
+    });
+    return prop;
+  },
+
   toJSON: function () {
-    // TODO:
+  },
+
+  toString: function () {
+    function quote_escape(text) {
+      return '"' + text.split('"').join('\\"') + '"';
+    }
+
+    var projection = this.view.getProjection().getCode();
+    var center = this.view.getCenter() || [0, 0];
+    var maxZoom = parseInt(olapp.tools.projection.zoomLevelFromResolution(this.view.minResolution_));
+    var zoom = this.view.getZoom();
+    var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
+
+    var content = [
+'olapp.loadProject(new olapp.Project({',
+'  title: ' + quote_escape(this.title) + ',',
+'  description: ' + quote_escape(this.description) + ',',
+'  view: new ol.View({',
+'    projection: ' + quote_escape(projection) + ',',
+'    center: ' + JSON.stringify(center) + ',',
+'    maxZoom: ' + maxZoom + ',',
+'    zoom: ' + zoom,
+'  }),',
+'  plugins: ' + JSON.stringify(this.plugins) + ',',
+'  init: ' + initFuncStr + ',',
+'  layerOrder: ' + JSON.stringify(this.layerIds()) + ',',
+'  layerProperties: ' + JSON.stringify(this.layerProperties()),
+'}));',
+''];
+    return content.join('\n');
   }
 
 };
@@ -1070,6 +1182,12 @@ olapp.tools.projection.resolutionFromZoomLevel = function (zoom) {
   var TILE_SIZE = 256,
       TSIZE1 = 20037508.342789244;
   return TSIZE1 / Math.pow(2, zoom - 1) / TILE_SIZE;
+};
+
+olapp.tools.projection.zoomLevelFromResolution = function (resolution) {
+  var TILE_SIZE = 256,
+      TSIZE1 = 20037508.342789244;
+  return Math.LOG2E * Math.log(TSIZE1 / resolution / TILE_SIZE) + 1;
 };
 
 
