@@ -99,7 +99,7 @@ olapp.loadProject(new olapp.Project({
   }),
   plugins: ['source/gsitiles.js'],
   init: function (project) {
-    var gsitiles = new olapp.source.GSITiles;
+    var gsitiles = olapp.source.GSITiles;
     project.addLayer(gsitiles.createLayer('std'));
     project.addLayer(gsitiles.createLayer('ort'));
   }
@@ -131,7 +131,7 @@ olapp.project.addLayer(function () {
 
 // L3
 olapp.loadLayer(function () {
-  var gsitiles = new olapp.source.GSITiles;
+  var gsitiles = olapp.source.GSITiles;
   return gsitiles.createLayer('relief');
 });
 
