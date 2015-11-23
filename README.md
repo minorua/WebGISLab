@@ -98,20 +98,19 @@ olapp.loadProject(new olapp.Project({
     zoom: 5
   }),
   plugins: ['source/gsitiles.js'],
-  init: function (project) {
-    var gsitiles = olapp.source.GSITiles;
-    project.addLayer(gsitiles.createLayer('std'));
-    project.addLayer(gsitiles.createLayer('ort'));
-  }
+  layers: [    // from bottom to top
+    [{source: 'GSITiles', layer: 'std'}],
+    [{source: 'GSITiles', layer: 'ort'}, {visible: false}]
+  ]
 }));
 ```
 
 ### プロジェクトの保存
 
-- プロジェクトの文字列化 - olapp.Project.toString()
-    - Function.toString()
-- ローカルストレージへの保存
+- プロジェクトの文字列化
+    - olapp.Project.toString()
 - jsファイルのダウンロード
+- ローカルストレージへの保存
 
 ### プロジェクトに対する変更の保存
 
@@ -121,25 +120,44 @@ olapp.loadProject(new olapp.Project({
     - レイヤに設定されたスタイル(データまたは関数)
 
 ```javascript
-// L2
-olapp.project.addLayer(function () {
-  var data = 'JSON Content';
-  var layer = olapp.core.loadText(data, 'GeoJSON');
-  // TODO: set layer style
-  return layer;
-});
-
-// L3
-olapp.loadLayer(function () {
-  var gsitiles = olapp.source.GSITiles;
-  return gsitiles.createLayer('relief');
-});
-
-// Layer ordering and properties settings
-olapp.project.setLayerOrder(['L0', 'L3', 'L2']);  // L1 (ort) was removed
-olapp.setLayerProperties('L0', {visible: true, opacity: 1, blend: false});   // std
-olapp.setLayerProperties('L2', {visible: true, opacity: 1});                 // vector layer
-olapp.setLayerProperties('L3', {visible: true, opacity: 0.5, blend: true});  // relief
+olapp.loadProject(new olapp.Project({
+  title: 'New Project',
+  description: '',
+  view: new ol.View({
+    projection: 'EPSG:3857',
+    center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
+    maxZoom: 18,
+    zoom: 5
+  }),
+  plugins: ['source/gsitiles.js', 'source/gsielevtile.js'],
+  init: function (project) {  // project is this project
+    // some initialization code
+  },
+  layers: [    // from bottom to top
+    [{source: 'GSITiles', layer: 'std'}, {visible: true, opacity: 1, blendMode: 'source-over'}],
+    [{source: 'Custom', layer: 0}, {visible: true, opacity: 1, blendMode: 'source-over'}]
+    [{source: 'Text', layer: 'filename.geojson20151123010100'}, {visible: true, opacity: 1, blendMode: 'source-over'}]
+    [{source: 'GSITiles', layer: 'relief'}, {visible: true, opacity: 0.8, blendMode: 'multiply'}],
+  ],
+  styles: [    // same item count as layers
+    undefined,
+    function (feature, resolution) {
+      return myfunction1(feature.getGeometry().getType());
+    },
+    function (feature, resolution) {
+      return myfunction2(feature.getGeometry().getType());
+    },
+    undefined
+  ],
+  customLayers: {
+    0: function (project) {  // project is this project
+      return new ol.layer.VectorTile({....});
+    }
+  },
+  textSources: {
+    'filename.geojson20151123010100': {format: 'GeoJSON', data: '{........JSON Content.......}'}
+  }
+}));
 ```
 
 ### プロジェクトの読み込み
