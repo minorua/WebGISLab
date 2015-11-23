@@ -364,15 +364,25 @@ var olapp = {
       // Load layers
       if (project.layers !== undefined) {
         project.layers.forEach(function (lyr) {
+          // Hold source and layer (id)
+          var layerOptions = {
+            olapp: {
+              source: lyr.source,
+              layer: lyr.layer
+            }
+          };
+          $.extend(layerOptions, lyr.options);
+
+          // Create a layer
           var layer;
           if (lyr.source == 'Custom') {
-            layer = project.customLayers[lyr.layer](project, lyr.options);
+            layer = project.customLayers[lyr.layer](project, layerOptions);
           }
           else if(lyr.source == 'Text') {
             // TODO:
           }
           else {
-            layer = olapp.source[lyr.source].createLayer(lyr.layer, lyr.options);
+            layer = olapp.source[lyr.source].createLayer(lyr.layer, layerOptions);
           }
 
           if (layer) project.addLayer(layer);
@@ -399,32 +409,11 @@ var olapp = {
         mapLayers[layer.get('id')] = layer;
       });
 
-      // Apply layer properties
-      var props = project.initialLayerProperties;
-      if (props !== undefined) {
-        for (var layerId in props) {
-          var layer = mapLayers[layerId],
-              lyrProps = props[layerId];
-          for (var k in lyrProps) {
-            layer.values_[k] = lyrProps[k];
-          }
-        }
-      }
-
       // Add layers to map and layer list
-      if (project.initialLayerOrder === undefined) {
-        project.mapLayers.forEach(function (layer) {
-          map.addLayer(layer);
-          gui.addLayer(layer);
-        });
-      }
-      else {
-        project.initialLayerOrder.forEach(function (layerId) {
-          var layer = mapLayers[layerId];
-          map.addLayer(layer);
-          gui.addLayer(layer);
-        });
-      }
+      project.mapLayers.forEach(function (layer) {
+        map.addLayer(layer);
+        gui.addLayer(layer);
+      });
     },
 
     loadLayerSource: function (layer, url) {
@@ -851,7 +840,14 @@ var olapp = {
       }
       list.find('button').click(function () {
         var srcname_id = $(this).parent().children('span').text().split('/');
-        var layer = source.get(srcname_id[0]).createLayer(srcname_id[1]);
+        // Hold source and layer (id)
+        var layerOptions = {
+          olapp: {
+            source: srcname_id[0],
+            layer: srcname_id[1]
+          }
+        };
+        var layer = source.get(srcname_id[0]).createLayer(srcname_id[1], layerOptions);
         core.project.addLayer(layer);
         // TODO: status message
       });
@@ -1035,10 +1031,8 @@ olapp.Project = function (options) {
   this.init = options.init;
   this.layers = options.layers || [];
   this.customLayers = options.customLayers || {};
-  this.initialLayerOrder = options.layerOrder;
-  this.initialLayerProperties = options.layerProperties;
 
-  this._lastLayerId = -1;     // TODO: get max layer id from layerOrder if specified
+  this._lastLayerId = this.layers.length - 1;
   this.mapLayers = [];
 };
 
@@ -1106,6 +1100,19 @@ olapp.Project.prototype = {
     var zoom = this.view.getZoom();
     var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
 
+    var layers = [];
+    this.mapLayers.forEach(function (layer) {
+      var properties = {
+        options: {
+          visible: layer.getVisible(),
+          opacity: layer.getOpacity(),
+          blendMode: layer.get('blendMode'),
+          title: layer.get('title')
+        }
+      };
+      layers.push($.extend(properties, layer.get('olapp')));
+    });
+
     var content = [
 'olapp.loadProject(new olapp.Project({',
 '  title: ' + quote_escape(this.title) + ',',
@@ -1118,8 +1125,7 @@ olapp.Project.prototype = {
 '  }),',
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
-'  layerOrder: ' + JSON.stringify(this.layerIds()) + ',',
-'  layerProperties: ' + JSON.stringify(this.layerProperties()),
+'  layers: ' + JSON.stringify(layers),
 '}));',
 ''];
     return content.join('\n');

@@ -10,7 +10,11 @@ projectsToTest.forEach(function (project) {
     var done = assert.async();
     olapp.loadProject(project.filename, function () {
       assert.ok(olapp.project.title == project.title, project.title + ' loaded');
-      assert.ok(Object.keys(olapp.project.mapLayers).length > 0);
+      assert.ok(olapp.project.mapLayers.length > 0, olapp.project.mapLayers.length + ' layers loaded');
+      olapp.project.mapLayers.forEach(function (layer) {
+        var lyrDef = layer.get('olapp');
+        assert.ok(lyrDef !== undefined, 'Layer [' + lyrDef.source + ', ' + lyrDef.layer + ']: ' + layer.get('title'));
+      });
       assert.ok(olapp.project.toString(), 'Serializable');
       done();
     });
