@@ -361,6 +361,25 @@ var olapp = {
       gui.setProjectTitle(project.title);
       map.setView(project.view);
 
+      // Load layers
+      if (project.layers !== undefined) {
+        project.layers.forEach(function (lyr) {
+          var layer;
+          if (lyr.source == 'Custom') {
+            layer = project.customLayers[lyr.layer](project, lyr.options);
+          }
+          else if(lyr.source == 'Text') {
+            // TODO:
+          }
+          else {
+            layer = olapp.source[lyr.source].createLayer(lyr.layer, lyr.options);
+          }
+
+          if (layer) project.addLayer(layer);
+          else console.log('Failed to load layer: ', lyr);
+        });
+      }
+
       var projection = project.view.getProjection();
       core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
       core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
@@ -1014,6 +1033,8 @@ olapp.Project = function (options) {
 
   this.plugins = options.plugins || [];
   this.init = options.init;
+  this.layers = options.layers || [];
+  this.customLayers = options.customLayers || {};
   this.initialLayerOrder = options.layerOrder;
   this.initialLayerProperties = options.layerProperties;
 
@@ -1428,17 +1449,12 @@ olapp.createDefaultProject = function () {
       zoom: 5
     }),
     plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
-    init: function (project) {
-      // GSI Tiles (source/gsitiles.js)
-      var gsitiles = olapp.source.GSITiles;
-      project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
-      project.addLayer(gsitiles.createLayer('relief', {visible: false}));   // 色別標高図
-      project.addLayer(gsitiles.createLayer('ort', {visible: false}));      // 写真
-
-      // Natural Earth data
-      var ne = olapp.source.NaturalEarth;
-      project.addLayer(ne.createLayer('cl', {visible: false}));       // Coastline
-    }
+    layers: [   // from bottom to top
+      {source: 'GSITiles', layer: 'std'},                                // 標準地図
+      {source: 'GSITiles', layer: 'relief', options: {visible: false}},  // 色別標高図
+      {source: 'GSITiles', layer: 'ort', options: {visible: false}},     // 写真
+      {source: 'NaturalEarth', layer: 'cl', options: {visible: false}}   // Coastline
+    ]
   });
 };
 

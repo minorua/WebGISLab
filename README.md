@@ -99,8 +99,8 @@ olapp.loadProject(new olapp.Project({
   }),
   plugins: ['source/gsitiles.js'],
   layers: [    // from bottom to top
-    [{source: 'GSITiles', layer: 'std'}],
-    [{source: 'GSITiles', layer: 'ort'}, {visible: false}]
+    {source: 'GSITiles', layer: 'std'},
+    {source: 'GSITiles', layer: 'ort', options: {visible: false}}
   ]
 }));
 ```
@@ -129,15 +129,15 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 18,
     zoom: 5
   }),
-  plugins: ['source/gsitiles.js', 'source/gsielevtile.js'],
+  plugins: ['source/gsitiles.js'],
   init: function (project) {  // project is this project
     // some initialization code
   },
   layers: [    // from bottom to top
-    [{source: 'GSITiles', layer: 'std'}, {visible: true, opacity: 1, blendMode: 'source-over'}],
-    [{source: 'Custom', layer: 0}, {visible: true, opacity: 1, blendMode: 'source-over'}]
-    [{source: 'Text', layer: 'filename.geojson20151123010100'}, {visible: true, opacity: 1, blendMode: 'source-over'}]
-    [{source: 'GSITiles', layer: 'relief'}, {visible: true, opacity: 0.8, blendMode: 'multiply'}],
+    {source: 'GSITiles', layer: 'std', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
+    {source: 'GSITiles', layer: 'relief', options: {visible: true, opacity: 0.8, blendMode: 'multiply'}},
+    {source: 'Text', layer: 'filename.geojson20151123010100', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
+    {source: 'Custom', layer: 'customlayer1', options: {visible: true, opacity: 1, blendMode: 'source-over'}}
   ],
   styles: [    // same item count as layers
     undefined,
@@ -150,8 +150,9 @@ olapp.loadProject(new olapp.Project({
     undefined
   ],
   customLayers: {
-    0: function (project) {  // project is this project
-      return new ol.layer.VectorTile({....});
+    'customlayer1': function (project, layerOptions) {  // project is this project
+      var options = {....};
+      return new ol.layer.VectorTile($.extend(options, layerOptions));
     }
   },
   textSources: {

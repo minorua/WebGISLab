@@ -10,13 +10,8 @@ olapp.loadProject(new olapp.Project({
     zoom: 8
   }),
   plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'tool/measure-vincenty.js'],
-  init: function (project) {
-    // GSI Tiles
-    var gsitiles = olapp.source.GSITiles;
-    project.addLayer(gsitiles.createLayer('std'));                        // 標準地図
-
-    // Natural Earth data
-    var ne = olapp.source.NaturalEarth;
-    project.addLayer(ne.createLayer('cl'));       // Coastline
-  }
+  layers: [
+    {source: 'GSITiles', layer: 'std'},                                 // 標準地図
+    {source: 'NaturalEarth', layer: 'cl', options: {visible: false}}    // Coastline
+  ]
 }));
