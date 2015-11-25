@@ -193,3 +193,7 @@ a.btn-blendmode span.active {
 .tooltip-static:before {
   border-top-color: #ffcc33;
 }
+
+/* 3D viewer (three.js) */
+#webgl {
+}
