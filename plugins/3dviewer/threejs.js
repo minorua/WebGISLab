@@ -90,20 +90,25 @@
 
       var dem = new olapp.demProvider.GSIElevTile();
       dem.readBlock(extent, demWidth, demHeight).then(function (data) {
-        var scale = planeWidth / (extent[2] - extent[0]) * zExaggeration;   // TODO: scale factor (mercator) * exag.
+        // max and min value
         var max = min = data[0], val;
         for (var i = 0, l = data.length; i < l; i++) {
           val = data[i];
-          if (max > val) max = val;
-          if (min < val) min = val;
-          data[i] *= scale;
+          if (max < val) max = val;
+          if (min > val) min = val;
         }
-        bl.data = data;
-
         lyr.stats = {
           max: max,
           min: min
         };
+
+        var shift = -min;
+        var scale = planeWidth / (extent[2] - extent[0]) * zExaggeration;   // TODO: scale factor (mercator) * exag.
+        for (var i = 0, l = data.length; i < l; i++) {
+          data[i] = (data[i] + shift) * scale;
+        }
+        bl.data = data;
+        project.origin.z = -shift;
 
         var options = Q3D.Options;
         options.bgcolor = 0xeeeeff;
