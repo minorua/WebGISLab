@@ -118,6 +118,7 @@
         app.loadProject(project);
 
         app.addEventListeners();
+        app.closePopup = function () {};
         app.start();
       });
     });
@@ -125,6 +126,18 @@
 
   plugin.stop = function () {
     Q3D.application.pause();
+  };
+
+  plugin.isRotating = function () {
+    return Q3D.application.controls.autoRotate;
+  };
+
+  plugin.rotate = function (active) {
+    Q3D.application.controls.autoRotate = active;
+  };
+
+  plugin.save = function () {
+    alert('TODO');
   };
 
   olapp.plugin.register(plugin.path, plugin);

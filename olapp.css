@@ -195,5 +195,17 @@ a.btn-blendmode span.active {
 }
 
 /* 3D viewer (three.js) */
+#three_rotate {
+  float: right;
+  margin-right: 5px;
+  opacity: 0.5;
+}
+
+#three_save {
+  float: right;
+  margin-right: 20px;
+  opacity: 0.5;
+}
+
 #webgl {
 }

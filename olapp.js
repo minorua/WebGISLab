@@ -530,7 +530,7 @@ var olapp = {
     });
 
     $(window).keydown(function (e) {
-      if (e.keyCode == 27) {
+      if (e.keyCode == 27) {    // escape
         if ($('#trigger').hasClass('active')) {
           $('#trigger').removeClass('active');
           $('#slider').toggle('slide', 'fast');
@@ -921,12 +921,48 @@ var olapp = {
   gui.dialog.threejs = {
 
     init: function () {
+      var threejs = function () {
+        return plugin.plugins['3dviewer/threejs.js'];
+      };
       $('#dlg_threejs').on('show.bs.modal', function () {
         // TODO: the plugin should be loaded here
-        plugin.plugins['3dviewer/threejs.js'].run();
+        threejs().run();
       });
       $('#dlg_threejs').on('hide.bs.modal', function () {
-        plugin.plugins['3dviewer/threejs.js'].stop();
+        threejs().stop();
+      });
+
+      // automatic rotation
+      $('#three_rotate').click(function () {
+        threejs().rotate(!threejs().isRotating());
+      });
+      window.addEventListener('keyup', function (e) {
+        if (e.keyCode == 82 && $('#dlg_threejs').is(':visible')) {    // R
+          if (threejs().isRotating()) $('#three_rotate').addClass('active');
+          else $('#three_rotate').removeClass('active');
+        }
+      });
+
+      // save scene
+      $('#three_save').click(function () {
+        bootbox.dialog({
+          title: 'Save the scene',
+          message: 'Click the save button if you want to save the scene to STL format.',
+          buttons: {
+            stl: {
+              label: 'Save',
+              className: "btn-primary",
+              callback: function () {
+                threejs().save();
+              }
+            },
+            cancel: {
+              label: 'Cancel',
+              className: "btn-default",
+              callback: function () {}
+            }
+          }
+        });
       });
     }
 
