@@ -137,7 +137,42 @@
   };
 
   plugin.save = function () {
-    alert('TODO');
+    Q3D.application.pause();
+
+    var project = Q3D.application.project;
+    var demLayer = project.layers[0];
+    demLayer.rebuild = function (exportMode) {
+      Q3D.Options.exportMode = exportMode;
+
+      this.objectGroup = new THREE.Group();
+      this.build();
+      this.objectGroup.updateMatrixWorld();   //
+    };
+    demLayer.rebuild(true);
+
+    var scripts = ['js/threejs/exporters/STLBinaryExporter.js', 'js/FileSaver.min.js'];
+    olapp.core.loadScripts(scripts, function () {
+      var exporter = new THREE.STLBinaryExporter();
+      var stlData = exporter.parse(demLayer.objectGroup).buffer;
+      saveAs(new Blob([stlData]), "terrain.stl");
+
+      /*
+      // TODO: FIXME
+      // With Chrome, two terrain.png files are saved.
+      //   ref. https://github.com/eligrey/FileSaver.js/issues/165
+      // Note: Map canvas image can be saved from Project menu.
+      var image = project.images[0];
+      var binStr = atob(image.data.split(',')[1]),
+          len = binStr.length,
+          imgData = new Uint8Array(len);
+      for (var i = 0; i < len; i++) {
+        imgData[i] = binStr.charCodeAt(i);
+      }
+      saveAs(new Blob([imgData]), "terrain.png");
+      */
+
+      Q3D.application.start();
+    });
   };
 
   olapp.plugin.register(plugin.path, plugin);
