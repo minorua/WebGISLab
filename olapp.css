@@ -199,6 +199,7 @@ a.btn-blendmode span.active {
   float: right;
   margin-right: 5px;
   opacity: 0.5;
+  transform: scaleY(-1);
 }
 
 #three_save {

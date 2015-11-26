@@ -943,11 +943,11 @@ var olapp = {
         }
       });
 
-      // save scene
+      // save model
       $('#three_save').click(function () {
         bootbox.dialog({
-          title: 'Save the scene',
-          message: 'Click the save button if you want to save the scene to STL format.',
+          title: 'Save the model',
+          message: 'Click save button if you want to save the model in STL format.',
           buttons: {
             stl: {
               label: 'Save',
