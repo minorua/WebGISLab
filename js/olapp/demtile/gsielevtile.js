@@ -34,29 +34,48 @@
 
     // nx, ny: number of grid points
     read: function (extent, nx, ny) {
-      var width = extent[2] - extent[0],
-          height = extent[3] - extent[1];
-      var xres = width / (nx - 1),
-          yres = height / (ny - 1);
+      var xres = (extent[2] - extent[0]) / (nx - 1),
+          yres = (extent[3] - extent[1]) / (ny - 1);
 
-      var vals = [];
+      var vals = [], pt;
       for (var y = 0; y < ny; y++) {
         for (var x = 0; x < nx; x++) {
-          var pt = [extent[0] + x * xres, extent[3] - y * yres];
-
-          // TODO: bilinear interpolation
-          // this.value = function (pt)
-          var xi = (pt[0] - this.extent[0]) / this.cellSize,
-              yi = (this.extent[3] - pt[1]) / this.cellSize;
-
-          var ti = parseInt(xi / TILE_SIZE) + parseInt(yi / TILE_SIZE) * this.cols;
-          if (this.blocks[ti] === undefined) vals.push(0);
-          else {
-            vals.push(this.blocks[ti][parseInt(xi % TILE_SIZE) + parseInt(yi % TILE_SIZE) * TILE_SIZE] || NODATA_VALUE);
-          }
+          pt = [extent[0] + x * xres, extent[3] - y * yres];
+          //vals.push(this.nearest(pt));
+          vals.push(this.bilinear(pt));
         }
       }
       return vals;
+    },
+
+    // read bilinear-interpolated value
+    bilinear: function (pt) {
+      var gx = (pt[0] - this.extent[0]) / this.cellSize,
+          gy = (this.extent[3] - pt[1]) / this.cellSize,
+          gx0 = Math.floor(gx),
+          gy0 = Math.floor(gy),
+          sx = gx - gx0,
+          sy = gy - gy0;
+
+      var ti, i = 0, z = [];
+      for (var yi = 0; yi < 2; yi++) {
+        for (var xi = 0; xi < 2; xi++, i++) {
+          ti = parseInt((gx + xi) / TILE_SIZE) + parseInt((gy + yi) / TILE_SIZE) * this.cols;
+          if (this.blocks[ti] === undefined) z[i] = NODATA_VALUE;
+          else z[i] = this.blocks[ti][parseInt((gx + xi) % TILE_SIZE) + parseInt((gy + yi) % TILE_SIZE) * TILE_SIZE] || NODATA_VALUE;
+        }
+      }
+      return (1 - sx) * ((1 - sy) * z[0] + sy * z[2]) + sx * ((1 - sy) * z[1] + sy * z[3]);
+    },
+
+    // read nearest-neighbor value
+    nearest: function (pt) {
+      var gx = (pt[0] - this.extent[0]) / this.cellSize,
+          gy = (this.extent[3] - pt[1]) / this.cellSize,
+          ti = parseInt(gx / TILE_SIZE) + parseInt(gy / TILE_SIZE) * this.cols;
+
+      if (this.blocks[ti] === undefined) return NODATA_VALUE;
+      return this.blocks[ti][parseInt(gx % TILE_SIZE) + parseInt(gy % TILE_SIZE) * TILE_SIZE] || NODATA_VALUE;
     }
 
   };
