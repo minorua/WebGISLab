@@ -6,7 +6,6 @@
 (function () {
   var TILE_SIZE = 256;
   var TSIZE1 = 20037508.342789244;
-  var NODATA_VALUE = 0;
   var ZMAX = 14;
 
   var DEMBlocks = function (zoom, xmin, ymin, xmax, ymax) {
@@ -41,10 +40,11 @@
       var xres = (extent[2] - extent[0]) / (nx - 1),
           yres = (extent[3] - extent[1]) / (ny - 1);
 
-      var vals = [], pt;
+      var vals = [], pt, py;
       for (var y = 0; y < ny; y++) {
+        py = extent[3] - y * yres;
         for (var x = 0; x < nx; x++) {
-          pt = transform([extent[0] + x * xres, extent[3] - y * yres]);
+          pt = transform([extent[0] + x * xres, py]);
           //vals.push(this.nearest(pt));
           vals.push(this.bilinear(pt));
         }
@@ -65,8 +65,8 @@
       for (var yi = 0; yi < 2; yi++) {
         for (var xi = 0; xi < 2; xi++, i++) {
           ti = parseInt((gx + xi) / TILE_SIZE) + parseInt((gy + yi) / TILE_SIZE) * this.cols;
-          if (this.blocks[ti] === undefined) z[i] = NODATA_VALUE;
-          else z[i] = this.blocks[ti][parseInt((gx + xi) % TILE_SIZE) + parseInt((gy + yi) % TILE_SIZE) * TILE_SIZE] || NODATA_VALUE;
+          if (this.blocks[ti] === undefined) z[i] = 0;
+          else z[i] = this.blocks[ti][parseInt((gx + xi) % TILE_SIZE) + parseInt((gy + yi) % TILE_SIZE) * TILE_SIZE] || 0;
         }
       }
       return (1 - sx) * ((1 - sy) * z[0] + sy * z[2]) + sx * ((1 - sy) * z[1] + sy * z[3]);
@@ -78,8 +78,8 @@
           gy = (this.extent[3] - pt[1]) / this.cellSize,
           ti = parseInt(gx / TILE_SIZE) + parseInt(gy / TILE_SIZE) * this.cols;
 
-      if (this.blocks[ti] === undefined) return NODATA_VALUE;
-      return this.blocks[ti][parseInt(gx % TILE_SIZE) + parseInt(gy % TILE_SIZE) * TILE_SIZE] || NODATA_VALUE;
+      if (this.blocks[ti] === undefined) return 0;
+      return this.blocks[ti][parseInt(gx % TILE_SIZE) + parseInt(gy % TILE_SIZE) * TILE_SIZE] || 0;
     }
 
   };
