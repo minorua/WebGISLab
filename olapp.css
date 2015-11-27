@@ -28,6 +28,10 @@ html, body {
 .btn.disabled {
   cursor: auto;
 }
+.btn-default.focus, .btn-default:focus {
+  outline: 0 none;
+  background-color: #fff;
+}
 
 /* nav bar */
 nav .container {
@@ -37,9 +41,6 @@ nav .container {
 #trigger {
   float: left;
   margin: 8px 2px;
-}
-#trigger:focus {
-  outline: 0 none;
 }
 #searchform {
   padding: 0;
@@ -63,9 +64,6 @@ nav .container {
   overflow: auto;
   padding: 5px;
   box-shadow: 1px 0 1px rgba(0, 0, 0, 0.3);
-}
-#slider button:focus {
-  outline: 0 none;
 }
 #layer_list {
   list-style-type: none;
