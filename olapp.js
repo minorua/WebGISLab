@@ -595,6 +595,7 @@ var olapp = {
       if (box.is(':visible')) {
         var q = box.val();
         if (q) tools.geocoding.Nominatim.search(q);
+        if (window.innerWidth < 450) box.hide();
       }
       else {
         box.show();
