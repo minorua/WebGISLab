@@ -33,14 +33,18 @@
     },
 
     // nx, ny: number of grid points
-    read: function (extent, nx, ny) {
+    read: function (extent, nx, ny, projection) {
+      var transform;
+      if (projection === undefined || projection == 'EPSG:3857') transform = function (pt) { return pt; };
+      else transform = ol.proj.getTransform(projection, 'EPSG:3857');
+
       var xres = (extent[2] - extent[0]) / (nx - 1),
           yres = (extent[3] - extent[1]) / (ny - 1);
 
       var vals = [], pt;
       for (var y = 0; y < ny; y++) {
         for (var x = 0; x < nx; x++) {
-          pt = [extent[0] + x * xres, extent[3] - y * yres];
+          pt = transform([extent[0] + x * xres, extent[3] - y * yres]);
           //vals.push(this.nearest(pt));
           vals.push(this.bilinear(pt));
         }
@@ -84,6 +88,7 @@
   if (olapp.demProvider === undefined) olapp.demProvider = {};
   olapp.demProvider.GSIElevTile = function () {
     this.urlTmpl = 'http://cyberjapandata.gsi.go.jp/xyz/dem/{z}/{x}/{y}.txt';
+    this.extent = [13667807, 2320477, 17230031, 5713298];
   };
 
   olapp.demProvider.GSIElevTile.prototype = {
@@ -91,16 +96,22 @@
     constructor: olapp.demProvider.GSIElevTile,
 
     readBlock: function (extent, width, height, projection) {
-      var merc_rect = extent;   // TODO: reprojection support
-      // if (!boundingbox.intersects(merc_rect)) return Array.apply(null, Array(width * height)).map(function (_, i) { return NODATA_VALUE; }
-
+      projection = projection || 'EPSG:3857';
+      var merc_rect = (projection == 'EPSG:3857') ? extent : ol.proj.transformExtent(extent, projection, 'EPSG:3857');
+      if (!ol.extent.intersects(this.extent, merc_rect)) {
+        var d = new $.Deferred();
+        window.setTimeout(function () {
+          d.resolve(Array.apply(null, Array(width * height)).map(function (x, i) { return 0; }));
+        }, 0);
+        return d.promise();
+      }
       var over_smpl = 1;
       var segments_x = (width == 1) ? 1 : width - 1;
       var res = (extent[2] - extent[0]) / segments_x / over_smpl;
 
       var d = new $.Deferred();
       this.getBlocks(merc_rect, res).then(function (blocks) {
-        d.resolve(blocks.read(merc_rect, width, height));
+        d.resolve(blocks.read(extent, width, height, projection));
       });
       return d.promise();
     },

@@ -16,13 +16,9 @@
 
   plugin.run = function () {
     var view = olapp.map.getView();
-    var crs = view.getProjection().getCode();
+    var projection = view.getProjection().getCode();
     if (view.getRotation()) {
       alert('3D viewer: Map rotation is not supported.');
-      return;
-    }
-    if (crs != 'EPSG:3857') {
-      alert('3D viewer: Reprojection is not supported.');
       return;
     }
 
@@ -89,7 +85,7 @@
       }, false);
 
       var dem = new olapp.demProvider.GSIElevTile();
-      dem.readBlock(extent, demWidth, demHeight).then(function (data) {
+      dem.readBlock(extent, demWidth, demHeight, projection).then(function (data) {
         // max and min value
         var max = min = data[0], val;
         for (var i = 0, l = data.length; i < l; i++) {
