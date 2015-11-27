@@ -44,12 +44,12 @@
         baseExtent: extent,
         rotation: 0,                      //
         wgs84Center: {lat: 0, lon: 0},    //
-        crs: view.getProjection().getCode(),
-        proj: '',                         //
+        crs: projection,
+        proj: projection,   //
         title: '',
         width: planeWidth,
         zShift: 0,
-        zExaggeration: zExaggeration
+        zExaggeration: zExaggeration      // TODO: scale factor (mercator) * exag.
       });
 
       // map canvas image
@@ -98,23 +98,33 @@
           min: min
         };
 
-        var shift = -min;
-        var scale = planeWidth / (extent[2] - extent[0]) * zExaggeration;   // TODO: scale factor (mercator) * exag.
+        var scale = project.zScale,
+            shift = -min;
+        project.origin.z = -shift;
         for (var i = 0, l = data.length; i < l; i++) {
           data[i] = (data[i] + shift) * scale;
         }
         bl.data = data;
-        project.origin.z = -shift;
 
         var options = Q3D.Options;
         options.bgcolor = 0xeeeeff;
 
+        // Q3D application
         var app = Q3D.application;
         app.init(container);
         app.loadProject(project);
 
+        // overrides
+        app.showQueryResult = function (point, layerId, featureId) {
+          // clicked coordinates
+          var pt = app.project.toMapCoordinates(point.x, point.y, point.z);
+          $('#threejs_info').html('Elevation: ' + pt.z.toFixed(2)).show();
+        };
+        app.closePopup = function () {
+          $('#threejs_info').hide();
+        };
+
         app.addEventListeners();
-        app.closePopup = function () {};
         app.start();
       });
     });

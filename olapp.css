@@ -210,3 +210,12 @@ a.btn-blendmode span.active {
 
 #webgl {
 }
+
+#threejs_info {
+  display: none;
+  background-color: white;
+  padding: 5px;
+  position: absolute;
+  bottom: 17px;
+  left: 17px;
+}
