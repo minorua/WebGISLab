@@ -43,8 +43,8 @@ var olapp = {
   var map, mapLayers;
 
   // init()
-  olapp.init = function () {
-    core.init();
+  olapp.init = function (mapOptions) {
+    core.init(mapOptions);
     gui.init(map);
 
     if (olapp.projectToLoad) {
@@ -79,15 +79,16 @@ var olapp = {
   // olapp.core
   core.wgs84Sphere = new ol.Sphere(6378137);
 
-  core.init = function () {
-    map = new ol.Map({
-      controls: ol.control.defaults({
-        attributionOptions: ({
-          collapsible: false
-        })
-      }),
-      target: 'map'
+  core.init = function (mapOptions) {
+    var opt = mapOptions || {};
+    opt.target = opt.target || 'map';
+    opt.controls = opt.controls || ol.control.defaults({
+      attributionOptions: ({
+        collapsible: false
+      })
     });
+
+    map = new ol.Map(opt);
     olapp.map = map;
 
     core.project.init();
@@ -1547,7 +1548,7 @@ olapp.createDefaultProject = function () {
 };
 
 
-// Initialize olapp application
+// Initialize olapp application if not initialized yet
 $(function () {
-  olapp.init();
+  if (olapp.map === undefined) olapp.init();
 });

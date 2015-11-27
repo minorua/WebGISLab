@@ -27,6 +27,17 @@ For example:
 #map {
   top: 0;
 }
+.olapp-btn-threejs {
+  top: .5em;
+  right: 2.6em;
+}
+.olapp-btn-threejs button {
+  width: 1.9em;
+}
+.olapp-btn-about {
+  top: .5em;
+  right: .5em;
+}
 </style>
 </head>
 <body>
@@ -72,5 +83,50 @@ For example:
     </div>
   </div>
 </div>
+<script type="text/javascript">
+  if (olapp.controls === undefined) olapp.controls = {};
+  olapp.controls.Threejs = function (options) {
+    var button = document.createElement('button');
+    $(button).html('3D').click(function () {
+      $('#dlg_threejs').modal('show');
+    });
+
+    var element = document.createElement('div');
+    element.className = 'olapp-btn-threejs ol-unselectable ol-control';
+    element.appendChild(button);
+
+    ol.control.Control.call(this, {
+      element: element
+    });
+  };
+  ol.inherits(olapp.controls.Threejs, ol.control.Control);
+
+  olapp.controls.About = function (options) {
+    var button = document.createElement('button');
+    $(button).html('i').click(function () {
+      $('#dlg_about').modal('show');
+    });
+
+    var element = document.createElement('div');
+    element.className = 'olapp-btn-about ol-unselectable ol-control';
+    element.appendChild(button);
+
+    ol.control.Control.call(this, {
+      element: element
+    });
+  };
+  ol.inherits(olapp.controls.About, ol.control.Control);
+
+  var opt = {};
+  opt.controls = ol.control.defaults({
+    attributionOptions: ({
+      collapsible: false
+    })
+  }).extend([
+    new olapp.controls.Threejs(),
+    new olapp.controls.About()
+  ]);
+  olapp.init(opt);
+</script>
 </body>
 </html>
