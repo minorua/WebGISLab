@@ -1,5 +1,5 @@
 body {
-  margin: 0
+  margin: 0;
 }
 html, body {
   height: 100%;
@@ -8,14 +8,14 @@ html, body {
 #map {
   position: absolute;
   top: 50px;
-  bottom: 0px;
+  bottom: 0;
   width: 100%;
   height: auto;
 }
 #info {
   position: absolute;
-  left: 0px;
-  bottom: 0px;
+  left: 0;
+  bottom: 0;
   background-color: rgba(255, 255, 255, 0.6)
 }
 
@@ -59,7 +59,7 @@ nav .container {
   display: none;  /* initially hidden*/
   position: absolute;
   top: 50px;
-  bottom: 0px;
+  bottom: 0;
   min-width: 250px;
   background-color: rgba(255, 255, 255, 0.95);
   overflow: auto;
@@ -81,7 +81,7 @@ a.btn {
   height: 60px;
 }
 .opacity-slider {
-  margin: 8px 0px;
+  margin: 8px 0;
   width: 175px;
 }
 a.btn-blendmode {
@@ -152,7 +152,7 @@ a.btn-blendmode span.active {
   cursor: pointer;
 }
 #dlg_measure .close {
-  padding: 0px 4px;
+  padding: 0 4px;
 }
 #dlg_measure .dlg-body {
   padding: 5px;
