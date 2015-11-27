@@ -163,6 +163,7 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
 
     var label = document.createElement('label');
 
+    /* // olapp
     if (lyr.getLayers) {
 
         li.className = 'group';
@@ -174,7 +175,7 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         this.renderLayers_(lyr, ul);
 
     } else {
-
+    */
         var input = document.createElement('input');
         if (lyr.get('type') === 'base') {
             input.type = 'radio';
@@ -193,8 +194,9 @@ ol.control.LayerSwitcher.prototype.renderLayer_ = function(lyr, idx) {
         label.innerHTML = lyrTitle;
         li.appendChild(label);
 
+    /* // olapp
     }
-
+    */
     return li;
 
 };
