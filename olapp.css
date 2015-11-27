@@ -35,15 +35,20 @@ nav .container {
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 #trigger {
-  background-color: #f4f4f4;
   float: left;
-  margin: 4px 2px;
-  padding: 8px 16px;
+  margin: 8px 2px;
 }
 #trigger:focus {
   outline: 0 none;
 }
+#searchform {
+  padding: 0;
+  float: left;
+}
 #search {
+}
+#searchbox {
+  display: none;
   width: 120px;
 }
 

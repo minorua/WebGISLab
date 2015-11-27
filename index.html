@@ -28,24 +28,22 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#">WebGIS Lab</a>
-      <button id="trigger" class="btn btn-lg" data-toggle="button">
+      <button id="trigger" class="btn btn-default" data-toggle="button">
         <span class="glyphicon glyphicon-list"></span>
       </button>
+      <form class="navbar-form" role="search" id="searchform">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="Search OSM..." name="q" id="searchbox">
+          <div class="input-group-btn">
+            <button type="submit" class="btn btn-default" id="search" title="Search OSM data by name/address with Nominatim">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
     <div id="navbar" class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li>
-          <form class="navbar-form" role="search">
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="Search OSM..." name="q" id="search">
-              <div class="input-group-btn">
-                <button class="btn btn-default" type="submit" title="Search OSM data by name/address with Nominatim">
-                  <span class="glyphicon glyphicon-search"></span>
-                </button>
-              </div>
-            </div>
-          </form>
-        </li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project<span class="caret"></span></a>
           <ul class="dropdown-menu">

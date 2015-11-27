@@ -590,9 +590,16 @@ var olapp = {
     });
 
     // search
-    $('form[role="search"]').submit(function (event) {
-      var q = $('#search').val();
-      if (q) tools.geocoding.Nominatim.search(q);
+    $('#searchform').submit(function (event) {
+      var box = $('#searchbox');
+      if (box.is(':visible')) {
+        var q = box.val();
+        if (q) tools.geocoding.Nominatim.search(q);
+      }
+      else {
+        box.show();
+        box.focus();
+      }
       event.preventDefault();
     });
   };
