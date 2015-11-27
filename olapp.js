@@ -45,11 +45,35 @@ var olapp = {
   // init()
   olapp.init = function () {
     core.init();
+    gui.init(map);
+
+    if (olapp.projectToLoad) {
+      olapp.loadProject(olapp.projectToLoad.project, olapp.projectToLoad.callback);
+      delete olapp.projectToLoad;
+    }
+    else {
+      // If project parameter is specified in URL, load the file.
+      // Otherwise, load default project.
+      var projectName = core.urlParams()['project'];
+      if (projectName) {
+        // Check that the project name is safe.
+        if (projectName.indexOf('..') !== -1) {
+          alert('Specified project name is wrong.');
+        }
+        else {
+          olapp.loadProject('files/' + projectName + '.js');
+        }
+      }
+      else {
+        olapp.loadProject(olapp.createDefaultProject());
+      }
+    }
   };
 
   // loadProject()
   olapp.loadProject = function (project, callback) {
-    core.project.load(project, callback);
+    if (olapp.map) core.project.load(project, callback);
+    else olapp.projectToLoad = {project: project, callback: callback};  // will be loaded after initialization
   };
 
   // olapp.core
@@ -67,7 +91,6 @@ var olapp = {
     olapp.map = map;
 
     core.project.init();
-    gui.init(map);
   };
 
   var attrs = {};
@@ -1527,21 +1550,4 @@ olapp.createDefaultProject = function () {
 // Initialize olapp application
 $(function () {
   olapp.init();
-
-  // If project parameter is specified in URL, load the file.
-  // Otherwise, load default project.
-  var projectName = olapp.core.urlParams()['project'];
-  if (projectName) {
-    // Check that the project name is safe.
-    if (projectName.indexOf('..') !== -1) {
-      alert('Specified project name is wrong.');
-    }
-    else {
-      // load the project
-      olapp.loadProject('files/' + projectName + '.js');
-    }
-  }
-  else {
-    olapp.loadProject(olapp.createDefaultProject());
-  }
 });
