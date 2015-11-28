@@ -627,6 +627,9 @@ var olapp = {
       }
       event.preventDefault();
     });
+
+    // map links
+    olapp.tools.mapLinks.init(document.getElementById('maplinks'));
   };
 
   // Add a layer to layer list.
@@ -1426,6 +1429,41 @@ olapp.tools.measure = {
       source: measureLayer.getSource(),
       type: geomType,
       style: new ol.style.Style(options)
+    });
+  }
+
+};
+
+
+// olapp.tools.mapLinks settings
+olapp.tools.mapLinks = {
+
+  links: [
+    {name: 'GSI Maps', url: 'http://maps.gsi.go.jp/#{z}/{lat}/{lon}'},
+    {name: 'Seamless Digital Geological Map', url: 'https://gbank.gsj.jp/seamless/seamless2015/2d/?center={lat},{lon}&z={z}&type=detailed'}
+  ],
+
+  getUrlByName: function (name) {
+    for (var i = 0; i < this.links.length; i++) {
+      var link = this.links[i];
+      if (link.name == name) return link.url;
+    }
+    return undefined;
+  },
+
+  init: function (listElem) {
+    if (Object.keys(this.links).length == 0) return;
+
+    var parent = $(listElem);
+    this.links.forEach(function (link) {
+      parent.append('<li><a href="#">' + link.name + '</a></li>');
+    });
+    parent.children('li').click(function () {
+      var view = olapp.map.getView();
+      var center = olapp.core.transformToWgs84(view.getCenter());
+      var url = olapp.tools.mapLinks.getUrlByName($(this).children('a').text());
+      url = url.replace('{lat}', center[1]).replace('{lon}', center[0]).replace('{z}', view.getZoom());
+      window.open(url);
     });
   }
 
