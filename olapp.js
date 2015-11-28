@@ -590,7 +590,7 @@ var olapp = {
     map.on('moveend', function (evt) {
       var view = map.getView();
       var center = core.transformToWgs84(view.getCenter());
-      window.location.hash = '#lat=' + center[1].toFixed(6) + '&lon=' + center[0].toFixed(6) + '&z=' + view.getZoom();
+      window.location.replace('#z=' + view.getZoom() + '&lat=' + center[1].toFixed(6) + '&lon=' + center[0].toFixed(6));
     });
 
     // Accept file drop
