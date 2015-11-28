@@ -31,7 +31,7 @@
     olapp.core.loadScripts(scripts, function () {
       var container = document.getElementById('webgl');
       var canvasWidth = parseInt(window.innerWidth * 0.9),
-          canvasHeight = parseInt((window.innerHeight - 70) * 0.9);
+          canvasHeight = parseInt((window.innerHeight - 70) * 0.85);
       $(container).width(canvasWidth).height(canvasHeight).html('');
       $('#dlg_threejs .modal-dialog').css('width', (canvasWidth + 30) + 'px');
 
