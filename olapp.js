@@ -1440,31 +1440,61 @@ olapp.tools.mapLinks = {
 
   links: [
     {name: 'GSI Maps', url: 'http://maps.gsi.go.jp/#{z}/{lat}/{lon}'},
-    {name: 'Seamless Digital Geological Map', url: 'https://gbank.gsj.jp/seamless/seamless2015/2d/?center={lat},{lon}&z={z}&type=detailed'}
+    {name: 'Google Maps', url: 'https://www.google.com/maps/@{lat},{lon},{z}z'},
+    null,
+    {name: 'Weather', links: [
+      {name: 'Weather Radar (Yahoo!地図)', url: 'http://map.yahoo.co.jp/maps?layer=weather&v=3&z={z}&lat={lat}&lon={lon}'}
+    ]},
+    {name: 'Geology', links: [
+      {name: 'Seamless Digital Geological Map', url: 'https://gbank.gsj.jp/seamless/seamless2015/2d/?center={lat},{lon}&z={z}&type=detailed'}
+    ]}
   ],
 
   getUrlByName: function (name) {
-    for (var i = 0; i < this.links.length; i++) {
-      var link = this.links[i];
-      if (link.name == name) return link.url;
+    function find(links, name) {
+      for (var i = 0; i < links.length; i++) {
+        var link = links[i];
+        if (link === null) continue;
+        if (link.url !== undefined) {
+          if (link.name == name) return link.url;
+        }
+        else if (link.links !== undefined) {
+          var url = find(link.links, name);
+          if (url !== undefined) return url;
+        }
+      }
+      return undefined;
     }
-    return undefined;
+    return find(this.links, name);
   },
 
   init: function (listElem) {
     if (Object.keys(this.links).length == 0) return;
 
-    var parent = $(listElem);
-    this.links.forEach(function (link) {
-      parent.append('<li><a href="#">' + link.name + '</a></li>');
-    });
-    parent.children('li').click(function () {
-      var view = olapp.map.getView();
-      var center = olapp.core.transformToWgs84(view.getCenter());
-      var url = olapp.tools.mapLinks.getUrlByName($(this).children('a').text());
-      url = url.replace('{lat}', center[1]).replace('{lon}', center[0]).replace('{z}', view.getZoom());
-      window.open(url);
-    });
+    function populateSubMenu(links, parentElem) {
+      var parent = $(parentElem);
+      links.forEach(function (link) {
+        if (link === null) parent.append('<li role="separator" class="divider"></li>');
+        else if (link.url !== undefined) {
+          $('<li><a href="#">' + link.name + '</a></li>').click(function () {
+            var view = olapp.map.getView();
+            var center = olapp.core.transformToWgs84(view.getCenter());
+            var url = olapp.tools.mapLinks.getUrlByName($(this).children('a').text());
+            url = url.replace('{lat}', center[1]).replace('{lon}', center[0]).replace('{z}', view.getZoom());
+            window.open(url);
+          }).appendTo(parentElem);
+        }
+        else if (link.links !== undefined) {
+          var listElem = document.createElement('ul');
+          listElem.className = 'dropdown-menu';
+
+          $('<li class="dropdown-submenu"><a href="#">' + link.name + '</a></li>').append(listElem).appendTo(parent);
+
+          populateSubMenu(link.links, listElem);
+        }
+      });
+    }
+    populateSubMenu(this.links, listElem);
   }
 
 };
