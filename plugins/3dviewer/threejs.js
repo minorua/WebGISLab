@@ -37,19 +37,25 @@
 
       var view = olapp.map.getView();
       var extent = view.calculateExtent(olapp.map.getSize());
-      var planeWidth = 200;
+      var center = olapp.core.transformToWgs84(view.getCenter());
+      var scaleFactor = 1;
+      if (projection == 'EPSG:3857') {
+        scaleFactor = 1 / Math.cos(ol.math.toRadians(center[1]));
+      }
+
+      var planeWidth = 250 / scaleFactor;
       var zExaggeration = 1.5;
 
       var project = new Q3D.Project({
         baseExtent: extent,
         rotation: 0,                      //
-        wgs84Center: {lat: 0, lon: 0},    //
+        wgs84Center: {lat: center[1], lon: center[0]},
         crs: projection,
         proj: projection,   //
         title: '',
         width: planeWidth,
         zShift: 0,
-        zExaggeration: zExaggeration      // TODO: scale factor (mercator) * exag.
+        zExaggeration: zExaggeration * scaleFactor
       });
 
       // map canvas image
