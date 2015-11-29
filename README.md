@@ -192,6 +192,14 @@ olapp.loadProject(new olapp.Project({
     description: '...'
   };
 
+  myplugin.init = function () {
+    var d = $.Deferred();
+    olapp.core.loadScripts(['js/olapp/module.js'], function () {
+      d.resolve();
+    });
+    return d.promise();
+  };
+
   ...
 
   olapp.plugin.addPlugin(myplugin);

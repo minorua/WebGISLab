@@ -1045,26 +1045,34 @@ var olapp = {
   plugin.register = function (pluginPath, module) {
     // Register and initialize the plugin
     plugin.plugins[pluginPath] = module;
-    if (module.init !== undefined) module.init();
 
-    // Call callback function
-    plugin._loadingSets.forEach(function (pluginSet) {
-      var index = pluginSet.plugins.indexOf(pluginPath);
-      if (index !== -1) {
-        pluginSet.plugins.splice(index, 1);
-        if (pluginSet.plugins.length == 0 && pluginSet.callback) pluginSet.callback();
+    var callback = function () {
+      // Call back if all the plugins in the set have been loaded.
+      plugin._loadingSets.forEach(function (pluginSet) {
+        var index = pluginSet.plugins.indexOf(pluginPath);
+        if (index !== -1) {
+          pluginSet.plugins.splice(index, 1);
+          if (pluginSet.plugins.length == 0 && pluginSet.callback) pluginSet.callback();
+        }
+      });
+
+      // Remove completely loaded plugin-set from the array.
+      for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
+        if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
       }
-    });
+    };
 
-    // Remove completely loaded plugin set from the array
-    for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
-      if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
-    }
+    var d;
+    if (module.init !== undefined) d = module.init();
+
+    // Call back when the plugin has been initialized.
+    if (typeof d == 'object') d.then(callback);
+    else callback();
   };
 
   // Load a plugin/plugins
   // pluginPaths: a plugin path string or an array of plugin paths.
-  // callback: callback is called once when all the plugins have been loaded.
+  // callback: callback is called once when all the plugins have been loaded and initialized.
   plugin.load = function (pluginPaths, callback) {
     if (typeof pluginPaths == 'string') pluginPaths = [pluginPaths];
 

@@ -12,6 +12,18 @@
   };
 
   plugin.init = function () {
+    var scripts = [
+      'js/threejs/three.min.js',
+      'js/Qgis2threejs/Qgis2threejs.js',
+      'js/threejs/controls/OrbitControls.js',
+      'js/olapp/demtile/gsielevtile.js'
+    ];
+
+    var d = $.Deferred();
+    olapp.core.loadScripts(scripts, function () {
+      d.resolve();
+    });
+    return d.promise();
   };
 
   plugin.run = function () {
@@ -22,117 +34,109 @@
       return;
     }
 
-    var scripts = [
-      'js/threejs/three.min.js',
-      'js/Qgis2threejs/Qgis2threejs.js',
-      'js/threejs/controls/OrbitControls.js',
-      'js/olapp/demtile/gsielevtile.js'
-    ];
-    olapp.core.loadScripts(scripts, function () {
-      var container = document.getElementById('webgl');
-      var canvasWidth = parseInt(window.innerWidth * 0.9),
-          canvasHeight = parseInt((window.innerHeight - 70) * 0.85);
-      $(container).width(canvasWidth).height(canvasHeight).html('');
-      $('#dlg_threejs .modal-dialog').css('width', (canvasWidth + 30) + 'px');
+    var container = document.getElementById('webgl');
+    var canvasWidth = parseInt(window.innerWidth * 0.9),
+        canvasHeight = parseInt((window.innerHeight - 70) * 0.85);
+    $(container).width(canvasWidth).height(canvasHeight).html('');
+    $('#dlg_threejs .modal-dialog').css('width', (canvasWidth + 30) + 'px');
 
-      var view = olapp.map.getView();
-      var extent = view.calculateExtent(olapp.map.getSize());
-      var center = olapp.core.transformToWgs84(view.getCenter());
-      var scaleFactor = 1;
-      if (projection == 'EPSG:3857') {
-        scaleFactor = 1 / Math.cos(ol.math.toRadians(center[1]));
-      }
+    var view = olapp.map.getView();
+    var extent = view.calculateExtent(olapp.map.getSize());
+    var center = olapp.core.transformToWgs84(view.getCenter());
+    var scaleFactor = 1;
+    if (projection == 'EPSG:3857') {
+      scaleFactor = 1 / Math.cos(ol.math.toRadians(center[1]));
+    }
 
-      var planeWidth = 250 / scaleFactor;
-      var zExaggeration = 1.5;
+    var planeWidth = 250 / scaleFactor;
+    var zExaggeration = 1.5;
 
-      var project = new Q3D.Project({
-        baseExtent: extent,
-        rotation: 0,                      //
-        wgs84Center: {lat: center[1], lon: center[0]},
-        crs: projection,
-        proj: projection,   //
-        title: '',
+    var project = new Q3D.Project({
+      baseExtent: extent,
+      rotation: 0,                      //
+      wgs84Center: {lat: center[1], lon: center[0]},
+      crs: projection,
+      proj: projection,   //
+      title: '',
+      width: planeWidth,
+      zShift: 0,
+      zExaggeration: zExaggeration * scaleFactor
+    });
+
+    // map canvas image
+    var mapCanvas = $('#map canvas').get(0);
+    project.images[0] = {
+      width: mapCanvas.width,
+      height: mapCanvas.height,
+      data: mapCanvas.toDataURL('image/png')
+    };
+
+    // DEM layer
+    var lyr = project.addLayer(new Q3D.DEMLayer({
+      type: 'dem',
+      name: 'GSI Elevation Tile',
+      m: [{i: 0, type: 1, ds: 1}],
+      shading: true,
+      q: 1
+    }));
+
+    var demWidth = 256,
+        demHeight = parseInt(demWidth * mapCanvas.height / mapCanvas.width);
+    var bl = lyr.addBlock({
+      width: demWidth,
+      height: demHeight,
+      plane: {
         width: planeWidth,
-        zShift: 0,
-        zExaggeration: zExaggeration * scaleFactor
-      });
+        offsetX: 0,
+        offsetY: 0,
+        height: planeWidth * mapCanvas.height / mapCanvas.width
+      },
+      m: 0,
+      sides: true
+    }, false);
 
-      // map canvas image
-      var mapCanvas = $('#map canvas').get(0);
-      project.images[0] = {
-        width: mapCanvas.width,
-        height: mapCanvas.height,
-        data: mapCanvas.toDataURL('image/png')
+    var dem = new olapp.demProvider.GSIElevTile();
+    dem.readBlock(extent, demWidth, demHeight, projection).then(function (data) {
+      // max and min value
+      var max = min = data[0], val;
+      for (var i = 0, l = data.length; i < l; i++) {
+        val = data[i];
+        if (max < val) max = val;
+        if (min > val) min = val;
+      }
+      lyr.stats = {
+        max: max,
+        min: min
       };
 
-      // DEM layer
-      var lyr = project.addLayer(new Q3D.DEMLayer({
-        type: 'dem',
-        name: 'GSI Elevation Tile',
-        m: [{i: 0, type: 1, ds: 1}],
-        shading: true,
-        q: 1
-      }));
+      var scale = project.zScale,
+          shift = -min;
+      project.origin.z = -shift;
+      for (var i = 0, l = data.length; i < l; i++) {
+        data[i] = (data[i] + shift) * scale;
+      }
+      bl.data = data;
 
-      var demWidth = 256,
-          demHeight = parseInt(demWidth * mapCanvas.height / mapCanvas.width);
-      var bl = lyr.addBlock({
-        width: demWidth,
-        height: demHeight,
-        plane: {
-          width: planeWidth,
-          offsetX: 0,
-          offsetY: 0,
-          height: planeWidth * mapCanvas.height / mapCanvas.width
-        },
-        m: 0,
-        sides: true
-      }, false);
+      var options = Q3D.Options;
+      options.bgcolor = 0xeeeeff;
 
-      var dem = new olapp.demProvider.GSIElevTile();
-      dem.readBlock(extent, demWidth, demHeight, projection).then(function (data) {
-        // max and min value
-        var max = min = data[0], val;
-        for (var i = 0, l = data.length; i < l; i++) {
-          val = data[i];
-          if (max < val) max = val;
-          if (min > val) min = val;
-        }
-        lyr.stats = {
-          max: max,
-          min: min
-        };
+      // Q3D application
+      var app = Q3D.application;
+      app.init(container);
+      app.loadProject(project);
 
-        var scale = project.zScale,
-            shift = -min;
-        project.origin.z = -shift;
-        for (var i = 0, l = data.length; i < l; i++) {
-          data[i] = (data[i] + shift) * scale;
-        }
-        bl.data = data;
+      // overrides
+      app.showQueryResult = function (point, layerId, featureId) {
+        // clicked coordinates
+        var pt = app.project.toMapCoordinates(point.x, point.y, point.z);
+        $('#threejs_info').html('Elevation: ' + pt.z.toFixed(2)).show();
+      };
+      app.closePopup = function () {
+        $('#threejs_info').hide();
+      };
 
-        var options = Q3D.Options;
-        options.bgcolor = 0xeeeeff;
-
-        // Q3D application
-        var app = Q3D.application;
-        app.init(container);
-        app.loadProject(project);
-
-        // overrides
-        app.showQueryResult = function (point, layerId, featureId) {
-          // clicked coordinates
-          var pt = app.project.toMapCoordinates(point.x, point.y, point.z);
-          $('#threejs_info').html('Elevation: ' + pt.z.toFixed(2)).show();
-        };
-        app.closePopup = function () {
-          $('#threejs_info').hide();
-        };
-
-        app.addEventListeners();
-        app.start();
-      });
+      app.addEventListeners();
+      app.start();
     });
   };
 
