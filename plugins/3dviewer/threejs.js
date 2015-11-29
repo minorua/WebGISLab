@@ -18,12 +18,7 @@
       'js/threejs/controls/OrbitControls.js',
       'js/olapp/demtile/gsielevtile.js'
     ];
-
-    var d = $.Deferred();
-    olapp.core.loadScripts(scripts, function () {
-      d.resolve();
-    });
-    return d.promise();
+    return olapp.core.loadScripts(scripts, true);
   };
 
   plugin.run = function () {
@@ -167,7 +162,7 @@
     demLayer.rebuild(true);
 
     var scripts = ['js/threejs/exporters/STLBinaryExporter.js', 'js/FileSaver.min.js'];
-    olapp.core.loadScripts(scripts, function () {
+    olapp.core.loadScripts(scripts).then(function () {
       var exporter = new THREE.STLBinaryExporter();
       var stlData = exporter.parse(demLayer.objectGroup).buffer;
       saveAs(new Blob([stlData]), "terrain.stl");

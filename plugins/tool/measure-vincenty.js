@@ -17,7 +17,7 @@
     var dir = 'js/geodesy/';
     core.loadScripts([dir + 'vector3d.js',
                       dir + 'latlon-ellipsoidal.js',
-                      dir + 'latlon-vincenty.js']);
+                      dir + 'latlon-vincenty.js'], true);
 
     $('#measure_length').parent().prop('title',
             'Measure geodesic distances. Two geodesic distances (on sphere and ellipsoid) are computed. The latter is calculated by Vincenty formula.');

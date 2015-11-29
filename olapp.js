@@ -103,29 +103,44 @@ var olapp = {
   };
 
   // Load a script if not loaded yet
-  core.loadScript = function (url, callback) {
+  core.loadScript = function (url) {
+    var d = $.Deferred();
     if ($('script[src="' + url + '"]').length) {
       console.log('Already loaded:', url);
-      if (callback) callback();
-      return;
+      window.setTimeout(function () {
+        d.resolve();
+      }, 0);
+      return d.promise();
     }
 
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    if (callback) s.onload = callback;
+    s.onload = function () { d.resolve(); };
     s.src = url;
     document.getElementsByTagName('head')[0].appendChild(s);
+    return d.promise();
   };
 
-  // Load multiple scripts sequentially
-  core.loadScripts = function (urls, callback) {
-    if (urls.length) {
-      core.loadScript(urls[0], function () {
-        core.loadScripts(urls.slice(1), callback);
+  // Load multiple scripts
+  core.loadScripts = function (urls, async) {
+    if (async) {
+      var d = $.Deferred();
+      core.loadScript(urls.shift()).then(function () {
+        if (urls.length == 0) d.resolve();
+        else {
+          core.loadScripts(urls, true).then(function () {
+            d.resolve();
+          });
+        }
       });
+      return d.promise();
     }
-    else {  // No script to be loaded remains
-      if (callback) callback();
+    else {
+      var loads = [];
+      for (var i = 0; i < urls.length; i++) {
+        loads.push(core.loadScript(urls[i]));
+      }
+      return $.when.apply(this, loads);
     }
   };
 
@@ -472,7 +487,7 @@ var olapp = {
     },
 
     saveToFile: function () {
-      core.loadScript('js/FileSaver.min.js', function () {
+      core.loadScript('js/FileSaver.min.js').then(function () {
         var blob = new Blob([olapp.project.toString()], {type: 'text/plain;charset=utf-8'});
         saveAs(blob, "project.js");
       });

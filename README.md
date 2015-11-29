@@ -193,11 +193,7 @@ olapp.loadProject(new olapp.Project({
   };
 
   myplugin.init = function () {
-    var d = $.Deferred();
-    olapp.core.loadScripts(['js/olapp/module.js'], function () {
-      d.resolve();
-    });
-    return d.promise();
+    return olapp.core.loadScripts(['js/olapp/module1.js', 'js/olapp/module2.js'], true);   // load asynchronously
   };
 
   ...
