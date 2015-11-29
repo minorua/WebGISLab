@@ -960,8 +960,9 @@ var olapp = {
         return plugin.plugins['3dviewer/threejs.js'];
       };
       $('#dlg_threejs').on('show.bs.modal', function () {
-        // TODO: the plugin should be loaded here
-        threejs().run();
+        plugin.load(['3dviewer/threejs.js'], function () {
+          threejs().run();
+        });
       });
       $('#dlg_threejs').on('hide.bs.modal', function () {
         threejs().stop();
@@ -1605,7 +1606,7 @@ olapp.createDefaultProject = function () {
       maxZoom: 18,
       zoom: 5
     }),
-    plugins: ['source/naturalearth.js', 'source/gsitiles.js', '3dviewer/threejs.js'],
+    plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
     layers: [   // from bottom to top
       {source: 'GSITiles', layer: 'std'},                                // 標準地図
       {source: 'GSITiles', layer: 'relief', options: {visible: false}},  // 色別標高図
