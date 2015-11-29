@@ -379,7 +379,7 @@ var olapp = {
       // prj is an instance of olapp.Project
       if (prj.plugins.length > 0) {
         // Load plugins
-        plugin.load(prj.plugins, function () {
+        plugin.load(prj.plugins).then(function () {
           // Set the project to the application after the plugins are loaded.
           core.project.set(prj);
           projectLoaded();
@@ -975,7 +975,7 @@ var olapp = {
         return plugin.plugins['3dviewer/threejs.js'];
       };
       $('#dlg_threejs').on('show.bs.modal', function () {
-        plugin.load(['3dviewer/threejs.js'], function () {
+        plugin.load(['3dviewer/threejs.js']).then(function () {
           threejs().run();
         });
       });
@@ -1067,7 +1067,7 @@ var olapp = {
         var index = pluginSet.plugins.indexOf(pluginPath);
         if (index !== -1) {
           pluginSet.plugins.splice(index, 1);
-          if (pluginSet.plugins.length == 0 && pluginSet.callback) pluginSet.callback();
+          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();
         }
       });
 
@@ -1086,9 +1086,9 @@ var olapp = {
   };
 
   // Load a plugin/plugins
-  // pluginPaths: a plugin path string or an array of plugin paths.
-  // callback: callback is called once when all the plugins have been loaded and initialized.
-  plugin.load = function (pluginPaths, callback) {
+  //   pluginPaths: a plugin path string or an array of plugin paths.
+  // Returns a deferred object which is resolved when all the plugins have been loaded and initialized.
+  plugin.load = function (pluginPaths) {
     if (typeof pluginPaths == 'string') pluginPaths = [pluginPaths];
 
     // add scripts
@@ -1104,15 +1104,19 @@ var olapp = {
       loadingPlugins.push(pluginPath);
     });
 
+    var d = $.Deferred();
     if (loadingPlugins.length == 0) {
-      if (callback) callback();
+      window.setTimeout(function () {
+        d.resolve();
+      }, 0);
     }
     else {
       plugin._loadingSets.push({
         plugins: loadingPlugins,
-        callback: callback
+        deferred: d
       });
     }
+    return d.promise();
   };
 
 })();
