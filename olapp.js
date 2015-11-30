@@ -116,7 +116,7 @@ var olapp = {
     if (sel.length) {
       console.log('Already loaded:', url);
       window.setTimeout(function () {
-        d.resolve(sel.get(0));    // TODO: test
+        d.resolve(sel.get(0));
       }, 0);
       return d.promise();
     }
@@ -335,8 +335,6 @@ var olapp = {
       gui.clearLayerList();
     },
 
-    _loadCallback: null,
-
     _loadDeferred: null,
     _loadPromise: null,
 
@@ -344,7 +342,7 @@ var olapp = {
 
     _loadingScripts: {},    // script elements to load layer source data
 
-    _scriptElement: null,   // script element to load a project
+    _scriptElement: null,   // script element of a project
 
     // Load a project
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
@@ -392,10 +390,6 @@ var olapp = {
             // TODO: status message
           }
           reader.readAsText(prj, 'UTF-8');
-        }
-        else {
-          // TODO: load project in JSON format
-          // prj = new olapp.Project
         }
 
         d = core.project._loadDeferred = $.Deferred();
@@ -594,7 +588,7 @@ var olapp = {
     $('#layer_list').sortable({
       axis: 'y',
       stop: function (event, ui) {
-        gui.updateLayerOrder();
+        gui.layerOrderChanged();
       }
     });
 
@@ -769,8 +763,7 @@ var olapp = {
     $('#layer_list').html('');
   };
 
-  // TODO: layerOrderChanged
-  gui.updateLayerOrder = function () {
+  gui.layerOrderChanged = function () {
     var project = olapp.project;
     project.mapLayers = [];
 

@@ -193,7 +193,7 @@ olapp.loadProject(new olapp.Project({
   };
 
   myplugin.init = function () {
-    return olapp.core.loadScripts(['js/olapp/module1.js', 'js/olapp/module2.js'], true);   // load asynchronously
+    return olapp.core.loadScripts(['js/olapp/module1.js', 'js/olapp/module2.js'], true);   // pass true as 2nd parameter to load scripts one by one
   };
 
   ...
