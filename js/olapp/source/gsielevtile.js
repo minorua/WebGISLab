@@ -157,8 +157,15 @@
         };
       }
       else if (mode == 'hillshade') {
-        for (var i = 0; i < 256; i++) {
-          myColorMap.push({r: i, g: i, b: i});
+        if (colorMap === undefined) {
+          for (var i = 0; i < 256; i++) {
+            myColorMap.push({r: i, g: i, b: i});
+          }
+        }
+        else {
+          for (var i = 0; i < 256; i++) {
+            myColorMap.push(this.getColor(i, 0));
+          }
         }
 
         var azimuth = 315;
@@ -176,7 +183,7 @@
           var slope = half_pi - Math.atan(Math.sqrt(x * x + y * y));
           var aspect = Math.atan2(-y, x);
           var shade = sin_alt * Math.sin(slope) + cos_alt * Math.cos(slope) * Math.cos(az - half_pi - aspect);
-          return 255 * ((shade > 0) ? shade : 0);
+          return 255 * (shade + 1) / 2;
         };
       }
 
