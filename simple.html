@@ -86,7 +86,7 @@ For example:
   if (olapp.control === undefined) olapp.control = {};
   olapp.control.Threejs = function (options) {
     var button = document.createElement('button');
-    $(button).html('3D').click(function () {
+    $(button).html('3D').attr('title', 'Open 3D viewer (three.js)').click(function () {
       $('#dlg_threejs').modal('show');
     });
 
@@ -102,7 +102,7 @@ For example:
 
   olapp.control.About = function (options) {
     var button = document.createElement('button');
-    $(button).html('i').click(function () {
+    $(button).html('i').attr('title', 'About').click(function () {
       $('#dlg_about').modal('show');
     });
 
