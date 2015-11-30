@@ -585,12 +585,15 @@ var olapp = {
     });
 
     // layer list
-    $('#layer_list').sortable({
-      axis: 'y',
-      stop: function (event, ui) {
-        gui.layerOrderChanged();
-      }
-    });
+    var layerList = $('#layer_list');
+    if (layerList.length) {
+      layerList.sortable({
+        axis: 'y',
+        stop: function (event, ui) {
+          gui.layerOrderChanged();
+        }
+      });
+    }
 
     // Initialize dialogs
     for (var k in gui.dialog) {
@@ -950,25 +953,28 @@ var olapp = {
         }
       });
 
-      var dlg = $('#dlg_measure').draggable({handle: ".dlg-header"});
-      dlg.find('.close').click(function () {
-        $('#dlg_measure').hide();
-          stopMeasure();
-      });
-      dlg.find('input').change(restartMeasure);
+      var dlg = $('#dlg_measure');
+      if (dlg.length) {
+        dlg.draggable({handle: ".dlg-header"});
+        dlg.find('.close').click(function () {
+          $('#dlg_measure').hide();
+            stopMeasure();
+        });
+        dlg.find('input').change(restartMeasure);
 
-      $('#measure_redo').addClass('disabled').click(function () {
-        this.blur();
-        if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.removeLastPoint();
-      });
-      $('#measure_fin').addClass('disabled').click(function () {
-        this.blur();
-        if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.finishDrawing();
-      });
-      $('#measure_clear').click(function () {
-        this.blur();
-        restartMeasure();
-      });
+        $('#measure_redo').addClass('disabled').click(function () {
+          this.blur();
+          if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.removeLastPoint();
+        });
+        $('#measure_fin').addClass('disabled').click(function () {
+          this.blur();
+          if (!$(this).hasClass('disabled')) olapp.tools.measure.draw.finishDrawing();
+        });
+        $('#measure_clear').click(function () {
+          this.blur();
+          restartMeasure();
+        });
+      }
     }
 
   };
