@@ -1534,6 +1534,13 @@ olapp.tools.mapLinks = {
       });
     }
     populateSubMenu(this.links, listElem);
+
+    // touch device support
+    $('#navbar .dropdown-submenu>a').click(function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      $(this).next('ul').show();
+    });
   }
 
 };
