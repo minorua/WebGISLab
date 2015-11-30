@@ -48,8 +48,10 @@ var olapp = {
     gui.init(map);
 
     if (olapp.projectToLoad) {
-      olapp.loadProject(olapp.projectToLoad.project, olapp.projectToLoad.callback);
-      delete olapp.projectToLoad;
+      olapp.loadProject(olapp.projectToLoad.project),then(function () {
+        olapp.projectToLoad.deferred.resolve();
+        delete olapp.projectToLoad;
+      });
     }
     else {
       // If project parameter is specified in URL, load the file.
@@ -71,9 +73,14 @@ var olapp = {
   };
 
   // loadProject()
-  olapp.loadProject = function (project, callback) {
-    if (olapp.map) core.project.load(project, callback);
-    else olapp.projectToLoad = {project: project, callback: callback};  // will be loaded after initialization
+  olapp.loadProject = function (project) {
+    if (olapp.map) return core.project.load(project);
+
+    // Project will be loaded after initialization
+    if (olapp.projectToLoad) olapp.projectToLoad.deferred.reject();
+    var d = $.Deferred();
+    olapp.projectToLoad = {project: project, deferred: d};
+    return d.promise();
   };
 
   // olapp.core
@@ -105,25 +112,26 @@ var olapp = {
   // Load a script if not loaded yet
   core.loadScript = function (url) {
     var d = $.Deferred();
-    if ($('script[src="' + url + '"]').length) {
+    var sel = $('script[src="' + url + '"]');
+    if (sel.length) {
       console.log('Already loaded:', url);
       window.setTimeout(function () {
-        d.resolve();
+        d.resolve(sel.get(0));    // TODO: test
       }, 0);
       return d.promise();
     }
 
     var s = document.createElement('script');
     s.type = 'text/javascript';
-    s.onload = function () { d.resolve(); };
+    s.onload = function () { d.resolve(s); };
     s.src = url;
     document.getElementsByTagName('head')[0].appendChild(s);
     return d.promise();
   };
 
   // Load multiple scripts
-  core.loadScripts = function (urls, async) {
-    if (async) {
+  core.loadScripts = function (urls, onebyone) {
+    if (onebyone) {
       var d = $.Deferred();
       core.loadScript(urls.shift()).then(function () {
         if (urls.length == 0) d.resolve();
@@ -329,6 +337,9 @@ var olapp = {
 
     _loadCallback: null,
 
+    _loadDeferred: null,
+    _loadPromise: null,
+
     _loadingLayers: {},
 
     _loadingScripts: {},    // script elements to load layer source data
@@ -337,58 +348,60 @@ var olapp = {
 
     // Load a project
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
-    //   callback: Callback function. If specified, called when the code to load a project has been executed.
-    load: function (prj, callback) {
-      if (typeof prj == 'string') {
+    // Returns a deferred object which is resolved when the project has been loaded to application.
+    load: function (prj) {
+      var d, p;
+      if (prj instanceof olapp.Project) {
+        d = core.project._loadDeferred || $.Deferred();
+        p = core.project._loadPromise || d.promise();
+
+        var setProject = function () {
+          core.project.set(prj);
+          core.project._loadDeferred = core.project._loadPromise = null;
+          d.resolve();
+        };
+
+        // Load and initialize plugins, and then set the project.
+        if (prj.plugins.length > 0) plugin.load(prj.plugins).then(setProject);
+        else window.setTimeout(setProject, 0);
+
+        return p;
+      }
+      else {
+        d = core.project._loadDeferred;
+        if (d) {
+          console.log('Another project starts to load before previous one finishes loading.');
+          d.reject();
+        }
+
         // Remove project script element if exists
         var head = document.getElementsByTagName('head')[0];
         if (core.project._scriptElement) head.removeChild(core.project._scriptElement);
         core.project._scriptElement = null;
 
-        var s = document.createElement('script');
-        s.type = 'text/javascript';
-        s.src = prj;
-        head.appendChild(s);
-        core.project._scriptElement = s;
-
-        // olapp.loadProject() will be called from the project file again.
-        core.project._loadCallback = callback;
-        return;
-      }
-      else if (prj instanceof File) {
-        var reader = new FileReader();
-        reader.onload = function (event) {
-          eval(reader.result);
-          // TODO: status message
+        if (typeof prj == 'string') {
+          // Load a project script
+          core.loadScript(prj).then(function (elem) {
+            core.project._scriptElement = elem;
+          });
         }
-        reader.readAsText(prj, 'UTF-8');
-        return;
-      }
-      else if (!(prj instanceof olapp.Project)) {
-        // TODO: load project in JSON format
-        // prj = new olapp.Project
-      }
+        else if (prj instanceof File) {
+          var reader = new FileReader();
+          reader.onload = function (event) {
+            eval(reader.result);
+            // TODO: status message
+          }
+          reader.readAsText(prj, 'UTF-8');
+        }
+        else {
+          // TODO: load project in JSON format
+          // prj = new olapp.Project
+        }
 
-      // Call this when project has been loaded
-      var projectLoaded = function () {
-        if (callback) callback();
-        else if (core.project._loadCallback) core.project._loadCallback();
-        core.project._loadCallback = null;
-      };
-
-      // prj is an instance of olapp.Project
-      if (prj.plugins.length > 0) {
-        // Load plugins
-        plugin.load(prj.plugins).then(function () {
-          // Set the project to the application after the plugins are loaded.
-          core.project.set(prj);
-          projectLoaded();
-        });
-        return;
+        d = core.project._loadDeferred = $.Deferred();
+        p = core.project._loadPromise = d.promise();
+        return p;
       }
-
-      core.project.set(prj);
-      projectLoaded();
     },
 
     set: function (project) {
@@ -1055,36 +1068,6 @@ var olapp = {
   plugin.plugins = {};
   plugin._loadingSets = [];
 
-  // Add a plugin to the application
-  // register() is called from end of a plugin code, whereas load() is called from project/gui.
-  plugin.register = function (pluginPath, module) {
-    // Register and initialize the plugin
-    plugin.plugins[pluginPath] = module;
-
-    var callback = function () {
-      // Call back if all the plugins in the set have been loaded.
-      plugin._loadingSets.forEach(function (pluginSet) {
-        var index = pluginSet.plugins.indexOf(pluginPath);
-        if (index !== -1) {
-          pluginSet.plugins.splice(index, 1);
-          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();
-        }
-      });
-
-      // Remove completely loaded plugin-set from the array.
-      for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
-        if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
-      }
-    };
-
-    var d;
-    if (module.init !== undefined) d = module.init();
-
-    // Call back when the plugin has been initialized.
-    if (typeof d == 'object') d.then(callback);
-    else callback();
-  };
-
   // Load a plugin/plugins
   //   pluginPaths: a plugin path string or an array of plugin paths.
   // Returns a deferred object which is resolved when all the plugins have been loaded and initialized.
@@ -1117,6 +1100,35 @@ var olapp = {
       });
     }
     return d.promise();
+  };
+
+  // Register a plugin
+  // register() is called from end of a plugin code, whereas load() is called from project/gui.
+  plugin.register = function (pluginPath, module) {
+    // Register and initialize the plugin
+    plugin.plugins[pluginPath] = module;
+
+    var resolve = function () {
+      // Resolve deferred object if all the plugins in the set have been loaded and initialized.
+      plugin._loadingSets.forEach(function (pluginSet) {
+        var index = pluginSet.plugins.indexOf(pluginPath);
+        if (index !== -1) {
+          pluginSet.plugins.splice(index, 1);
+          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();
+        }
+      });
+
+      // Remove completely loaded plugin-set from the array.
+      for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
+        if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
+      }
+    };
+
+    var d;
+    if (module.init !== undefined) d = module.init();
+
+    if (typeof d == 'object') d.then(resolve);
+    else resolve();
   };
 
 })();

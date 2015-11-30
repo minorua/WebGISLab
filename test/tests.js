@@ -8,7 +8,7 @@ var projectsToTest = [
 projectsToTest.forEach(function (project) {
   QUnit.test('Project loading:' + project.title, function(assert) {
     var done = assert.async();
-    olapp.loadProject(project.filename, function () {
+    olapp.loadProject(project.filename).then(function () {
       assert.ok(olapp.project.title == project.title, project.title + ' loaded');
       assert.ok(olapp.project.mapLayers.length > 0, olapp.project.mapLayers.length + ' layers loaded');
       olapp.project.mapLayers.forEach(function (layer) {
