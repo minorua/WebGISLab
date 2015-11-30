@@ -182,8 +182,8 @@
               y = ((w[6] + 2 * w[7] + w[8]) - (w[0] + 2 * w[1] + w[2])) / nsres;
           var slope = half_pi - Math.atan(Math.sqrt(x * x + y * y));
           var aspect = Math.atan2(-y, x);
-          var shade = sin_alt * Math.sin(slope) + cos_alt * Math.cos(slope) * Math.cos(az - half_pi - aspect);
-          return 255 * (shade + 1) / 2;
+          var light = sin_alt * Math.sin(slope) + cos_alt * Math.cos(slope) * Math.cos(az - half_pi - aspect);
+          return 255 * (light + 1) / 2;
         };
       }
 

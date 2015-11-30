@@ -85,7 +85,7 @@ a.btn {
   width: 175px;
 }
 a.btn-blendmode {
-  padding: 2px;
+  padding: 1px 4px;
 }
 a.btn-blendmode span {
   color: lightgray;

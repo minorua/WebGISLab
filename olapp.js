@@ -694,14 +694,14 @@ var olapp = {
         var html =
 '<div class="layer-sub-container">' +
 '  <div class="layer-button-container">' +
-'    <button class="btn btn-zoomtolayer" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
-'    <button class="btn btn-attrtable" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
-'    <button class="btn btn-removelayer" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
+'    <button class="btn btn-default btn-zoomtolayer disabled" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+'    <button class="btn btn-default btn-attrtable disabled" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+'    <button class="btn btn-default btn-removelayer" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
 '  </div><div>' +
 '    <div style="float:left;">' +
 '      <div class="opacity-slider" title="Opacity"></div>' +
 '    </div><div style="float:right;">' +
-'      <a href="#" class="btn btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
+'      <a href="#" class="btn btn-default btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
 '    </div>' +
 '  </div>' +
 '</div>';
