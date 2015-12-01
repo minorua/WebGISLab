@@ -987,6 +987,7 @@ var olapp = {
         return plugin.plugins['3dviewer/threejs.js'];
       };
       $('#dlg_threejs').on('show.bs.modal', function () {
+        $('#three_rotate').removeClass('active');
         plugin.load(['3dviewer/threejs.js']).then(function () {
           threejs().run();
         });
