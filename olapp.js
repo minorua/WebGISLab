@@ -418,7 +418,8 @@ var olapp = {
           var layerOptions = {
             olapp: {
               source: lyr.source,
-              layer: lyr.layer
+              layer: lyr.layer,
+              style: lyr.style
             }
           };
           $.extend(layerOptions, lyr.options);
@@ -488,6 +489,15 @@ var olapp = {
 
       if (typeof source == 'function') source = source();
       core.project._loadingLayers[url].forEach(function (layer) {
+        var style = layer.get('olapp').style;
+        if (style !== undefined) {
+          // Set style to features
+          var styleFunc = core.createStyleFunction(style.color);
+          var features = source.getFeatures();
+          for (var i = 0, l = features.length; i < l; i++) {
+            features[i].setStyle(styleFunc(features[i]));
+          }
+        }
         layer.setSource(source);
       });
       delete core.project._loadingLayers[url];
@@ -770,13 +780,13 @@ var olapp = {
                   callback: function () {
                     $(this).parent().find('.active').removeClass('active');
 
-                    // Set feature style
                     if (layer instanceof ol.layer.Vector) {
                       var color = $('#lyr_color').val();
                       var obj = layer.get('olapp');
                       obj.style = obj.style || {};
                       obj.style.color = color;
 
+                      // Set style to features
                       var styleFunc = core.createStyleFunction(color);
                       var features = layer.getSource().getFeatures();
                       for (var i = 0, l = features.length; i < l; i++) {
