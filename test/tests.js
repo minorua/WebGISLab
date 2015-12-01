@@ -1,6 +1,7 @@
 // olapp.project
 // load projects
 var projectsToTest = [
+  {title: '飛び出せ ニッポン! (Beta)', filename: 'files/japan3d.js'},
   {title: 'Experimental Project', filename: 'files/experimental.js'},
   {title: 'Experimental UTM53 Project', filename: 'files/experimental_utm53.js'}
 ];
