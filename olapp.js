@@ -516,6 +516,7 @@ var olapp = {
     });
 
     $('#prj_open').click(function () {
+      alert('Not implemented yet');
     });
 
     $('#prj_save').click(function () {
@@ -547,7 +548,7 @@ var olapp = {
     $('#prj_properties').click(function () {
       var project = olapp.project;
       var html =
-'<table class="prj-properties">' +
+'<table id="prj_properties">' +
 '<tr><td>Title</td><td>' + project.title + '</td></tr>' +
 '<tr><td>CRS</td><td>' + project.view.getProjection().getCode() + '</td></tr>' +
 '</table>';
@@ -564,6 +565,7 @@ var olapp = {
     });
 
     $('#print').click(function () {
+      alert('Not implemented yet');
     });
 
     $('#save_image').click(function () {
@@ -682,7 +684,8 @@ var olapp = {
     var switchExpansion = function (e) {
       e.stopPropagation();
 
-      var layerId = item.attr('id');
+      var layerId = item.attr('id'),
+          layer = mapLayers[layerId];
       $('#layer_list .glyphicon-chevron-up').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
       $('#layer_list .layer-sub-container').slideUp('fast', function () {
         $(this).remove();
@@ -691,56 +694,119 @@ var olapp = {
       if ($(this).parent().find('.layer-sub-container').length == 0) {
         $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
+        // buttons and slider
+        var extent = layer.getExtent();
+        if (extent === undefined && layer.getSource !== undefined) extent = layer.getSource().getExtent();
+
+        var hasButtons = [(extent !== undefined), false, true, true];
+        var emptyButton = '<button class="btn btn-default btn-empty disabled"></button>';
         var html =
 '<div class="layer-sub-container">' +
-'  <div class="layer-button-container">' +
-'    <button class="btn btn-default btn-zoomtolayer disabled" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
-'    <button class="btn btn-default btn-attrtable disabled" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
-'    <button class="btn btn-default btn-removelayer" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
-'  </div><div>' +
-'    <div style="float:left;">' +
-'      <div class="opacity-slider" title="Opacity"></div>' +
-'    </div><div style="float:right;">' +
-'      <a href="#" class="btn btn-default btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a>' +
-'    </div>' +
+'  <div>' +
+'    <button class="btn btn-default btn-zoomtolayer' + (hasButtons[0] ? '' : ' disabled') + '" title="Zoom to layer extent"><span class="glyphicon glyphicon-zoom-in"></span></button>' +
+'    <button class="btn btn-default btn-attrtable' + (hasButtons[1] ? '' : ' disabled') + '" title="Show attribute table"><span class="glyphicon glyphicon-list-alt"></span></button>' +
+'    <button class="btn btn-default btn-properties' + (hasButtons[2] ? '' : ' disabled') + '" title="Properties"><span class="glyphicon glyphicon-cog"></span></button>' +
+'    <button class="btn btn-default btn-removelayer' + (hasButtons[3] ? '' : ' disabled') + '" title="Remove layer"><span class="glyphicon glyphicon-trash"></span></button>' +
 '  </div>' +
+'  <div class="opacity-slider" title="Opacity"></div>' +
+'  <div><a href="#" class="btn btn-default btn-blendmode" title="Multipy blending mode"><span class="glyphicon glyphicon-tint"></span></a></div>' +
 '</div>';
 
         item.append(html);
 
-        if (mapLayers[layerId].get('blendMode') == 'multiply') {
+        if (layer.get('blendMode') == 'multiply') {
           item.find('.btn-blendmode span').addClass('active');
         }
 
         item.find('.opacity-slider').slider({
           change: function (event, ui) {
             var opacity = ui.value / 100;
-            mapLayers[layerId].setOpacity(opacity);
+            layer.setOpacity(opacity);
           },
           slide: function (event, ui) {
             var opacity = ui.value / 100;
-            mapLayers[layerId].setOpacity(opacity);
+            layer.setOpacity(opacity);
           },
-          value: mapLayers[layerId].getOpacity() * 100
+          value: layer.getOpacity() * 100
         });
 
-        item.find('.layer-button-container .btn').click(function () {
-          if ($(this).hasClass('btn-removelayer')) {
+        item.find('.layer-sub-container .btn').click(function () {
+          if ($(this).hasClass('btn-properties')) {
+            var html =
+'<div id="lyr_properties">' +
+'  <h3>General</h3>' +
+'  <table>' +
+'    <tr><td>Source</td><td>' + layer.get('olapp').source + '</td></tr>' +
+'    <tr><td>Layer</td><td>' + layer.get('olapp').layer + '</td></tr>' +
+'  </table>' +
+'</div>';
+
+            var obj = $(html);
+            if (layer instanceof ol.layer.Vector) {
+              var color = 'red';
+              html =
+'<h3>Style</h3>' +
+'<table>' +
+'<tr><td>Color</td><td><input type="text" id="lyr_color"><div /></td></tr>' +
+'</table>';
+              var subObj = $(html);
+              subObj.find('input').on('keyup paste change', function () {
+                $(this).next().css('background-color', 'white').css('background-color', $(this).val());
+              }).val(color).keyup();
+              obj.append(subObj);
+            }
+
+            bootbox.dialog({
+              title: 'Layer Properties - ' + layer.get('title'),
+              message: obj,
+              buttons: {
+                ok: {
+                  label: 'OK',
+                  className: "btn-primary",
+                  callback: function () {
+                    $(this).parent().find('.active').removeClass('active');
+
+                    // set layer style
+                    if (layer instanceof ol.layer.Vector) {
+                      var color = $('#lyr_color').val();
+                      var obj = layer.get('olapp');
+                      obj.style = obj.style || {};
+                      obj.style.color = color;
+                      layer.setStyle(core.createStyleFunction(color));
+                    }
+                  }
+                },
+                cancel: {
+                  label: 'Cancel',
+                  className: "btn-default",
+                  callback: function () {
+                    $(this).parent().find('.active').removeClass('active');
+                  }
+                }
+              }
+            });
+          }
+          else if ($(this).hasClass('btn-removelayer')) {
             bootbox.confirm("Are you sure you want to remove this layer?", function(result) {
               if (result) olapp.core.project.removeLayer(layerId);
+              else $(this).parent().find('.active').removeClass('active');
             });
           }
           else if ($(this).hasClass('btn-zoomtolayer')) {
+            var extent = layer.getExtent();
+            if (!extent && layer.getSource()) extent = layer.getSource().getExtent();
+            if (extent) map.getView().fit(extent, map.getSize());
           }
           else {    // btn-attrtable
+            alert('Not implemented yet');
           }
         });
 
         item.find('.btn-blendmode').click(function (e) {
           e.stopPropagation();
 
-          var blendMode = (mapLayers[layerId].get('blendMode') == 'source-over') ? 'multiply' : 'source-over';
-          mapLayers[layerId].set('blendMode', blendMode);
+          var blendMode = (layer.get('blendMode') == 'source-over') ? 'multiply' : 'source-over';
+          layer.set('blendMode', blendMode);
 
           var target = $(this);
           if (target.prop('tagName') == 'A') target = target.children();
@@ -1583,6 +1649,45 @@ olapp.tools.geocoding.Nominatim = {
 
 };
 
+olapp.core.createStyleFunction = function (strokeColor, strokeWidth, fillColor) {
+  if (strokeWidth === undefined) strokeWidth = 1;
+
+  var strokeStyle, fillStyle;
+  strokeStyle = new ol.style.Stroke({
+    color: strokeColor,
+    width: strokeWidth
+  });
+
+  if (fillColor !== undefined) {
+    fillStyle = new ol.style.Fill({
+      color: fillColor
+    });
+  }
+  var style = {
+    'Point': [new ol.style.Style({
+      image: new ol.style.Circle({
+        stroke: strokeStyle,
+        fill: fillStyle,
+        radius: 5
+      })
+    })],
+    'LineString': [new ol.style.Style({
+      stroke: strokeStyle
+    })],
+    'Polygon': [new ol.style.Style({
+      stroke: strokeStyle,
+      fill: fillStyle
+    })]
+  };
+  style.MultiPoint = style.Point;
+  style.MultiLineString = style.LineString;
+  style.MultiPolygon = style.Polygon;
+
+  return function (feature, resolution) {
+    return style[feature.getGeometry().getType()];
+  };
+};
+
 
 olapp.defaultStyle = {
   'Point': [new ol.style.Style({
@@ -1611,35 +1716,11 @@ olapp.defaultStyle = {
       color: '#0ff',
       width: 1
     })
-  })],
-  'MultiPoint': [new ol.style.Style({
-    image: new ol.style.Circle({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,0,255,0.5)'
-      }),
-      radius: 5,
-      stroke: new ol.style.Stroke({
-        color: '#f0f',
-        width: 1
-      })
-    })
-  })],
-  'MultiLineString': [new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: '#0f0',
-      width: 3
-    })
-  })],
-  'MultiPolygon': [new ol.style.Style({
-    fill: new ol.style.Fill({
-      color: 'rgba(0,0,255,0.5)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#00f',
-      width: 1
-    })
   })]
 };
+olapp.defaultStyle.MultiPoint = olapp.defaultStyle.Point;
+olapp.defaultStyle.MultiLineString = olapp.defaultStyle.LineString;
+olapp.defaultStyle.MultiPolygon = olapp.defaultStyle.Polygon;
 
 
 olapp.createDefaultProject = function () {

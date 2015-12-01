@@ -27,6 +27,7 @@ html, body {
 }
 .btn.disabled {
   cursor: auto;
+  opacity: 0.1;
 }
 .btn-default.focus, .btn-default:focus {
   outline: 0 none;
@@ -74,15 +75,23 @@ nav .container {
 a.btn {
   color: gray;
 }
-.layer-sub-container {
-  margin-top: 10px;
+#layer_list .list-group-item>input {
+  margin-right: 2px;
+}
+div.layer-sub-container {
   display: none;
-  float: clear;
+  clear: both;
+  margin-top: 10px;
   height: 60px;
 }
-.opacity-slider {
+div.opacity-slider {
+  float: left;
   margin: 8px 0;
   width: 175px;
+}
+div.opacity-slider + div {
+  float: right;
+  margin-left: 15px;
 }
 a.btn-blendmode {
   padding: 1px 4px;
@@ -96,21 +105,39 @@ a.btn-blendmode span.active {
 
 
 /* project properties */
-.prj-properties {
+#prj_properties {
 
 }
 
-.prj-properties td:first-child {
+#prj_properties td:first-child {
   width: 60px;
 }
 
-.prj-properties td:last-child {
+#prj_properties td:last-child {
   font-weight: bold;
 }
 
-.prj-properties tr:nth-child(odd) {
+#prj_properties tr:nth-child(odd) {
 }
 
+
+/* layer properties dialog */
+#lyr_properties h3:first-child {
+  margin-top: 0;
+}
+
+#lyr_properties table td:first-child {
+  width: 60px;
+}
+
+#lyr_color + div {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 3px;
+  border: 1px solid black;
+  width: 26px;
+  height: 26px;
+}
 
 /* add layer dialog */
 #dlg_addlayer {
@@ -137,6 +164,7 @@ a.btn-blendmode span.active {
   height: 300px;
   overflow: auto;
 }
+
 
 /* measure dialog */
 #dlg_measure {
