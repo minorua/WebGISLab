@@ -171,7 +171,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  core.loadText = function (text, format) {
+  core.loadText = function (text, filename, format) {
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
@@ -188,10 +188,10 @@ var olapp = {
       ol.format.TopoJSON
     ];
 
-    return core._loadText(text, formatConstructors);
+    return core._loadText(text, filename, formatConstructors);
   };
 
-  core._loadText = function (text, formatConstructors) {
+  core._loadText = function (text, filename, formatConstructors) {
     var transform = core.transformFromWgs84;
 
     for (var i = 0; i < formatConstructors.length; i++) {
@@ -215,7 +215,11 @@ var olapp = {
 
       var layer = new ol.layer.Vector({
         source: source,
-        style: core.styleFunction
+        style: core.styleFunction,
+        olapp: {
+          source: 'Text',
+          layer: filename + '.' + parseInt($.now() / 1000).toString(16)
+        }
       });
 
       return layer;
