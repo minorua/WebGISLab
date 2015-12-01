@@ -770,13 +770,18 @@ var olapp = {
                   callback: function () {
                     $(this).parent().find('.active').removeClass('active');
 
-                    // set layer style
+                    // Set feature style
                     if (layer instanceof ol.layer.Vector) {
                       var color = $('#lyr_color').val();
                       var obj = layer.get('olapp');
                       obj.style = obj.style || {};
                       obj.style.color = color;
-                      layer.setStyle(core.createStyleFunction(color));
+
+                      var styleFunc = core.createStyleFunction(color);
+                      var features = layer.getSource().getFeatures();
+                      for (var i = 0, l = features.length; i < l; i++) {
+                        features[i].setStyle(styleFunc(features[i]));
+                      }
                     }
                   }
                 },
