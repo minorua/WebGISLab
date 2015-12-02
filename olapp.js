@@ -820,8 +820,8 @@ var olapp = {
               var style = layer.get('olapp').style || {};
               var color = style.color;
               if (color === undefined) {
-                var layerStyle = layer.getStyleFunction()(layer.getSource().getFeatures()[0]);
-                color = layerStyle[0].getStroke().getColor();
+                var styleFunc = layer.getStyleFunction();
+                if (styleFunc) color = styleFunc(layer.getSource().getFeatures()[0])[0].getStroke().getColor();
               }
 
               html =
@@ -830,7 +830,7 @@ var olapp = {
 '<tr><td>Color</td><td><input type="text" id="lyr_color" class="pick-a-color form-control"></td></tr>' +
 '</table>';
               var subObj = $(html);
-              subObj.find('input').val(color).pickAColor();
+              subObj.find('input').val(color || '').pickAColor();
               obj.append(subObj);
             }
 
