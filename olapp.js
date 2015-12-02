@@ -501,18 +501,18 @@ var olapp = {
     setLayerSource: function (url, source) {
       if (core.project._loadingLayers[url] === undefined) return;
 
-      if (typeof source == 'function') source = source();
       core.project._loadingLayers[url].forEach(function (layer) {
+        var src = (typeof source == 'function') ? source() : source;
         var style = layer.get('olapp').style;
         if (style !== undefined) {
           // Set style to features
           var styleFunc = core.createStyleFunction(style.color);
-          var features = source.getFeatures();
+          var features = src.getFeatures();
           for (var i = 0, l = features.length; i < l; i++) {
             features[i].setStyle(styleFunc(features[i]));
           }
         }
-        layer.setSource(source);
+        layer.setSource(src);
       });
       delete core.project._loadingLayers[url];
 
