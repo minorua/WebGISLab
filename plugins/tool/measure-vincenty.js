@@ -14,7 +14,7 @@
 
   plugin.init = function () {
     var core = olapp.core;
-    var dir = 'js/geodesy/';
+    var dir = 'lib/geodesy/';
     core.loadScripts([dir + 'vector3d.js',
                       dir + 'latlon-ellipsoidal.js',
                       dir + 'latlon-vincenty.js'], true);

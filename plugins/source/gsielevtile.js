@@ -3,7 +3,7 @@
 // https://github.com/minorua/WebGISLab
 // Dependencies: jQuery, OpenLayers 3
 
-olapp.core.loadScript('js/olapp/source/gsielevtile.js').then(function () {
+olapp.core.loadScript('js/source/gsielevtile.js').then(function () {
   var plugin = {
     name: 'GSIElevTile',
     path: 'source/gsielevtile.js',

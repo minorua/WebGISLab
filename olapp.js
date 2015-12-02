@@ -571,7 +571,7 @@ var olapp = {
     },
 
     saveToFile: function () {
-      core.loadScript('js/FileSaver.min.js').then(function () {
+      core.loadScript('lib/FileSaver.js/FileSaver.min.js').then(function () {
         var blob = new Blob([olapp.project.toString()], {type: 'text/plain;charset=utf-8'});
         saveAs(blob, "project.js");
       });

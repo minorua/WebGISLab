@@ -13,10 +13,10 @@
 
   plugin.init = function () {
     var scripts = [
-      'js/threejs/three.min.js',
-      'js/Qgis2threejs/Qgis2threejs.js',
-      'js/threejs/controls/OrbitControls.js',
-      'js/olapp/demtile/gsielevtile.js'
+      'lib/threejs/three.min.js',
+      'lib/Qgis2threejs/Qgis2threejs.js',
+      'lib/threejs/controls/OrbitControls.js',
+      'js/demtile/gsielevtile.js'
     ];
     return olapp.core.loadScripts(scripts, true);
   };
@@ -161,7 +161,7 @@
     };
     demLayer.rebuild(true);
 
-    var scripts = ['js/threejs/exporters/STLBinaryExporter.js', 'js/FileSaver.min.js'];
+    var scripts = ['lib/threejs/exporters/STLBinaryExporter.js', 'lib/FileSaver.js/FileSaver.min.js'];
     olapp.core.loadScripts(scripts).then(function () {
       var exporter = new THREE.STLBinaryExporter();
       var stlData = exporter.parse(demLayer.objectGroup).buffer;
