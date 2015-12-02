@@ -192,7 +192,7 @@ var olapp = {
     var layer = core._loadText(text, filename, formatConstructors);
     if (style !== undefined) {
       // Set style to features
-      var styleFunc = core.createStyleFunction(style.color);
+      var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
       var features = layer.getSource().getFeatures();
       for (var i = 0, l = features.length; i < l; i++) {
         features[i].setStyle(styleFunc(features[i]));
@@ -506,7 +506,7 @@ var olapp = {
         var style = layer.get('olapp').style;
         if (style !== undefined) {
           // Set style to features
-          var styleFunc = core.createStyleFunction(style.color);
+          var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
           var features = src.getFeatures();
           for (var i = 0, l = features.length; i < l; i++) {
             features[i].setStyle(styleFunc(features[i]));
@@ -799,13 +799,18 @@ var olapp = {
                     $(this).parent().find('.active').removeClass('active');
 
                     if (layer instanceof ol.layer.Vector) {
-                      var color = $('#lyr_color').val();
+                      var color = '#' + $('#lyr_color').val();
+                      var width = 1;
+                      var fillColor = tinycolor(color).setAlpha(.5).toRgbString();
+
                       var obj = layer.get('olapp');
                       obj.style = obj.style || {};
                       obj.style.color = color;
+                      obj.style.width = width;
+                      obj.style.fillColor = fillColor;
 
                       // Set style to features
-                      var styleFunc = core.createStyleFunction(color);
+                      var styleFunc = core.createStyleFunction(color, width, fillColor);
                       var features = layer.getSource().getFeatures();
                       for (var i = 0, l = features.length; i < l; i++) {
                         features[i].setStyle(styleFunc(features[i]));
