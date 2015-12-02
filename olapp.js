@@ -771,16 +771,20 @@ var olapp = {
 
             var obj = $(html);
             if (layer instanceof ol.layer.Vector) {
-              var color = 'red';
+              var style = layer.get('olapp').style || {};
+              var color = style.color;
+              if (color === undefined) {
+                var layerStyle = layer.getStyleFunction()(layer.getSource().getFeatures()[0]);
+                color = layerStyle[0].getStroke().getColor();
+              }
+
               html =
 '<h3>Style</h3>' +
 '<table>' +
-'<tr><td>Color</td><td><input type="text" id="lyr_color"><div /></td></tr>' +
+'<tr><td>Color</td><td><input type="text" id="lyr_color" class="pick-a-color form-control"></td></tr>' +
 '</table>';
               var subObj = $(html);
-              subObj.find('input').on('keyup paste change', function () {
-                $(this).next().css('background-color', 'white').css('background-color', $(this).val());
-              }).val(color).keyup();
+              subObj.find('input').val(color).pickAColor();
               obj.append(subObj);
             }
 

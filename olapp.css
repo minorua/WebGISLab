@@ -130,14 +130,6 @@ a.btn-blendmode span.active {
   width: 60px;
 }
 
-#lyr_color + div {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 3px;
-  border: 1px solid black;
-  width: 26px;
-  height: 26px;
-}
 
 /* add layer dialog */
 #dlg_addlayer {
