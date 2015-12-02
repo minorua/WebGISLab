@@ -808,7 +808,8 @@ var olapp = {
         });
 
         item.find('.layer-sub-container button').click(function () {
-          if ($(this).hasClass('btn-properties')) {
+          var button = $(this);
+          if (button.hasClass('btn-properties')) {
             var html =
 '<div id="lyr_properties">' +
 '  <h3>General</h3>' +
@@ -837,6 +838,7 @@ var olapp = {
               obj.append(subObj);
             }
 
+            // TODO: olapp.gui.dialog.layerProperties
             bootbox.dialog({
               title: 'Layer Properties - ' + layer.get('title'),
               message: obj,
@@ -845,7 +847,7 @@ var olapp = {
                   label: 'OK',
                   className: "btn-primary",
                   callback: function () {
-                    $(this).parent().find('.active').removeClass('active');
+                    button.parent().find('.active').removeClass('active');
 
                     if (layer instanceof ol.layer.Vector) {
                       var color = '#' + $('#lyr_color').val();
@@ -871,19 +873,19 @@ var olapp = {
                   label: 'Cancel',
                   className: "btn-default",
                   callback: function () {
-                    $(this).parent().find('.active').removeClass('active');
+                    button.parent().find('.active').removeClass('active');
                   }
                 }
               }
             });
           }
-          else if ($(this).hasClass('btn-removelayer')) {
+          else if (button.hasClass('btn-removelayer')) {
             bootbox.confirm("Are you sure you want to remove this layer?", function(result) {
               if (result) olapp.core.project.removeLayer(layerId);
-              else $(this).parent().find('.active').removeClass('active');
+              else button.parent().find('.active').removeClass('active');
             });
           }
-          else if ($(this).hasClass('btn-zoomtolayer')) {
+          else if (button.hasClass('btn-zoomtolayer')) {
             var extent = layer.getExtent();
             if (!extent && layer.getSource()) extent = layer.getSource().getExtent();
             if (extent) map.getView().fit(extent, map.getSize());
