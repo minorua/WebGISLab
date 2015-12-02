@@ -171,7 +171,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  core.loadText = function (text, filename, format, style) {
+  core.loadText = function (text, filename, format, style) {    // TODO: layerOptions
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
@@ -491,6 +491,9 @@ var olapp = {
           }
           else if(lyr.source == 'Text') {
             layer = core.loadText(project.textSources[lyr.layer], lyr.layer, undefined, lyr.style);
+            for (var k in lyr.options) {
+              layer.set(k, lyr.options[k]);
+            }
           }
           else {
             layer = olapp.source[lyr.source].createLayer(lyr.layer, layerOptions);
