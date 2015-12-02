@@ -171,7 +171,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  core.loadText = function (text, filename, format) {
+  core.loadText = function (text, filename, format, style) {
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
@@ -179,6 +179,7 @@ var olapp = {
       'json': [ol.format.GeoJSON, ol.format.TopoJSON]
     };
 
+    format = format || '';    // TODO: get from extension
     var formatConstructors = format2formatConstructors[format.toLowerCase()];
     if (!formatConstructors) formatConstructors = [
       ol.format.GeoJSON,
@@ -188,7 +189,16 @@ var olapp = {
       ol.format.TopoJSON
     ];
 
-    return core._loadText(text, filename, formatConstructors);
+    var layer = core._loadText(text, filename, formatConstructors);
+    if (style !== undefined) {
+      // Set style to features
+      var styleFunc = core.createStyleFunction(style.color);
+      var features = layer.getSource().getFeatures();
+      for (var i = 0, l = features.length; i < l; i++) {
+        features[i].setStyle(styleFunc(features[i]));
+      }
+    }
+    return layer;
   };
 
   core._loadText = function (text, filename, formatConstructors) {
@@ -213,12 +223,16 @@ var olapp = {
         features: features
       });
 
+      var id = filename;
+      if (id.indexOf('#') === -1) id += '#' + parseInt($.now() / 1000).toString(16);
+
       var layer = new ol.layer.Vector({
         source: source,
         style: core.styleFunction,
         olapp: {
           source: 'Text',
-          layer: filename + '.' + parseInt($.now() / 1000).toString(16)
+          layer: id,
+          text: text
         }
       });
 
@@ -430,7 +444,7 @@ var olapp = {
             layer = project.customLayers[lyr.layer](project, layerOptions);
           }
           else if(lyr.source == 'Text') {
-            // TODO:
+            layer = core.loadText(project.textSources[lyr.layer], lyr.layer, undefined, lyr.style);
           }
           else {
             layer = olapp.source[lyr.source].createLayer(lyr.layer, layerOptions);
@@ -1242,6 +1256,7 @@ olapp.Project = function (options) {
   this.init = options.init;
   this.layers = options.layers || [];
   this.customLayers = options.customLayers || {};
+  this.textSources = options.textSources || {};
 
   this._lastLayerId = this.layers.length - 1;
   this.mapLayers = [];
@@ -1311,7 +1326,7 @@ olapp.Project.prototype = {
     var zoom = this.view.getZoom();
     var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
 
-    var layers = [];
+    var layers = [], textSources = {};
     this.mapLayers.forEach(function (layer) {
       var properties = {
         options: {
@@ -1321,7 +1336,14 @@ olapp.Project.prototype = {
           title: layer.get('title')
         }
       };
-      layers.push($.extend(properties, layer.get('olapp')));
+      $.extend(properties, layer.get('olapp'));
+      delete properties.text;
+      layers.push(properties);
+
+      if (layer instanceof ol.layer.Vector) {
+        var text = layer.get('olapp').text;
+        if (text !== undefined) textSources[properties.layer] = text;
+      }
     });
 
     var content = [
@@ -1336,7 +1358,8 @@ olapp.Project.prototype = {
 '  }),',
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
-'  layers: ' + JSON.stringify(layers),
+'  layers: ' + JSON.stringify(layers) + ',',
+'  textSources: ' + JSON.stringify(textSources),
 '}));',
 ''];
     return content.join('\n');
