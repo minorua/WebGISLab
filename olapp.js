@@ -807,7 +807,7 @@ var olapp = {
           value: layer.getOpacity() * 100
         });
 
-        item.find('.layer-sub-container .btn').click(function () {
+        item.find('.layer-sub-container button').click(function () {
           if ($(this).hasClass('btn-properties')) {
             var html =
 '<div id="lyr_properties">' +
