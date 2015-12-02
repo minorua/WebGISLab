@@ -40,7 +40,7 @@
     if (layerIds.indexOf(id) === -1) return null;
 
     var options = {
-      style: olapp.core.styleFunction,
+      style: olapp.core.createStyleFunction(),
       title: layers[id].name
     };
     var layer = new ol.layer.Vector($.extend(options, layerOptions));

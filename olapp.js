@@ -228,7 +228,7 @@ var olapp = {
 
       var layer = new ol.layer.Vector({
         source: source,
-        style: core.styleFunction,
+        style: core.createStyleFunction(),
         olapp: {
           source: 'Text',
           layer: id,
@@ -302,15 +302,6 @@ var olapp = {
     }
   };
 
-  core.styleFunction = function (feature, resolution) {
-    var featureStyleFunction = feature.getStyleFunction();
-    if (featureStyleFunction) {
-      return featureStyleFunction.call(feature, resolution);
-    } else {
-      return olapp.defaultStyle[feature.getGeometry().getType()];
-    }
-  };
-
   core.urlParams = function () {
     var p, vars = {};
     var params = window.location.search.substring(1).split('&').concat(window.location.hash.substring(1).split('&'));
@@ -319,6 +310,61 @@ var olapp = {
       vars[p[0]] = p[1];
     });
     return vars;
+  };
+
+  // Create a style function
+  // strokeColor: If not specified, use a random color. If both strokeColor and fillColor
+  //             is not specified, fillColor is set to translucent color of the random color.
+  // strokeWidth: Default is 1.
+  // fillColor: No fill style if strokeColor is specified and fillColor is not specified
+  core.createStyleFunction = function (strokeColor, strokeWidth, fillColor) {
+    if (strokeColor === undefined) {
+      if (typeof tinycolor == 'undefined') {
+        strokeColor = '#0f0';
+        if (fillColor === undefined) fillColor = 'rgba (0, 255, 0, 0.5)';
+      }
+      else {
+        var color = tinycolor.random();
+        strokeColor = color.toRgbString();
+        if (fillColor === undefined) fillColor = color.setAlpha(0.5).toRgbString();
+      }
+    }
+    if (strokeWidth === undefined) strokeWidth = 1;
+
+    var strokeStyle, fillStyle;
+    strokeStyle = new ol.style.Stroke({
+      color: strokeColor,
+      width: strokeWidth
+    });
+
+    if (fillColor !== undefined) {
+      fillStyle = new ol.style.Fill({
+        color: fillColor
+      });
+    }
+    var style = {
+      Point: [new ol.style.Style({
+        image: new ol.style.Circle({
+          stroke: strokeStyle,
+          fill: fillStyle,
+          radius: 5
+        })
+      })],
+      LineString: [new ol.style.Style({
+        stroke: strokeStyle
+      })],
+      Polygon: [new ol.style.Style({
+        stroke: strokeStyle,
+        fill: fillStyle
+      })]
+    };
+    style.MultiPoint = style.Point;
+    style.MultiLineString = style.LineString;
+    style.MultiPolygon = style.Polygon;
+
+    return function (feature, resolution) {
+      return style[feature.getGeometry().getType()];
+    };
   };
 
 
@@ -801,7 +847,7 @@ var olapp = {
                     if (layer instanceof ol.layer.Vector) {
                       var color = '#' + $('#lyr_color').val();
                       var width = 1;
-                      var fillColor = tinycolor(color).setAlpha(.5).toRgbString();
+                      var fillColor = tinycolor(color).setAlpha(0.5).toRgbString();
 
                       var obj = layer.get('olapp');
                       obj.style = obj.style || {};
@@ -1699,79 +1745,6 @@ olapp.tools.geocoding.Nominatim = {
   }
 
 };
-
-olapp.core.createStyleFunction = function (strokeColor, strokeWidth, fillColor) {
-  if (strokeWidth === undefined) strokeWidth = 1;
-
-  var strokeStyle, fillStyle;
-  strokeStyle = new ol.style.Stroke({
-    color: strokeColor,
-    width: strokeWidth
-  });
-
-  if (fillColor !== undefined) {
-    fillStyle = new ol.style.Fill({
-      color: fillColor
-    });
-  }
-  var style = {
-    'Point': [new ol.style.Style({
-      image: new ol.style.Circle({
-        stroke: strokeStyle,
-        fill: fillStyle,
-        radius: 5
-      })
-    })],
-    'LineString': [new ol.style.Style({
-      stroke: strokeStyle
-    })],
-    'Polygon': [new ol.style.Style({
-      stroke: strokeStyle,
-      fill: fillStyle
-    })]
-  };
-  style.MultiPoint = style.Point;
-  style.MultiLineString = style.LineString;
-  style.MultiPolygon = style.Polygon;
-
-  return function (feature, resolution) {
-    return style[feature.getGeometry().getType()];
-  };
-};
-
-
-olapp.defaultStyle = {
-  'Point': [new ol.style.Style({
-    image: new ol.style.Circle({
-      fill: new ol.style.Fill({
-        color: 'rgba(255,255,0,0.5)'
-      }),
-      radius: 5,
-      stroke: new ol.style.Stroke({
-        color: '#ff0',
-        width: 1
-      })
-    })
-  })],
-  'LineString': [new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: '#f00',
-      width: 3
-    })
-  })],
-  'Polygon': [new ol.style.Style({
-    fill: new ol.style.Fill({
-      color: 'rgba(0,255,255,0.5)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#0ff',
-      width: 1
-    })
-  })]
-};
-olapp.defaultStyle.MultiPoint = olapp.defaultStyle.Point;
-olapp.defaultStyle.MultiLineString = olapp.defaultStyle.LineString;
-olapp.defaultStyle.MultiPolygon = olapp.defaultStyle.Polygon;
 
 
 olapp.createDefaultProject = function () {
