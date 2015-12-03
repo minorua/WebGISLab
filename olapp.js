@@ -48,7 +48,7 @@ var olapp = {
     gui.init(map);
 
     if (olapp.projectToLoad) {
-      olapp.loadProject(olapp.projectToLoad.project),then(function () {
+      olapp.loadProject(olapp.projectToLoad.project).then(function () {
         olapp.projectToLoad.deferred.resolve();
         delete olapp.projectToLoad;
       });
@@ -139,7 +139,7 @@ var olapp = {
   core.loadScripts = function (urls, onebyone) {
     if (onebyone) {
       var d = $.Deferred();
-      core.loadScript(urls.shift()).then(function () {
+      core.loadScript(urls.shift()).then(function () {    // TODO: do not make a change to urls
         if (urls.length == 0) d.resolve();
         else {
           core.loadScripts(urls, true).then(function () {
@@ -653,6 +653,12 @@ var olapp = {
 
     $('#save_image').click(function () {
       core.saveMapImage('mapimage.png');
+    });
+
+    $('#publish').click(function () {
+      plugin.load(['export/publish.js']).then(function () {
+        plugin.plugins['export/publish.js'].run();
+      });
     });
 
     // layer list panel
