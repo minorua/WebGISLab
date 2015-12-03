@@ -48,6 +48,23 @@
     });
   };
 
+  // Get a file as an ArrayBuffer
+  function download(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'arraybuffer';
+
+    var d = $.Deferred();
+    xhr.onload = function (e) {
+      d.resolve(this.response);
+    };
+    xhr.onerror = function (e) {
+      d.reject();
+    };
+    xhr.send(null);
+    return d.promise();
+  };
+
   plugin.export = function (pageType) {
     var zip = new JSZip();
 
@@ -67,17 +84,11 @@
 
       // libraries, plugins and other files
       olapp.exportFiles.forEach(function (url) {
-        var ext = url.split('.').pop().toLowerCase();
-        gets.push($.ajax({
-          url: url,
-          dataType: (ext == 'js' || ext == 'svg') ? 'text' : undefined,
-          success: function (content) {
-            zip.file(url, content);
-            console.log('Zipped', url);
-          },
-          error: function () {
-            console.log('Failed to download', url);
-          }
+        gets.push(download(url).then(function (data) {
+          zip.file(url, data);
+          console.log('Zipped', url);
+        }, function () {
+          console.log('Failed to download', url);
         }));
       });
 
