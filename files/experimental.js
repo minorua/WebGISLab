@@ -59,6 +59,7 @@ olapp.loadProject(new olapp.Project({
         'AdmBdry':  {c: "#f77", w: 4}    // #f77, 4 + //TODO: dashArray:"10,10"
       };
 
+      var pointStyleFunction = olapp.core.createStyleFunction('#0f0');
       var featureStyleFunction = function (feature, resolution) {
         if (feature.values_['vis'] == '非表示') return [];
 
@@ -90,7 +91,7 @@ olapp.loadProject(new olapp.Project({
         }
 
         // TODO: Point style is not implemented yet.
-        return olapp.defaultStyle[geomType];
+        return pointStyleFunction(feature, resolution);
       };
 
       attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
