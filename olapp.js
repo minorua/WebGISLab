@@ -319,23 +319,15 @@ var olapp = {
   };
 
   // Create a style function
-  // strokeColor: If not specified, use a random color. If both strokeColor and fillColor
-  //             is not specified, fillColor is set to translucent color of the random color.
+  // strokeColor: If not specified, use a random color.
   // strokeWidth: Default is 1.
-  // fillColor: No fill style if strokeColor is specified and fillColor is not specified
+  // fillColor: If null, no fill style. If not specified, use translucent color of strokeColor.
   core.createStyleFunction = function (strokeColor, strokeWidth, fillColor) {
     if (strokeColor === undefined) {
-      if (typeof tinycolor == 'undefined') {
-        strokeColor = '#0f0';
-        if (fillColor === undefined) fillColor = 'rgba (0, 255, 0, 0.5)';
-      }
-      else {
-        var color = tinycolor.random();
-        strokeColor = color.toRgbString();
-        if (fillColor === undefined) fillColor = color.setAlpha(0.5).toRgbString();
-      }
+      strokeColor = (typeof tinycolor == 'undefined') ? '#0f0' : tinycolor.random().toRgbString();
     }
     if (strokeWidth === undefined) strokeWidth = 1;
+    if (fillColor === undefined) fillColor = tinycolor(strokeColor).setAlpha(0.5).toRgbString();
 
     var strokeStyle, fillStyle;
     strokeStyle = new ol.style.Stroke({
@@ -343,7 +335,7 @@ var olapp = {
       width: strokeWidth
     });
 
-    if (fillColor !== undefined) {
+    if (fillColor !== null) {
       fillStyle = new ol.style.Fill({
         color: fillColor
       });
