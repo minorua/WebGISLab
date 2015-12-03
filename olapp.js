@@ -958,7 +958,8 @@ var olapp = {
       }
       if (features.length > 1) html += ' and other ' + (features.length - 1) + ' feature(s)';
     }
-    $('#info').html(html || '&nbsp;');
+    if (html) $('#info').html(html).show();
+    else $('#info').hide();
   };
 
   gui.setProjectTitle = function (title) {
