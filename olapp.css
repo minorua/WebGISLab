@@ -127,11 +127,11 @@ a.btn-blendmode span.active {
 
 
 /* layer properties dialog */
-#lyr_properties h3:first-child {
+#dlg_layerProperties .modal-body h3:first-child {
   margin-top: 0;
 }
 
-#lyr_properties table td:first-child {
+#dlg_layerProperties .modal-body table td:first-child {
   width: 60px;
 }
 

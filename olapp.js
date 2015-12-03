@@ -812,82 +812,18 @@ var olapp = {
           value: layer.getOpacity() * 100
         });
 
-        item.find('.layer-sub-container button').click(function () {
+        item.find('.layer-sub-container button').click(function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+
           var button = $(this);
+          button.parent().find('.active').removeClass('active');
           if (button.hasClass('btn-properties')) {
-            var html =
-'<div id="lyr_properties">' +
-'  <h3>General</h3>' +
-'  <table>' +
-'    <tr><td>Source</td><td>' + layer.get('olapp').source + '</td></tr>' +
-'    <tr><td>Layer</td><td>' + layer.get('olapp').layer + '</td></tr>' +
-'  </table>' +
-'</div>';
-
-            var obj = $(html);
-            if (layer instanceof ol.layer.Vector) {
-              var style = layer.get('olapp').style || {};
-              var color = style.color;
-              if (color === undefined) {
-                var styleFunc = layer.getStyleFunction();
-                if (styleFunc) color = styleFunc(layer.getSource().getFeatures()[0])[0].getStroke().getColor();
-              }
-
-              html =
-'<h3>Style</h3>' +
-'<table>' +
-'<tr><td>Color</td><td><input type="text" id="lyr_color" class="pick-a-color form-control"></td></tr>' +
-'</table>';
-              var subObj = $(html);
-              subObj.find('input').val(color || '').pickAColor();
-              obj.append(subObj);
-            }
-
-            // TODO: olapp.gui.dialog.layerProperties
-            bootbox.dialog({
-              title: 'Layer Properties - ' + layer.get('title'),
-              message: obj,
-              buttons: {
-                ok: {
-                  label: 'OK',
-                  className: "btn-primary",
-                  callback: function () {
-                    button.parent().find('.active').removeClass('active');
-
-                    if (layer instanceof ol.layer.Vector) {
-                      var color = '#' + $('#lyr_color').val();
-                      var width = 1;
-                      var fillColor = tinycolor(color).setAlpha(0.5).toRgbString();
-
-                      var obj = layer.get('olapp');
-                      obj.style = obj.style || {};
-                      obj.style.color = color;
-                      obj.style.width = width;
-                      obj.style.fillColor = fillColor;
-
-                      // Set style to features
-                      var styleFunc = core.createStyleFunction(color, width, fillColor);
-                      var features = layer.getSource().getFeatures();
-                      for (var i = 0, l = features.length; i < l; i++) {
-                        features[i].setStyle(styleFunc(features[i]));
-                      }
-                    }
-                  }
-                },
-                cancel: {
-                  label: 'Cancel',
-                  className: "btn-default",
-                  callback: function () {
-                    button.parent().find('.active').removeClass('active');
-                  }
-                }
-              }
-            });
+            gui.dialog.layerProperties.show(layer);
           }
           else if (button.hasClass('btn-removelayer')) {
             bootbox.confirm("Are you sure you want to remove this layer?", function(result) {
               if (result) olapp.core.project.removeLayer(layerId);
-              else button.parent().find('.active').removeClass('active');
             });
           }
           else if (button.hasClass('btn-zoomtolayer')) {
@@ -1079,6 +1015,71 @@ var olapp = {
 
   };
   gui.dialog.addLayer = addLayerDialog;
+
+  gui.dialog.layerProperties = {
+
+    _layer: null,
+
+    init: function () {
+      $('#dlg_layerProperties').find('.modal-footer .btn-primary').click(function () {
+        var layer = gui.dialog.layerProperties._layer;
+        if (layer instanceof ol.layer.Vector) {
+          var color = '#' + $('#lyr_color').val();
+          var width = 1;
+          var fillColor = tinycolor(color).setAlpha(0.5).toRgbString();
+
+          var obj = layer.get('olapp');
+          obj.style = obj.style || {};
+          obj.style.color = color;
+          obj.style.width = width;
+          obj.style.fillColor = fillColor;
+
+          // Set style to features
+          var styleFunc = core.createStyleFunction(color, width, fillColor);
+          var features = layer.getSource().getFeatures();
+          for (var i = 0, l = features.length; i < l; i++) {
+            features[i].setStyle(styleFunc(features[i]));
+          }
+        }
+        $('#dlg_layerProperties').modal('hide');
+      });
+    },
+
+    show: function (layer) {
+      this._layer = layer;
+
+      var dlg = $('#dlg_layerProperties');
+      dlg.find('.modal-title').html('Layer Properties - ' + layer.get('title'));
+
+      var html =
+'<h3>General</h3>' +
+'<table>' +
+'  <tr><td>Source</td><td>' + layer.get('olapp').source + '</td></tr>' +
+'  <tr><td>Layer</td><td>' + layer.get('olapp').layer + '</td></tr>' +
+'</table>';
+      dlg.find('.modal-body').html(html);
+
+      if (layer instanceof ol.layer.Vector && layer.getSource().getFeatures) {
+        var style = layer.get('olapp').style || {};
+        var color = style.color;
+        if (color === undefined) {
+          var styleFunc = layer.getStyleFunction();
+          if (styleFunc) color = styleFunc(layer.getSource().getFeatures()[0])[0].getStroke().getColor();
+        }
+
+        html =
+'<h3>Style</h3>' +
+'<table>' +
+'  <tr><td>Color</td><td><input type="text" id="lyr_color" class="pick-a-color form-control"></td></tr>' +
+'</table>';
+        var obj = $(html);
+        obj.find('input').val(color || '').pickAColor();
+        dlg.find('.modal-body').append(obj);
+      }
+      dlg.modal('show');
+    }
+
+  };
 
 
   // olapp.gui.dialog.measure
