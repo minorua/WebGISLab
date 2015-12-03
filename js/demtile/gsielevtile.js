@@ -168,7 +168,7 @@
       });
 
       var d = new $.Deferred();
-      $.when.apply(this, gets).then(function () {
+      $.when.apply(this, gets).always(function () {
         d.resolve(blocks);
       });
       return d.promise();
