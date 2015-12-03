@@ -16,8 +16,9 @@ olapp - An OpenLayers application
 .source           - Data source management module. A souce class is a subclass based on olapp.source.Base.
 .tools            - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
 
-.init()         - Initialize application.
-.loadProject()  - Load a project.
+.init()             - Initialize application.
+.loadProject()      - Load a project.
+.defineProjection() - Define a projection.
 
 .Project
 .Source
@@ -42,7 +43,6 @@ var olapp = {
 
   var map, mapLayers;
 
-  // init()
   olapp.init = function (mapOptions) {
     core.init(mapOptions);
     gui.init(map);
@@ -72,7 +72,6 @@ var olapp = {
     }
   };
 
-  // loadProject()
   olapp.loadProject = function (project) {
     if (olapp.map) return core.project.load(project);
 
@@ -81,6 +80,13 @@ var olapp = {
     var d = $.Deferred();
     olapp.projectToLoad = {project: project, deferred: d};
     return d.promise();
+  };
+
+  olapp.definedProjections = {};
+
+  olapp.defineProjection = function (name, proj4Str) {
+    proj4.defs(name, proj4Str);
+    olapp.definedProjections[name] = proj4Str;
   };
 
   // olapp.core
@@ -1422,6 +1428,11 @@ olapp.Project.prototype = {
 '  textSources: ' + JSON.stringify(textSources),
 '}));',
 ''];
+
+    if (projection != 'EPSG:3857') {
+      content.unshift('olapp.defineProjection(' + quote_escape(projection) + ', ' +
+                                                  quote_escape(olapp.definedProjections[projection]) + ');\n');
+    }
     return content.join('\n');
   }
 

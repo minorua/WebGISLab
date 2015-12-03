@@ -1,4 +1,4 @@
-proj4.defs('EPSG:3099', '+proj=utm +zone=53 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+olapp.defineProjection('EPSG:3099', '+proj=utm +zone=53 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 olapp.loadProject(new olapp.Project({
   title: 'Experimental UTM53 Project',
