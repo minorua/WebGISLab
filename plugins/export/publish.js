@@ -65,8 +65,8 @@
         zip.file('index.html', content);
       }));
 
-      // dependencies
-      olapp.dependencies.forEach(function (url) {
+      // libraries, plugins and other files
+      olapp.exportFiles.forEach(function (url) {
         var ext = url.split('.').pop().toLowerCase();
         gets.push($.ajax({
           url: url,
@@ -88,11 +88,6 @@
         alert('Failed to download files');
       });
     });
-
-
-    var view = olapp.map.getView();
-    var projection = view.getProjection().getCode();
-
   };
 
   olapp.plugin.register(plugin.path, plugin);
