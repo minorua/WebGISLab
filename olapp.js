@@ -324,7 +324,7 @@ var olapp = {
   // fillColor: If null, no fill style. If not specified, use translucent color of strokeColor.
   core.createStyleFunction = function (strokeColor, strokeWidth, fillColor) {
     if (strokeColor === undefined) {
-      strokeColor = (typeof tinycolor == 'undefined') ? '#0f0' : tinycolor.random().toRgbString();
+      strokeColor = tinycolor.random().toRgbString();
     }
     if (strokeWidth === undefined) strokeWidth = 1;
     if (fillColor === undefined) fillColor = tinycolor(strokeColor).setAlpha(0.5).toRgbString();
