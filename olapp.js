@@ -776,9 +776,11 @@ var olapp = {
         $(this).find('span').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
 
         // buttons and slider
-        var extent = layer.getExtent(),
-            source = layer.getSource();
-        if (extent === undefined && source && source.getExtent) extent = layer.getSource().getExtent();
+        var extent = layer.getExtent();
+        if (extent === undefined && layer.getSource) {
+          var source = layer.getSource();
+          if (source && source.getExtent) extent = source.getExtent();
+        }
 
         var hasButtons = [(extent !== undefined), false, true, true];
         var emptyButton = '<button class="btn btn-default btn-empty disabled"></button>';
