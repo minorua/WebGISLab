@@ -683,12 +683,6 @@ var olapp = {
       gui.dialog[k].init();
     }
 
-    map.on('pointermove', function (evt) {
-      if (evt.dragging) return;
-      var pixel = map.getEventPixel(evt.originalEvent);
-      gui.displayFeatureInfo(pixel);
-    });
-
     map.on('click', function (evt) {
       var pt = map.getEventCoordinate(evt.originalEvent);
       console.log('Clicked', pt, core.transformToWgs84(pt));
