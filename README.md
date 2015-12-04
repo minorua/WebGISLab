@@ -2,6 +2,12 @@
 
 目標: デスクトップGISのような画面構成をもち多機能で軽量な(使いたいと思った時にすぐに使える)HTML5 WebGISアプリケーション
 
+## Released Web Maps
+
+* 飛び出せ ニッポン! (Beta): http://minorua.github.io/WebGISLab/simple.html?project=japan3d
+    地理院タイルの「標準地図」「色別標高図」「写真」レイヤの表示が可能で、クリック1つで3D表示にすることができます. 簡単な操作で3DモデルをSTLファイルに保存することができ、3Dプリンタを用いて地形をパソコンの外へ出力することができます.
+
+
 ## Demo Projects
 
 * Default Project: http://minorua.github.io/WebGISLab/index.html ([メニューなし版](http://minorua.github.io/WebGISLab/simple.html))
