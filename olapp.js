@@ -1060,7 +1060,10 @@ var olapp = {
         var color = style.color;
         if (color === undefined) {
           var styleFunc = layer.getStyleFunction();
-          if (styleFunc) color = styleFunc(layer.getSource().getFeatures()[0])[0].getStroke().getColor();
+          if (styleFunc) {
+            var stroke = styleFunc(layer.getSource().getFeatures()[0])[0].getStroke();
+            if (stroke) color = stroke.getColor();
+          }
         }
 
         html =
