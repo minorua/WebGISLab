@@ -5,6 +5,7 @@ find lib -type f -printf "'%p',\n" >> $outfile
 find plugins -type f -printf "'%p',\n" >> $outfile
 find js -type f -printf "'%p',\n" >> $outfile
 find files -type f -printf "'%p',\n" >> $outfile
+echo "'LICENSE'," >> $outfile
 echo "'olapp.js'," >> $outfile
 echo "'olapp.css'" >> $outfile
 echo "];" >> $outfile
