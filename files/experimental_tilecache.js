@@ -10,8 +10,8 @@ olapp.loadProject(new olapp.Project({
   plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'cache/tilecache.js'],
   layers: [
     {source: 'GSITiles', layer: 'std'},                                   // 標準地図
-    {source: 'GSITiles', layer: 'ort', options: {visible: false}},        // 写真
-    {source: 'GSIElevTile', layer: 'slope', options: {visible: false}},   // 傾斜区分図
-    {source: 'GSJ', layer: 'g', options: {visible: false}}                // シームレス地質図 (詳細版)
+    {source: 'GSITiles', layer: 'ort', options: {visible: false}}/*,*/    // 写真
+//  {source: 'GSIElevTile', layer: 'slope', options: {visible: false}},   // 傾斜区分図
+//  {source: 'GSJ', layer: 'g', options: {visible: false}}                // シームレス地質図 (詳細版)
   ]
 }));

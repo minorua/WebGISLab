@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+<title>WebGIS Lab</title>
+<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="lib/ol3/ol.css" type="text/css">
+<link rel="stylesheet" href="lib/ol3-layerswitcher/ol3-layerswitcher.css" type="text/css">
+<link rel="stylesheet" href="olapp.css" type="text/css">
+<script src="lib/jquery-2.1.4.min.js" type="text/javascript"></script>
+<script src="lib/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="lib/bootbox/bootbox.min.js" type="text/javascript"></script>
+<script src="lib/tinycolor/tinycolor-min.js" type="text/javascript"></script>
+<script src="lib/ol3/ol-debug.js" type="text/javascript"></script>
+<script src="lib/ol3-layerswitcher/ol3-layerswitcher.js" type="text/javascript"></script>
+<script src="lib/proj4js/proj4.js" type="text/javascript"></script>
+<script src="olapp.js" type="text/javascript"></script>
+<script src="files/experimental_tilecache.js" type="text/javascript"></script>
+<style>
+#map {
+  top: 0;
+}
+.ol-rotate {
+  top: 3em;
+}
+.layer-switcher {
+  right: 2.6em;
+}
+.olapp-btn-about {
+  top: .5em;
+  right: .5em;
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="info"></div>
+
+<div class="modal" id="dlg_about" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">About</h4>
+      </div>
+      <div class="modal-body">
+        <div><a href="https://github.com/minorua/WebGISLab">WebGISLab (GitHub)</a></div>
+        <div>UNDER CONSTRUCTION...</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+      console.log('ServiceWorker registered');
+    }).catch(function(err) {
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  }
+
+  if (olapp.control === undefined) olapp.control = {};
+  olapp.control.About = function (options) {
+    var button = document.createElement('button');
+    $(button).html('i').attr('title', 'About').click(function () {
+      $('#dlg_about').modal('show');
+    });
+
+    var element = document.createElement('div');
+    element.className = 'olapp-btn-about ol-unselectable ol-control';
+    element.appendChild(button);
+
+    ol.control.Control.call(this, {
+      element: element
+    });
+  };
+  ol.inherits(olapp.control.About, ol.control.Control);
+
+  var opt = {};
+  opt.controls = ol.control.defaults({
+    attributionOptions: ({
+      collapsible: false
+    })
+  }).extend([
+    new ol.control.LayerSwitcher(),
+    new olapp.control.About()
+  ]);
+  olapp.init(opt);
+</script>
+</body>
+</html>
