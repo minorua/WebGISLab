@@ -469,6 +469,10 @@ var olapp = {
       gui.setProjectTitle(project.title);
       map.setView(project.view);
 
+      var projection = project.view.getProjection();
+      core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
+      core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
+
       // Load layers
       if (project.layers !== undefined) {
         project.layers.forEach(function (lyr) {
@@ -502,10 +506,7 @@ var olapp = {
         });
       }
 
-      var projection = project.view.getProjection();
-      core.transformToWgs84 = ol.proj.getTransform(projection, 'EPSG:4326');
-      core.transformFromWgs84 = ol.proj.getTransform('EPSG:4326', projection);
-
+      // Set position and zoom
       var urlParams = olapp.core.urlParams();
       if (urlParams.lat !== undefined && urlParams.lon !== undefined) {
         var lonLat = [parseFloat(urlParams.lon), parseFloat(urlParams.lat)];
