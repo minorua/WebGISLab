@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
+<title>EPSG List Generator</title>
+<script src="../lib/jquery-2.1.4.min.js" type="text/javascript"></script>
+<script src="../lib/FileSaver.js/FileSaver.min.js" type="text/javascript"></script>
+</head>
+<body>
+<h3>EPSG List Generator</h3>
+<form>
+<label for="sourceURL">Source URL</label>
+<input type="text" id="sourceURL" style="width: 500px;" value="https://raw.githubusercontent.com/OSGeo/proj.4/master/nad/epsg"><br>
+<button type="button">Fetch and Generate</button><br>
+<label for="output">Log</label><br>
+<textarea id="output" style="width: 640px; height: 100px;"></textarea>
+</form>
+
+<script type="text/javascript">
+
+$('button').click(function () {
+  var url = $('#sourceURL').val();
+  $('#output').text('Fetching ' + url + ' ...');
+  $.get(url).then(function (data) {
+    $('#output').append(' done\n\n');
+    var projections = [];
+    var lines = data.split('\n');
+    for (var i = 0; i < lines.length - 1; i += 2) {
+      console.log(lines[i]);
+      if (lines[i + 1].indexOf('# Unable to translate') !== -1) {
+        i++;
+        continue;
+      }
+      var title = lines[i].substr(2);
+      var a = lines[i + 1].replace(/</g, '').split('>');
+      var code = parseInt(a[0]);
+      var proj = a[1].trim();
+
+      projections.push('{code:' + code + ',title:"' + title + '",proj:"' + proj + '"}');
+    }
+    $('#output').append(projections.length + ' CRSs are defined.');
+    var text = '// Generated from ' + url + '\n';
+    text += 'olapp.epsgList = [\n' + projections.join(',\n') + '\n];\n';
+    var blob = new Blob([text], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "epsg.js");
+  });
+});
+</script>
+</body>
+</html>
