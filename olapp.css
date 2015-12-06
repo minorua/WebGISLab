@@ -111,19 +111,17 @@ a.btn-blendmode span.active {
 
 
 /* project properties */
-#prj_properties {
-
+#dlg_project input[type="text"], #dlg_project textarea {
+  width: 430px;
 }
 
-#prj_properties td:first-child {
-  width: 60px;
+#dlg_project tr:last-child input {
+  width: 365px;
 }
 
-#prj_properties td:last-child {
-  font-weight: bold;
-}
-
-#prj_properties tr:nth-child(odd) {
+#dlg_project td:first-child {
+  width: 120px;
+  vertical-align: top;
 }
 
 

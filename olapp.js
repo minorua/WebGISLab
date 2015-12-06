@@ -47,7 +47,12 @@ var olapp = {
     core.init(mapOptions);
     gui.init(map);
 
-    if (olapp.projectToLoad) {
+    if ('projectToLoad' in localStorage) {
+      console.log(localStorage.projectToLoad);    // for debug
+      eval(localStorage.projectToLoad);
+      delete localStorage.projectToLoad;
+    }
+    else if (olapp.projectToLoad) {
       olapp.loadProject(olapp.projectToLoad.project).then(function () {
         olapp.projectToLoad.deferred.resolve();
         delete olapp.projectToLoad;
@@ -245,6 +250,42 @@ var olapp = {
       return layer;
     }
     return null;
+  };
+
+  // TODO: core.crs.getDefinition (name)
+  core.getCRSDefinition = function (crs) {
+    var d = $.Deferred();
+    if (crs.indexOf('EPSG:') === 0) {
+      if (crs == 'EPSG:3857') {
+        setTimeout(function () {
+          d.resolve();
+        }, 0);
+      }
+      else if (crs in olapp.definedProjections) {
+        setTimeout(function () {
+          d.resolve(olapp.definedProjections[crs]);
+        }, 0);
+      }
+      else {
+        // TODO: status message
+        core.loadScript('js/epsg.js').then(function () {
+          var code = parseInt(crs.substr(5));
+          for (var i = 0, l = olapp.epsgList.length; i < l; i++) {
+            if (olapp.epsgList[i].code == code) {
+              d.resolve(olapp.epsgList[i]);
+              return;
+            }
+          }
+          d.reject();
+        });
+      }
+    }
+    else {
+      setTimeout(function () {
+        d.reject();
+      }, 0);
+    }
+    return d.promise();
   };
 
   var _canvasImageUrl;
@@ -577,6 +618,26 @@ var olapp = {
     },
 
     saveToStorage: function () {
+    },
+
+    setCRS: function (crs) {
+      core.getCRSDefinition(crs).then(function (obj) {
+        if (obj && obj.proj) olapp.defineProjection(crs, obj.proj);
+
+        // transform center coordinates
+        var view = olapp.project.view;
+        var currentCRS = view.getProjection().getCode();
+
+        olapp.project.view = new ol.View({
+          projection: crs,
+          center: ol.proj.transform(view.getCenter(), currentCRS, crs),
+          zoom: view.getZoom(),
+          maxZoom: parseInt(tools.projection.zoomLevelFromResolution(view.minResolution_))
+        });
+
+        localStorage.projectToLoad = olapp.project.toString();
+        location.reload();  // TODO: remove project parameter from URL
+      }, function () {});
     }
 
   };
@@ -622,22 +683,7 @@ var olapp = {
     });
 
     $('#prj_properties').click(function () {
-      var project = olapp.project;
-      var html =
-'<table id="prj_properties">' +
-'<tr><td>Title</td><td>' + project.title + '</td></tr>' +
-'<tr><td>CRS</td><td>' + project.view.getProjection().getCode() + '</td></tr>' +
-'</table>';
-      bootbox.dialog({
-        title: 'Project properties',
-        message: html,
-        buttons: {
-          close: {
-            label: 'Close',
-            callback: function () {}
-          }
-        }
-      });
+      gui.dialog.project.show();
     });
 
     $('#print').click(function () {
@@ -693,7 +739,12 @@ var olapp = {
     map.on('moveend', function (evt) {
       var view = map.getView();
       var center = core.transformToWgs84(view.getCenter());
-      window.location.replace('#z=' + view.getZoom() + '&lat=' + center[1].toFixed(6) + '&lon=' + center[0].toFixed(6));
+      var crs = view.getProjection().getCode();
+
+      var hash = '#';
+      if (crs != 'EPSG:3857') hash += 'crs=' + crs + '&';
+      hash += 'z=' + view.getZoom() + '&lat=' + center[1].toFixed(6) + '&lon=' + center[0].toFixed(6);
+      window.location.replace(hash);
     });
 
     // Accept file drop
@@ -899,6 +950,122 @@ var olapp = {
     document.title = gui._originalTitle + (title ? ' - ' + title : '');
   };
 
+
+  // olapp.gui.dialog.project
+  gui.dialog.project = {
+
+    _initialized: false,
+
+    init: function () {},
+
+    ok: function () {
+      var body = $('#dlg_project').find('.modal-body');
+
+      var project = olapp.project;
+      project.title = body.find('input[name=title]').val();
+      project.description = body.find('textarea[name=desc]').val();
+
+      var crs = body.find('input[name=crs]').val();
+      if (crs != project.view.getProjection().getCode()) {
+        core.getCRSDefinition(crs).then(function () {
+          bootbox.confirm('Are you sure you want to change the CRS to ' + crs + '? If you click OK, page will be reloaded to apply the change.', function(result) {
+            if (result) {
+              core.project.setCRS(crs);
+              $('#dlg_project').modal('hide');
+            }
+          });
+        }, function () {
+          alert('Invalid CRS "' + crs + '". Cannot apply it to the project.');
+        });
+      }
+      else {
+        $('#dlg_project').modal('hide');
+      }
+    },
+
+    show: function () {
+      if (!this._initialized) {
+        $('#dlg_project').find('.modal-footer .btn-primary').click(function () {
+          gui.dialog.project.ok();
+        });
+        this._initialized = true;
+      }
+
+      var project = olapp.project;
+      var html =
+'<form><table>' +
+'<tr><td>Title</td><td><input type="text" name="title"></td></tr>' +
+'<tr><td>Description</td><td><textarea name="desc" rows="4"></textarea></td></tr>' +
+'<tr><td>CRS</td><td><input type="text" name="crs"><button type="button" class="btn-default">Browse</button></td></tr>' +
+'</table><input type="submit" style="display: none;"></form>';
+
+      var dlg = $('#dlg_project');
+      var body = dlg.find('.modal-body');
+      body.html(html);
+      body.find('input[name=title]').val(project.title);
+      body.find('textarea[name=desc]').val(project.description);
+      body.find('input[name=crs]').val(project.view.getProjection().getCode());
+      body.find('button').click(function () {
+        // TODO: status message
+        core.loadScript('js/epsg.js').then(function () {
+          var container = $('<div />');
+          var filterBox = $('<input type="text" style="width: 100%;">').on('change keyup', function () {
+            var filter = $(this).val().toLowerCase();
+            $(this).next().children().each(function (index) {
+              if ($(this).html().toLowerCase().indexOf(filter) !== -1) $(this).show();
+              else $(this).hide();
+            });
+          }).appendTo(container);
+
+          var list = $('<ul class="list-group epsg-list" />').css({
+            'overflow-y': 'scroll',
+            'height': '200px'
+          }).appendTo(container);
+          olapp.epsgList.forEach(function (crs) {
+            list.append('<li class="list-group-item">[EPSG:' + crs.code + '] ' + crs.title + '</li>')
+          });
+          list.children().click(function () {
+            list.find('.active').removeClass('active');
+            $(this).addClass('active');
+          });
+
+          bootbox.dialog({
+            title: 'Coordinate Reference Systems',
+            message: container,
+            buttons: {
+              ok: {
+                label: 'OK',
+                className: "btn-primary",
+                callback: function (e) {
+                  var item = list.children('.active');
+                  if (item.length == 0) {
+                    alert('A CRS not selected');
+                    e.preventDefault();
+                  }
+                  else {
+                    body.find('input[name=crs]').val(item.html().substr(1).split(']')[0]);
+                  }
+                }
+              },
+              cancel: {
+                label: 'Cancel',
+                className: "btn-default",
+                callback: function () {}
+              }
+            }
+          });
+        });
+      });
+      body.children('form').submit(function (e) {
+        e.preventDefault();
+        gui.dialog.project.ok();
+      });
+      dlg.modal('show');
+    }
+
+  };
+
+
   // olapp.gui.dialog.addLayer
   var addLayerDialog = {
 
@@ -1018,6 +1185,7 @@ var olapp = {
     _layer: null,
 
     init: function () {
+      // TODO: initialize in show()
       $('#dlg_layerProperties').find('.modal-footer .btn-primary').click(function () {
         var layer = gui.dialog.layerProperties._layer;
         if (layer instanceof ol.layer.Vector) {
@@ -1767,7 +1935,7 @@ olapp.tools.geocoding.Nominatim = {
 olapp.createDefaultProject = function () {
   return new olapp.Project({
     title: 'Default project',
-    description: 'This project is default project, which has GSI tile layers.',
+    description: 'This is default project.',
     view: new ol.View({
       projection: 'EPSG:3857',
       center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
