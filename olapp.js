@@ -48,9 +48,11 @@ var olapp = {
     gui.init(map);
 
     if ('projectToLoad' in localStorage) {
-      console.log(localStorage.projectToLoad);    // for debug
-      eval(localStorage.projectToLoad);
+      var projectToLoad = localStorage.projectToLoad;
       delete localStorage.projectToLoad;
+
+      console.log('olapp.init()', projectToLoad);
+      eval(projectToLoad);
     }
     else if (olapp.projectToLoad) {
       olapp.loadProject(olapp.projectToLoad.project).then(function () {
@@ -1581,6 +1583,11 @@ olapp.Project.prototype = {
       }
     });
 
+    var customLayers = [];
+    for (var layer in this.customLayers) {
+      customLayers.push('\n    ' + layer + ': ' + this.customLayers[layer].toString());
+    }
+
     var content = [
 'olapp.loadProject(new olapp.Project({',
 '  title: ' + quote_escape(this.title) + ',',
@@ -1594,7 +1601,8 @@ olapp.Project.prototype = {
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
 '  layers: ' + JSON.stringify(layers) + ',',
-'  textSources: ' + JSON.stringify(textSources),
+'  textSources: ' + JSON.stringify(textSources) + ',',
+'  customLayers: {' + customLayers.join(',') + '}',
 '}));',
 ''];
 

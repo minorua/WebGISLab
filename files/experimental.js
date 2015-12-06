@@ -94,7 +94,7 @@ olapp.loadProject(new olapp.Project({
         return pointStyleFunction(feature, resolution);
       };
 
-      attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
+      var attr = "<a href='https://github.com/gsi-cyberjapan/experimental_fgd' target='_blank'>地理院提供実験(fgd)</a>";
       var options = {
         source: new ol.source.VectorTile({
           attributions: [olapp.core.getAttribution(attr)],
