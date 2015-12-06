@@ -47,14 +47,7 @@ var olapp = {
     core.init(mapOptions);
     gui.init(map);
 
-    if ('projectToLoad' in localStorage) {
-      var projectToLoad = localStorage.projectToLoad;
-      delete localStorage.projectToLoad;
-
-      console.log('olapp.init()', projectToLoad);
-      eval(projectToLoad);
-    }
-    else if (olapp.projectToLoad) {
+    if (olapp.projectToLoad) {
       olapp.loadProject(olapp.projectToLoad.project).then(function () {
         olapp.projectToLoad.deferred.resolve();
         delete olapp.projectToLoad;
@@ -637,8 +630,10 @@ var olapp = {
           maxZoom: parseInt(tools.projection.zoomLevelFromResolution(view.minResolution_))
         });
 
-        localStorage.projectToLoad = olapp.project.toString();
-        location.reload();  // TODO: remove project parameter from URL
+        var projectStr = olapp.project.toString();
+        console.log('CRS has been changed.', projectStr);
+        eval(projectStr);
+        // TODO: remove project parameter from URL
       }, function () {});
     }
 
@@ -970,7 +965,7 @@ var olapp = {
       var crs = body.find('input[name=crs]').val();
       if (crs != project.view.getProjection().getCode()) {
         core.getCRSDefinition(crs).then(function () {
-          bootbox.confirm('Are you sure you want to change the CRS to ' + crs + '? If you click OK, page will be reloaded to apply the change.', function(result) {
+          bootbox.confirm('Are you sure you want to change the CRS to ' + crs + '?', function(result) {
             if (result) {
               core.project.setCRS(crs);
               $('#dlg_project').modal('hide');
