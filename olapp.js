@@ -1128,8 +1128,6 @@ var olapp = {
             addLayerDialog.groupSelectionChanged(group, $(this).children('span').text());
           });
 
-          groupList.append('<li class="list-group-item"><span>File</span></li>');
-
           // toggle button style
           $('#addlg_group_list').find('.collapse').on('hide.bs.collapse', function () {
             $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-down"></span>');
@@ -1179,7 +1177,7 @@ var olapp = {
           }
         };
         var layer = source.get(srcname_id[0]).createLayer(srcname_id[1], layerOptions);
-        core.project.addLayer(layer);
+        if (layer) core.project.addLayer(layer);
         // TODO: status message
       });
     }
@@ -1955,7 +1953,7 @@ olapp.createDefaultProject = function () {
       maxZoom: 18,
       zoom: 5
     }),
-    plugins: ['source/naturalearth.js', 'source/gsitiles.js'],
+    plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gist.js'],
     layers: [   // from bottom to top
       {source: 'GSITiles', layer: 'std'},                                // 標準地図
       {source: 'GSITiles', layer: 'relief', options: {visible: false}},  // 色別標高図
