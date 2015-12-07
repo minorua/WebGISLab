@@ -132,6 +132,7 @@ a.btn-blendmode span.active {
 
 #dlg_layerProperties .modal-body table td:first-child {
   width: 60px;
+  vertical-align: top;
 }
 
 

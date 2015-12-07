@@ -1225,7 +1225,7 @@ var olapp = {
 '<h3>General</h3>' +
 '<table>' +
 '  <tr><td>Source</td><td>' + layer.get('olapp').source + '</td></tr>' +
-'  <tr><td>Layer</td><td>' + layer.get('olapp').layer + '</td></tr>' +
+'  <tr><td>Layer</td><td><div style="width: 450px; word-wrap: break-word;">' + layer.get('olapp').layer + '</div></td></tr>' +
 '</table>';
       dlg.find('.modal-body').html(html);
 
