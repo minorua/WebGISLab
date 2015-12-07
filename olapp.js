@@ -8,6 +8,7 @@
 olapp - An OpenLayers application
 
 .core             - Core module.
+.core.crs         - CRS management module.
 .core.project     - Project management module.
 .gui              - GUI module.
 .map              - An object of ol.Map. Initialized in olapp.init().
@@ -82,11 +83,8 @@ var olapp = {
     return d.promise();
   };
 
-  olapp.definedProjections = {};
-
   olapp.defineProjection = function (name, proj4Str) {
-    proj4.defs(name, proj4Str);
-    olapp.definedProjections[name] = proj4Str;
+    core.crs.define(name, proj4Str);
   };
 
   // olapp.core
@@ -248,42 +246,6 @@ var olapp = {
     return null;
   };
 
-  // TODO: core.crs.getDefinition (name)
-  core.getCRSDefinition = function (crs) {
-    var d = $.Deferred();
-    if (crs.indexOf('EPSG:') === 0) {
-      if (crs == 'EPSG:3857') {
-        setTimeout(function () {
-          d.resolve();
-        }, 0);
-      }
-      else if (crs in olapp.definedProjections) {
-        setTimeout(function () {
-          d.resolve(olapp.definedProjections[crs]);
-        }, 0);
-      }
-      else {
-        // TODO: status message
-        core.loadScript('js/epsg.js').then(function () {
-          var code = parseInt(crs.substr(5));
-          for (var i = 0, l = olapp.epsgList.length; i < l; i++) {
-            if (olapp.epsgList[i].code == code) {
-              d.resolve(olapp.epsgList[i]);
-              return;
-            }
-          }
-          d.reject();
-        });
-      }
-    }
-    else {
-      setTimeout(function () {
-        d.reject();
-      }, 0);
-    }
-    return d.promise();
-  };
-
   var _canvasImageUrl;
 
   core.saveMapImage = function (filename) { //, width, height) {
@@ -400,6 +362,53 @@ var olapp = {
     return function (feature, resolution) {
       return style[feature.getGeometry().getType()];
     };
+  };
+
+  // olapp.core.crs - CRS management module
+  core.crs = {
+
+    definedCRSs: {},
+
+    define: function (name, proj4Str) {
+      proj4.defs(name, proj4Str);
+      core.crs.definedCRSs[name] = proj4Str;
+    },
+
+    getDefinition: function (name) {
+      var d = $.Deferred();
+      if (name.indexOf('EPSG:') === 0) {
+        if (name == 'EPSG:3857') {
+          setTimeout(function () {
+            d.resolve();
+          }, 0);
+        }
+        else if (name in core.crs.definedCRSs) {
+          setTimeout(function () {
+            d.resolve(core.crs.definedCRSs[name]);
+          }, 0);
+        }
+        else {
+          // TODO: status message
+          core.loadScript('js/epsg.js').then(function () {
+            var code = parseInt(name.substr(5));
+            for (var i = 0, l = olapp.epsgList.length; i < l; i++) {
+              if (olapp.epsgList[i].code == code) {
+                d.resolve(olapp.epsgList[i]);
+                return;
+              }
+            }
+            d.reject();
+          });
+        }
+      }
+      else {
+        setTimeout(function () {
+          d.reject();
+        }, 0);
+      }
+      return d.promise();
+    }
+
   };
 
 
@@ -617,7 +626,7 @@ var olapp = {
     },
 
     setCRS: function (crs) {
-      core.getCRSDefinition(crs).then(function (obj) {
+      core.crs.getDefinition(crs).then(function (obj) {
         if (obj && obj.proj) olapp.defineProjection(crs, obj.proj);
 
         // transform center coordinates
@@ -965,15 +974,15 @@ var olapp = {
 
       var crs = body.find('input[name=crs]').val();
       if (crs != project.view.getProjection().getCode()) {
-        core.getCRSDefinition(crs).then(function () {
-          bootbox.confirm('Are you sure you want to change the CRS to ' + crs + '?', function(result) {
+        core.crs.getDefinition(crs).then(function (obj) {
+          bootbox.confirm('Are you sure you want to change the CRS to "' + obj.title + '" (' + crs + ') ?', function(result) {
             if (result) {
               core.project.setCRS(crs);
               $('#dlg_project').modal('hide');
             }
           });
         }, function () {
-          alert('Invalid CRS "' + crs + '". Cannot apply it to the project.');
+          bootbox.alert('Invalid CRS "' + crs + '". Cannot apply it to the project.');
         });
       }
       else {
@@ -1037,7 +1046,7 @@ var olapp = {
                 callback: function (e) {
                   var item = list.children('.active');
                   if (item.length == 0) {
-                    alert('A CRS not selected');
+                    bootbox.alert('No CRS selected');
                     e.preventDefault();
                   }
                   else {
@@ -1604,7 +1613,7 @@ olapp.Project.prototype = {
 
     if (projection != 'EPSG:3857') {
       content.unshift('olapp.defineProjection(' + quote_escape(projection) + ', ' +
-                                                  quote_escape(olapp.definedProjections[projection]) + ');\n');
+                                                  quote_escape(olapp.core.crs.definedCRSs[projection]) + ');\n');
     }
     return content.join('\n');
   }
