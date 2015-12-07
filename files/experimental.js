@@ -13,10 +13,25 @@ olapp.loadProject(new olapp.Project({
     {source: 'GSITiles', layer: 'relief', options: {visible: false}},     // 色別標高図
     {source: 'GSIElevTile', layer: 'slope', options: {visible: false}},   // 傾斜区分図
     {source: 'GSJ', layer: 'g', options: {visible: false}},               // シームレス地質図 (詳細版)
+    {source: 'Custom', layer: 'gist1', options: {visible: false}},
     {source: 'Custom', layer: 'vt_rdcl', options: {visible: false}},
     {source: 'Custom', layer: 'vt_fgd', options: {visible: false}}
   ],
   customLayers: {
+    'gist1': function (project, layerOptions) {
+      var options = {
+        style: olapp.core.createStyleFunction(),
+        title: 'ne_110m_admin_0_countries.kml'
+      };
+      var layer = new ol.layer.Vector($.extend(options, layerOptions));
+
+      var url = 'https://gist.githubusercontent.com/minorua/97bc49fd8de08cff1502/raw/5f8bbb620486fe32b4e56867e71f19102dc019bf/ne_110m_admin_0_countries.kml';
+      $.get(url).then(function (data) {
+        var lyr = olapp.core.loadText(data, '', 'KML');
+        layer.setSource(lyr.getSource());
+      });
+      return layer;
+    },
     'vt_rdcl': function (project, layerOptions) {
       // EXPERIMENTAL vector tile - experimental_rdcl
       var attr = "<a href='https://github.com/gsi-cyberjapan/vector-tile-experiment' target='_blank'>地理院提供実験(rdcl)</a>";

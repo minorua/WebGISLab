@@ -177,6 +177,7 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
+  // TODO: return source instead of layer
   core.loadText = function (text, filename, format, style) {    // TODO: layerOptions
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
