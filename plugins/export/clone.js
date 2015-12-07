@@ -1,15 +1,15 @@
-// publish.js
+// clone.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
 // Dependencies: jQuery
 
 (function () {
   var plugin = {
-    name: 'Publish Project',
-    path: 'export/publish.js',
+    name: 'Clone Application',
+    path: 'export/clone.js',
     type: 'export',
     experimental: true,
-    description: ''
+    description: 'Clone the application and set the current project as default project.'
   };
 
   plugin.init = function () {
@@ -23,13 +23,13 @@
     }
 
     var html =
-'<div>Are you sure you want to save the project with HTML file and library files for web publishing?</div>' +
+'<div>Are you sure you want to save the project with HTML file and library files?</div>' +
 '<div style="margin: 10px 0; font-weight: bold;">Page type:</div>' +
 '<label><input type="radio" name="pagetype" value="index">index.html (Bootstrap)</label><br>' +
 '<label><input type="radio" name="pagetype" value="simple" checked>simple.html</label>';
 
     bootbox.dialog({
-      title: 'Publish Project "' + olapp.project.title + '"',
+      title: 'Clone the Application',
       message: html,
       buttons: {
         ok: {
