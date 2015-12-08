@@ -11,12 +11,19 @@
     description: 'Adds olapp.source.Gist'
   };
 
+  var sourceName = 'Gist';
   var layers = [
     {
       id: 'new',
       name: 'New Gist File'
     }
   ];
+
+  var html =
+'<li class="list-group-item">' +
+'  <button type="button" class="btn btn-primary">Add</button>' + layers[0].name +
+'</li>';
+  layers[0].listItem = $(html);
 
   /* olapp.source.Gist */
   olapp.source.Gist = new olapp.Source('Gist', layers);
@@ -56,8 +63,19 @@
     return layer;
   };
 
+  // event handler
+  layers[0].listItem.children('button').click(function () {
+    var layerOptions = {
+      olapp: {
+        source: sourceName
+      }
+    };
+    var layer = olapp.source.Gist.createLayer(layers[0].id, layerOptions);
+    if (layer) olapp.core.project.addLayer(layer);
+  });
+
   // register this source
-  olapp.source.register('File', 'Gist', olapp.source.Gist);
+  olapp.source.register('File', sourceName, olapp.source.Gist);
 
   // register this plugin
   olapp.plugin.register(plugin.path, plugin);

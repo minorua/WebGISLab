@@ -145,10 +145,6 @@ a.btn-blendmode span.active {
 
 }
 
-#dlg_addlayer .list-group-item {
-  border-radius: 0;
-}
-
 #addlg_group_list {
   background-color: gray;
   min-width: 120px;
@@ -164,6 +160,11 @@ a.btn-blendmode span.active {
   background-color: lightgray;
   height: 300px;
   overflow: auto;
+}
+
+#addlg_layer_list button {
+  float: right;
+  padding: 0px 8px;
 }
 
 
@@ -197,7 +198,6 @@ a.btn-blendmode span.active {
 .tooltip {
   position: relative;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
   color: white;
   opacity: 0.9;
   padding: 4px 8px;
@@ -267,9 +267,6 @@ http://bootsnipp.com/license
     left: 100%;
     margin-top: -6px;
     margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
 }
 
 .dropdown-submenu:hover>.dropdown-menu {
@@ -301,8 +298,5 @@ http://bootsnipp.com/license
 .dropdown-submenu.pull-left>.dropdown-menu {
     left: -100%;
     margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
 }
 /* <-- Multi level dropdown menu BS3 */

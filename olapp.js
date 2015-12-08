@@ -1078,15 +1078,17 @@ var olapp = {
 
 
   // olapp.gui.dialog.addLayer
-  var addLayerDialog = {
+  gui.dialog.addLayer = {
 
     groupListInitialized: false,
 
     init: function () {
+      var dialog = this;
+
       $('#dlg_addlayer').on('show.bs.modal', function () {
         var groupList = $('#addlg_group_list');
 
-        if (!addLayerDialog.groupListInitialized) {
+        if (!dialog.groupListInitialized) {
           // Initialize and populate group list
           groupList.html('');
 
@@ -1123,13 +1125,13 @@ var olapp = {
             groupList.find('.active').removeClass('active');
             $(this).addClass('active');
             $(this).find('.list-group-item').addClass('active');
-            addLayerDialog.groupSelectionChanged($(this).children('span').text());
+            dialog.groupSelectionChanged($(this).children('span').text());
           }).find('.list-group-item').click(function (event) {
             event.stopPropagation();
             groupList.find('.active').removeClass('active');
             $(this).addClass('active');
             var group = $(this).parent().parent().parent().children('span').text();
-            addLayerDialog.groupSelectionChanged(group, $(this).children('span').text());
+            dialog.groupSelectionChanged(group, $(this).children('span').text());
           });
 
           // toggle button style
@@ -1139,7 +1141,7 @@ var olapp = {
             $(this).parent().find('.accordion-toggle').html('<span class="glyphicon glyphicon-chevron-up"></span>');
           }).collapse('hide');
 
-          addLayerDialog.groupListInitialized = true;
+          dialog.groupListInitialized = true;
         }
       });
     },
@@ -1149,14 +1151,34 @@ var olapp = {
       var list = $('#addlg_layer_list');
       list.html('');
 
+      var addLayer = function (src, id) {
+        // Hold source and layer (id)
+        var layerOptions = {
+          olapp: {
+            source: src,
+            layer: id
+          }
+        };
+        var layer = source.get(src).createLayer(id, layerOptions);
+        if (layer) core.project.addLayer(layer);
+        // TODO: status message
+      };
+
       var appendItem = function (sourceName, item) {
-        var html =
+        if (item.listItem !== undefined) {
+          list.append(item.listItem);
+        }
+        else {
+          var html =
 '<li class="list-group-item">' +
-'  <button type="button" class="btn btn-primary" style="float:right; padding:0px 8px;">Add</button>' +
+'  <button type="button" class="btn btn-primary">Add</button>' +
 '  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
 '</li>';
-
-        list.append(html);
+          $(html).appendTo(list).children('button').click(function () {
+            var srcname_id = $(this).parent().children('span').text().split('/');
+            addLayer(srcname_id[0], srcname_id[1]);
+          });
+        }
       };
 
       if (sourceName === undefined) {
@@ -1171,23 +1193,9 @@ var olapp = {
           appendItem(sourceName, item);
         });
       }
-      list.find('button').click(function () {
-        var srcname_id = $(this).parent().children('span').text().split('/');
-        // Hold source and layer (id)
-        var layerOptions = {
-          olapp: {
-            source: srcname_id[0],
-            layer: srcname_id[1]
-          }
-        };
-        var layer = source.get(srcname_id[0]).createLayer(srcname_id[1], layerOptions);
-        if (layer) core.project.addLayer(layer);
-        // TODO: status message
-      });
     }
 
   };
-  gui.dialog.addLayer = addLayerDialog;
 
   gui.dialog.layerProperties = {
 
