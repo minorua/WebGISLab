@@ -1191,37 +1191,40 @@ var olapp = {
 
   gui.dialog.layerProperties = {
 
+    _initialized: false,
+
     _layer: null,
 
-    init: function () {
-      // TODO: initialize in show()
-      $('#dlg_layerProperties').find('.modal-footer .btn-primary').click(function () {
-        var layer = gui.dialog.layerProperties._layer;
-        if (layer instanceof ol.layer.Vector) {
-          var color = '#' + $('#lyr_color').val();
-          var width = 1;
-          var fillColor = tinycolor(color).setAlpha(0.5).toRgbString();
-
-          var obj = layer.get('olapp');
-          obj.style = obj.style || {};
-          obj.style.color = color;
-          obj.style.width = width;
-          obj.style.fillColor = fillColor;
-
-          // Set style to features
-          var styleFunc = core.createStyleFunction(color, width, fillColor);
-          var features = layer.getSource().getFeatures();
-          for (var i = 0, l = features.length; i < l; i++) {
-            features[i].setStyle(styleFunc(features[i]));
-          }
-        }
-        $('#dlg_layerProperties').modal('hide');
-      });
-    },
+    init: function () {},
 
     show: function (layer) {
-      this._layer = layer;
+      if (!this._initialized) {
+        $('#dlg_layerProperties').find('.modal-footer .btn-primary').click(function () {
+          var lyr = gui.dialog.layerProperties._layer;
+          if (lyr instanceof ol.layer.Vector) {
+            var color = '#' + $('#lyr_color').val();
+            var width = 1;
+            var fillColor = tinycolor(color).setAlpha(0.5).toRgbString();
 
+            var obj = lyr.get('olapp');
+            obj.style = obj.style || {};
+            obj.style.color = color;
+            obj.style.width = width;
+            obj.style.fillColor = fillColor;
+
+            // Set style to features
+            var styleFunc = core.createStyleFunction(color, width, fillColor);
+            var features = lyr.getSource().getFeatures();
+            for (var i = 0, l = features.length; i < l; i++) {
+              features[i].setStyle(styleFunc(features[i]));
+            }
+          }
+          $('#dlg_layerProperties').modal('hide');
+        });
+        this._initialized = true;
+      }
+
+      this._layer = layer;
       var dlg = $('#dlg_layerProperties');
       dlg.find('.modal-title').html('Layer Properties - ' + layer.get('title'));
 
