@@ -71,7 +71,7 @@ nav .container {
   position: absolute;
   top: 50px;
   bottom: 0;
-  min-width: 250px;
+  min-width: 256px;
   background-color: #fff;
   overflow: auto;
   padding: 5px;
