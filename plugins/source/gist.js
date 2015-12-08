@@ -11,15 +11,15 @@
     description: 'Adds olapp.source.Gist'
   };
 
-  var layerIds = ['new'];
-  var layers = {
-    'new': {
+  var layers = [
+    {
+      id: 'new',
       name: 'New Gist File'
     }
-  };
+  ];
 
   /* olapp.source.Gist */
-  olapp.source.Gist = new olapp.Source('Gist', layerIds, layers);
+  olapp.source.Gist = new olapp.Source('Gist', layers);
   olapp.source.Gist.createLayer = function (id, layerOptions) {
     var url;
     if (id != 'new') url = id;

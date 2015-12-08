@@ -12,99 +12,111 @@
   };
   // GSI Tiles
   // http://maps.gsi.go.jp/development/
-  var layerIds = ['std', 'pale', 'blank', 'english', 'relief', 'ort', 'gazo1', 'gazo2', 'gazo3', 'gazo4', 'ort_old10', 'ort_USA10', 'airphoto'];
-  var layers = {
-    'std': {
+  var layers = [
+    {
+      id: 'std',
       name: '標準地図',
       format: 'png',
       zmin: 2,
       zmax: 18,
       zminJp: 9
     },
-    'pale': {
+    {
+      id: 'pale',
       name: '淡色地図',
       format: 'png',
       zmin: 12,
       zmax: 18
     },
-    'blank': {
+    {
+      id: 'blank',
       name: '白地図',
       format: 'png',
       zmin: 5,
       zmax: 14
     },
-    'english': {
+    {
+      id: 'english',
       name: 'English',
       format: 'png',
       zmin: 5,
       zmax: 11
     },
-    'relief': {
+    {
+      id: 'relief',
       name: '色別標高図',
       format: 'png',
       zmin: 5,
       zmax: 15
     },
-    'ort': {
+    {
+      id: 'ort',
       name: '写真',
       format: 'jpg',
       zmin: 2,
       zmax: 18,
       zminJp: 5
     },
-    'gazo1': {
+    {
+      id: 'gazo1',
       name: '国土画像情報（第一期：1974～1978年撮影）',
       format: 'jpg',
       zmin: 10,
       zmax: 17
     },
-    'gazo2': {
+    {
+      id: 'gazo2',
       name: '国土画像情報（第二期：1979～1983年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
-    'gazo3': {
+    {
+      id: 'gazo3',
       name: '国土画像情報（第三期：1984～1986年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
-    'gazo4': {
+    {
+      id: 'gazo4',
       name: '国土画像情報（第四期：1988～1990年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
-    'ort_old10': {
+    {
+      id: 'ort_old10',
       name: '空中写真（1961～1964年）',
       format: 'png',
       zmin: 15,
       zmax: 17
     },
-    'ort_USA10': {
+    {
+      id: 'ort_USA10',
       name: '空中写真（1945～1950年）',
       format: 'png',
       zmin: 15,
       zmax: 17
     },
-    'airphoto': {
+    {
+      id: 'airphoto',
       name: '簡易空中写真（2004年～）',
       format: 'png',
       zmin: 5,
       zmax: 18
     }
-  };
+  ];
 
   var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
 
   /* olapp.source.GSITiles */
-  olapp.source.GSITiles = new olapp.Source('GSI Tiles', layerIds, layers);
+  olapp.source.GSITiles = new olapp.Source('GSI Tiles', layers);
   olapp.source.GSITiles.createLayer = function (id, layerOptions) {
-    if (layerIds.indexOf(id) === -1) return null;
+    var lyr = this.getLayerById(id);
+    if (!lyr) return null;
 
-    var lyr = layers[id],
-        url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format,
+    var url = 'http://cyberjapandata.gsi.go.jp/xyz/' + id + '/{z}/{x}/{y}.' + lyr.format,
         destProj = olapp.project.view.getProjection(),
         extentJp = ol.proj.transformExtent([122.7, 20.4, 154.8, 45.6], 'EPSG:4326', destProj);
 
@@ -141,7 +153,7 @@
       // Create two layers and a layer group that binds the layers
       options = {
         layers: [new ol.layer.Tile(options1), new ol.layer.Tile(options2)],
-        title: layers[id].name
+        title: lyr.name
       };
       return new ol.layer.Group($.extend(options, layerOptions));
     }
@@ -151,7 +163,7 @@
         extent: extentJp,
         maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1),
         source: source,
-        title: layers[id].name
+        title: lyr.name
       };
       return new ol.layer.Tile($.extend(options, layerOptions));
     }

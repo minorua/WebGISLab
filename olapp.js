@@ -1161,13 +1161,13 @@ var olapp = {
 
       if (sourceName === undefined) {
         source.sourceNames(groupName).forEach(function (sourceName) {
-          source.get(sourceName).list().forEach(function (item) {
+          source.get(sourceName).layers.forEach(function (item) {
             appendItem(sourceName, item);
           });
         });
       }
       else {
-        source.get(sourceName).list().forEach(function (item) {
+        source.get(sourceName).layers.forEach(function (item) {
           appendItem(sourceName, item);
         });
       }
@@ -1383,10 +1383,10 @@ var olapp = {
   var sources = {};
   var sourceGroups = {};
 
-  source.register = function (group, name, constructor) {
+  source.register = function (group, name, object) {
     if (sourceGroups[group] === undefined) sourceGroups[group] = {};
-    sourceGroups[group][name] = constructor;
-    sources[name] = constructor;
+    sourceGroups[group][name] = object;
+    sources[name] = object;
   };
 
   source.get = function (name) {
@@ -1629,36 +1629,37 @@ olapp.Project.prototype = {
 /*
 olapp.Source
 
-.list()          - Get layer list in HTML.
-.createLayer(id) - Create a layer with a source identified by id.
+.createLayer should be overridden.
 */
-olapp.Source = function (name, layerIds, layers) {
+// Constructor
+//   name: source name
+//   layers: List of layer items. Each item should have id and name properties.
+//           Optionally it can have listItem and/or more properties.
+//           listItem property can be a HTML string, a DOM element or a jQuery object.
+olapp.Source = function (name, layers) {
   this.name = name;
-  this.layerIds = layerIds || [];
-  this.layers = layers || {};
+  this.layers = layers || [];
 };
 
 olapp.Source.prototype = {
 
   constructor: olapp.Source,
 
-  list: function () {
-    var listItems = [];
-    this.layerIds.forEach(function (id) {
-      listItems.push({
-        id: id,
-        name: this.layers[id].name
-      });
-    }, this);
-    return listItems;
+  getLayerById: function (id) {
+    for (var i = 0, l = this.layers.length; i < l; i++) {
+      if (this.layers[i].id === id) return this.layers[i];
+    }
+    return undefined;
   },
 
+  // Create a layer with a source identified by id.
   createLayer: function (id, layerOptions) {
     console.log(this.name, 'createLayer method is not implemented');
     return null;
   }
 
 };
+
 
 // geometry
 olapp.tools.geom = {};

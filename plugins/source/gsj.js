@@ -13,21 +13,22 @@
   // Seamless Digital Geological Map of Japan (1:200,000)
   // https://gbank.gsj.jp/seamless/
 
-  var layerIds = ['g'];
-  var layers = {
-    'g': {
+  var layers = [
+    {
+      id: 'g',
       name: 'シームレス地質図 (詳細版)',
       matrixSet: 'g_set'
     }
-  };
+  ];
 
   /* olapp.source.GSJ */
-  olapp.source.GSJ = new olapp.Source('GSJ', layerIds, layers);
+  olapp.source.GSJ = new olapp.Source('GSJ', layers);
   olapp.source.GSJ.createLayer = function (id, layerOptions) {
-    if (layerIds.indexOf(id) === -1) return null;
+    var lyr = this.getLayerById(id);
+    if (!lyr) return null;
 
     var options = {
-      title: layers[id].name
+      title: lyr.name
     };
     var gsjlayer = new ol.layer.Tile($.extend(options, layerOptions));
 
@@ -37,7 +38,7 @@
       var result = parser.read(response);
       var options = ol.source.WMTS.optionsFromCapabilities(result, {
         layer: id,
-        matrixSet: layers[id].matrixSet,
+        matrixSet: lyr.matrixSet,
         requestEncoding: 'REST'
       });
       options.crossOrigin = 'anonymous';

@@ -11,41 +11,45 @@ olapp.core.loadScript('js/source/gsielevtile.js').then(function () {
     description: 'Adds olapp.source.GSIElevTile.'
   };
 
-  var layerIds = ['hillshade', 'relief', 'relief_low', 'slope', 'slope_steep'];
-  var layers = {
-    'hillshade': {
+  var layers = [
+    {
+      id: 'hillshade',
       name: '陰影図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
-    'relief': {
+    {
+      id: 'relief',
       name: '段彩図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
-    'relief_low': {
+    {
+      id: 'relief_low',
       name: '低標高向けカラー標高図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
-    'slope': {
+    {
+      id: 'slope',
       name: '傾斜区分図 (標高タイル. z>=10)',
       zmin: 10,
       zmax: 14
     },
-    'slope_steep': {
+    {
+      id: 'slope_steep',
       name: '急傾斜地図 (標高タイル. z>=10)',
       zmin: 10,
       zmax: 14
     }
-  };
+  ];
 
   /* olapp.source.GSIElevTile */
-  olapp.source.GSIElevTile = new olapp.Source('GSI Elevation Tile', layerIds, layers);
+  olapp.source.GSIElevTile = new olapp.Source('GSI Elevation Tile', layers);
   olapp.source.GSIElevTile.createLayer = function (id, layerOptions) {
-    if (layerIds.indexOf(id) === -1) return null;
+    var lyr = this.getLayerById(id);
+    if (!lyr) return null;
 
-    var lyr = layers[id];
     var attr = "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
     var mode = id.split('_')[0];
     var colorMap, colorInterpolation;
@@ -93,7 +97,7 @@ olapp.core.loadScript('js/source/gsielevtile.js').then(function () {
     options = {
       extent: extentJp,
       source: new ol.source.GSIElevTile(options),
-      title: layers[id].name
+      title: lyr.name
     };
     if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
 
