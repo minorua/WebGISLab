@@ -137,7 +137,8 @@ var olapp = {
   core.loadScripts = function (urls, onebyone) {
     if (onebyone) {
       var d = $.Deferred();
-      core.loadScript(urls.shift()).then(function () {    // TODO: do not make a change to urls
+      core.loadScript(urls[0]).then(function () {
+        urls = urls.slice(1);
         if (urls.length == 0) d.resolve();
         else {
           core.loadScripts(urls, true).then(function () {
