@@ -27,8 +27,7 @@ olapp.loadProject(new olapp.Project({
 
       var url = 'https://gist.githubusercontent.com/minorua/97bc49fd8de08cff1502/raw/5f8bbb620486fe32b4e56867e71f19102dc019bf/ne_110m_admin_0_countries.kml';
       $.get(url).then(function (data) {
-        var lyr = olapp.core.loadText(data, '', 'KML');
-        layer.setSource(lyr.getSource());
+        layer.setSource(olapp.core.loadText(data, 'KML'));
       });
       return layer;
     },

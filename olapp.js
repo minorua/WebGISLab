@@ -161,8 +161,7 @@ var olapp = {
 
     var reader = new FileReader();
     reader.onload = function (event) {
-      var format = file.name.split('.').pop();
-      var layer = core.loadText(reader.result, file.name, format);
+      var layer = core.createLayerFromTextSource(reader.result, file.name);
       if (layer) {
         layer.set('title', file.name);
         core.project.addLayer(layer);
@@ -175,30 +174,27 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  // TODO: return source instead of layer
-  core.loadText = function (text, filename, format, style) {    // TODO: layerOptions
-    var format2formatConstructors = {
-      'geojson': [ol.format.GeoJSON],
-      'gpx': [ol.format.GPX],
-      'kml': [ol.format.KML],
-      'json': [ol.format.GeoJSON, ol.format.TopoJSON]
-    };
+  core.createLayerFromTextSource = function (text, filename, style, format) {    // TODO: layerOptions
+    if (format === undefined) format = filename.split('#')[0].split('.').pop();
 
-    format = format || '';    // TODO: get from extension
-    var formatConstructors = format2formatConstructors[format.toLowerCase()];
-    if (!formatConstructors) formatConstructors = [
-      ol.format.GeoJSON,
-      ol.format.GPX,
-      ol.format.IGC,
-      ol.format.KML,
-      ol.format.TopoJSON
-    ];
+    var source = core.loadText(text, format);
+    var id = filename || '';
+    if (id.indexOf('#') === -1) id += '#' + parseInt($.now() / 1000).toString(16);
 
-    var layer = core._loadText(text, filename, formatConstructors);
+    var layer = new ol.layer.Vector({
+      source: source,
+      style: core.createStyleFunction(),
+      olapp: {
+        source: 'Text',
+        layer: id,
+        text: text
+      }
+    });
+
     if (style !== undefined) {
       // Set style to features
       var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
-      var features = layer.getSource().getFeatures();
+      var features = source.getFeatures();
       for (var i = 0, l = features.length; i < l; i++) {
         features[i].setStyle(styleFunc(features[i]));
       }
@@ -206,7 +202,29 @@ var olapp = {
     return layer;
   };
 
-  core._loadText = function (text, filename, formatConstructors) {
+  core.loadText = function (text, format) {
+    var format2formatConstructors = {
+      'geojson': [ol.format.GeoJSON],
+      'gpx': [ol.format.GPX],
+      'kml': [ol.format.KML],
+      'json': [ol.format.GeoJSON, ol.format.TopoJSON]
+    };
+
+    format = format || '';
+    var formatConstructors = format2formatConstructors[format.toLowerCase()];
+    if (!formatConstructors) {
+      formatConstructors = [
+        ol.format.GeoJSON,
+        ol.format.GPX,
+        ol.format.IGC,
+        ol.format.KML,
+        ol.format.TopoJSON
+      ];
+    }
+    return core._loadText(text, formatConstructors);
+  };
+
+  core._loadText = function (text, formatConstructors) {
     var transform = core.transformFromWgs84;
 
     for (var i = 0; i < formatConstructors.length; i++) {
@@ -224,24 +242,9 @@ var olapp = {
         if (geometry) geometry.applyTransform(transform);
       });
 
-      var source = new ol.source.Vector({
+      return new ol.source.Vector({
         features: features
       });
-
-      var id = filename;
-      if (id.indexOf('#') === -1) id += '#' + parseInt($.now() / 1000).toString(16);
-
-      var layer = new ol.layer.Vector({
-        source: source,
-        style: core.createStyleFunction(),
-        olapp: {
-          source: 'Text',
-          layer: id,
-          text: text
-        }
-      });
-
-      return layer;
     }
     return null;
   };
@@ -538,7 +541,7 @@ var olapp = {
             layer = project.customLayers[lyr.layer](project, layerOptions);
           }
           else if(lyr.source == 'Text') {
-            layer = core.loadText(project.textSources[lyr.layer], lyr.layer, undefined, lyr.style);
+            layer = core.createLayerFromTextSource(project.textSources[lyr.layer], lyr.layer, lyr.style);
             for (var k in lyr.options) {
               layer.set(k, lyr.options[k]);
             }

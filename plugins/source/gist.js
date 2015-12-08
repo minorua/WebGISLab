@@ -39,9 +39,9 @@
     var layer = new ol.layer.Vector($.extend(options, layerOptions));
 
     $.get(url).then(function (data) {
-      var lyr = olapp.core.loadText(data, filename);
-      if (lyr) {
-        layer.setSource(lyr.getSource());
+      var source = olapp.core.loadText(data);
+      if (source) {
+        layer.setSource(source);
         layer.get('olapp').layer = url;
         // TODO: store to local storage as a recently used Gist file
       }
