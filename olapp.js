@@ -1572,8 +1572,10 @@ olapp.Project.prototype = {
   },
 
   toString: function () {
-    function quote_escape(text) {
-      return "'" + text.replace(/\n/g, '\\n').replace(/\'/g, "\\'") + "'";
+    function quote_escape(text, singleQuote) {
+      text = text.replace(/\n/g, '\\n');
+      if (singleQuote) return "'" + text.replace(/\'/g, "\\'") + "'";
+      return '"' + text.replace(/\"/g, '\\"') + '"';
     }
 
     var projection = this.view.getProjection().getCode();
@@ -1595,7 +1597,7 @@ olapp.Project.prototype = {
       var olappObj = layer.get('olapp');
       $.extend(properties, olappObj);
       delete properties.data;
-      layers.push(properties);
+      layers.push('\n    ' + JSON.stringify(properties));
 
       // source data
       var data = olappObj.data;
@@ -1606,7 +1608,7 @@ olapp.Project.prototype = {
           data = JSON.stringify(data);
         }
         else {
-          data = quote_escape(data);
+          data = quote_escape(data, true);    // enclose text in single quotes
         }
         data = '{format:' + quote_escape(ext) + ',data:' + data + '}';
         sources.push('\n    ' + quote_escape(properties.layer) + ':' + data);
@@ -1630,10 +1632,11 @@ olapp.Project.prototype = {
 '  }),',
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
-'  layers: ' + JSON.stringify(layers) + ',',
-'  sources: {' + sources.join(',') + '\n',
+'  layers: [' + layers.join(','),
+'  ],',
+'  sources: {' + sources.join(','),
 '  },',
-'  customLayers: {' + customLayers.join(',') + '\n',
+'  customLayers: {' + customLayers.join(','),
 '  }',
 '}));',
 ''];
