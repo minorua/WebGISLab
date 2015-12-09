@@ -162,7 +162,7 @@ var olapp = {
 
     var reader = new FileReader();
     reader.onload = function (event) {
-      var layer = core.createLayerFromTextSource(reader.result, file.name);
+      var layer = core.createLayer(reader.result, file.name);
       if (layer) {
         layer.set('title', file.name);
         core.project.addLayer(layer);
@@ -175,27 +175,28 @@ var olapp = {
     reader.readAsText(file, 'UTF-8');
   };
 
-  core.createLayerFromTextSource = function (text, filename, style, format) {    // TODO: layerOptions
-    if (format === undefined) format = filename.split('#')[0].split('.').pop();
+  core.createLayer = function (source, filename, style, format) {    // TODO: layerOptions
+    var ext = filename.split('#')[0].split('.').pop().toLowerCase();
+    if (format === undefined) format = ext;
 
-    var source = core.loadText(text, format);
+    var src = core.loadSource(source, format);
     var id = filename || '';
     if (id.indexOf('#') === -1) id += '#' + parseInt($.now() / 1000).toString(16);
 
     var layer = new ol.layer.Vector({
-      source: source,
+      source: src,
       style: core.createStyleFunction(),
       olapp: {
-        source: 'Text',
+        source: (ext.indexOf('json') !== -1) ? 'JSON' : 'Text',
         layer: id,
-        text: text
+        data: source
       }
     });
 
     if (style !== undefined) {
       // Set style to features
       var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
-      var features = source.getFeatures();
+      var features = src.getFeatures();
       for (var i = 0, l = features.length; i < l; i++) {
         features[i].setStyle(styleFunc(features[i]));
       }
@@ -203,7 +204,7 @@ var olapp = {
     return layer;
   };
 
-  core.loadText = function (text, format) {
+  core.loadSource = function (source, format) {
     var format2formatConstructors = {
       'geojson': [ol.format.GeoJSON],
       'gpx': [ol.format.GPX],
@@ -222,17 +223,17 @@ var olapp = {
         ol.format.TopoJSON
       ];
     }
-    return core._loadText(text, formatConstructors);
+    return core._loadSource(source, formatConstructors);
   };
 
-  core._loadText = function (text, formatConstructors) {
+  core._loadSource = function (source, formatConstructors) {
     var transform = core.transformFromWgs84;
 
     for (var i = 0; i < formatConstructors.length; i++) {
       var format = new formatConstructors[i]();
       var features = [];
       try {
-        features = format.readFeatures(text);
+        features = format.readFeatures(source);
       } catch (e) {
         continue;
       }
@@ -541,8 +542,8 @@ var olapp = {
           if (lyr.source == 'Custom') {
             layer = project.customLayers[lyr.layer](project, layerOptions);
           }
-          else if(lyr.source == 'Text') {
-            layer = core.createLayerFromTextSource(project.textSources[lyr.layer], lyr.layer, lyr.style);
+          else if(lyr.source == 'JSON' || lyr.source == 'Text') {
+            layer = core.createLayer(project.sources[lyr.layer].data, lyr.layer, lyr.style);
             for (var k in lyr.options) {
               layer.set(k, lyr.options[k]);
             }
@@ -1511,7 +1512,7 @@ olapp.Project = function (options) {
   this.init = options.init;
   this.layers = options.layers || [];
   this.customLayers = options.customLayers || {};
-  this.textSources = options.textSources || {};
+  this.sources = options.sources || {};
 
   this._lastLayerId = this.layers.length - 1;
   this.mapLayers = [];
@@ -1581,7 +1582,7 @@ olapp.Project.prototype = {
     var zoom = this.view.getZoom();
     var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
 
-    var layers = [], textSources = {};
+    var layers = [], sources = [];
     this.mapLayers.forEach(function (layer) {
       var properties = {
         options: {
@@ -1591,13 +1592,23 @@ olapp.Project.prototype = {
           title: layer.get('title')
         }
       };
-      $.extend(properties, layer.get('olapp'));
-      delete properties.text;
+      var olappObj = layer.get('olapp');
+      $.extend(properties, olappObj);
+      delete properties.data;
       layers.push(properties);
 
+      // source data
       if (layer instanceof ol.layer.Vector) {
-        var text = layer.get('olapp').text;
-        if (text !== undefined) textSources[properties.layer] = text;
+        var data = olappObj.data;
+        if (data !== undefined) {
+          // If the format is JSON, put parsed object into textSources to avoid escaping " and LF.
+          var ext = olappObj.layer.split('#')[0].split('.').pop().toLowerCase();
+          var obj = {
+            format: ext,
+            data: (olappObj.source == 'JSON' && typeof data == 'string') ? JSON.parse(data) : data
+          };
+          sources.push('\n    ' + quote_escape(properties.layer) + ': ' + JSON.stringify(obj));
+        }
       }
     });
 
@@ -1619,7 +1630,7 @@ olapp.Project.prototype = {
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
 '  layers: ' + JSON.stringify(layers) + ',',
-'  textSources: ' + JSON.stringify(textSources) + ',',
+'  sources: {' + sources.join(',') + '},',
 '  customLayers: {' + customLayers.join(',') + '}',
 '}));',
 ''];

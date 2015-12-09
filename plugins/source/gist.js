@@ -46,7 +46,7 @@
     var layer = new ol.layer.Vector($.extend(options, layerOptions));
 
     $.get(url).then(function (data) {
-      var source = olapp.core.loadText(data);
+      var source = olapp.core.loadSource(data);
       if (source) {
         layer.setSource(source);
         layer.get('olapp').layer = url;

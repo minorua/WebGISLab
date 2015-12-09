@@ -141,5 +141,5 @@ olapp.core.project.setLayerSource('files/ne/ne_110m_coastline.js', function () {
 {"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":[[-106.6,73.6],[-105.26,73.64],[-104.5,73.42],[-105.38,72.76],[-106.94,73.46],[-106.6,73.6]]}}
 ]
 };
-  return olapp.core.loadText(data, 'GeoJSON');
+  return olapp.core.loadSource(data, 'GeoJSON');
 });
