@@ -1573,7 +1573,7 @@ olapp.Project.prototype = {
 
   toString: function () {
     function quote_escape(text) {
-      return '"' + text.split('"').join('\\"') + '"';
+      return "'" + text.replace(/\n/g, '\\n').replace(/\'/g, "\\'") + "'";
     }
 
     var projection = this.view.getProjection().getCode();
@@ -1598,17 +1598,18 @@ olapp.Project.prototype = {
       layers.push(properties);
 
       // source data
-      if (layer instanceof ol.layer.Vector) {
-        var data = olappObj.data;
-        if (data !== undefined) {
-          // If the format is JSON, put parsed object into textSources to avoid escaping " and LF.
-          var ext = olappObj.layer.split('#')[0].split('.').pop().toLowerCase();
-          var obj = {
-            format: ext,
-            data: (olappObj.source == 'JSON' && typeof data == 'string') ? JSON.parse(data) : data
-          };
-          sources.push('\n    ' + quote_escape(properties.layer) + ': ' + JSON.stringify(obj));
+      var data = olappObj.data;
+      if (layer instanceof ol.layer.Vector && data !== undefined) {
+        var ext = olappObj.layer.split('#')[0].split('.').pop().toLowerCase();
+        if (olappObj.source == 'JSON') {
+          if (typeof data == 'string') data = JSON.parse(data);
+          data = JSON.stringify(data);
         }
+        else {
+          data = quote_escape(data);
+        }
+        data = '{format:' + quote_escape(ext) + ',data:' + data + '}';
+        sources.push('\n    ' + quote_escape(properties.layer) + ':' + data);
       }
     });
 
@@ -1630,8 +1631,10 @@ olapp.Project.prototype = {
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
 '  layers: ' + JSON.stringify(layers) + ',',
-'  sources: {' + sources.join(',') + '},',
-'  customLayers: {' + customLayers.join(',') + '}',
+'  sources: {' + sources.join(',') + '\n',
+'  },',
+'  customLayers: {' + customLayers.join(',') + '\n',
+'  }',
 '}));',
 ''];
 
