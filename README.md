@@ -44,6 +44,7 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
     - 新規プロジェクトの作成と既存プロジェクトの変更
         - [ ] タイトル・説明
         - [ ] 座標参照系
+            - [ ] カスタム座標参照系
         - [ ] プラグイン
 - レイヤリスト
     - [x] チェックボックスによる表示・非表示切り替え
@@ -187,7 +188,8 @@ olapp.loadProject(new olapp.Project({
   layers: [    // from bottom to top
     {source: 'GSITiles', layer: 'std', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
     {source: 'GSITiles', layer: 'relief', options: {visible: true, opacity: 0.8, blendMode: 'multiply'}},
-    {source: 'Text', layer: 'filename.geojson20151123010100', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
+    {source: 'JSON', layer: 'filename.geojson#20151123010100', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
+    {source: 'Text', layer: 'filename.kml#20151123020100', options: {visible: true, opacity: 1, blendMode: 'source-over'}},
     {source: 'Custom', layer: 'customlayer1', options: {visible: true, opacity: 1, blendMode: 'source-over'}}
   ],
   styles: [    // same item count as layers
@@ -206,8 +208,9 @@ olapp.loadProject(new olapp.Project({
       return new ol.layer.VectorTile($.extend(options, layerOptions));
     }
   },
-  textSources: {
-    'filename.geojson20151123010100': {format: 'GeoJSON', data: '{........JSON Content.......}'}
+  sources: {
+    'filename.geojson#20151123010100': {format: 'geojson', data: {........GeoJSON Content........}},
+    'filename.kml#20151123020100': {format: 'kml', data: "<?xml version=\"1.0\" encoding=\"utf-8\" ?>........KML Content......."}
   }
 }));
 ```
