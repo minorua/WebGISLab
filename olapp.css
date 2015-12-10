@@ -24,6 +24,13 @@ html, body {
   padding: 5px;
   overflow: auto;
 }
+#status {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 50px;
+  background-color: white;
+}
 
 * {
   border-radius: 0 !important;

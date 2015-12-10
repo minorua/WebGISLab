@@ -114,7 +114,7 @@ var olapp = {
   };
 
   // Load a script if not loaded yet
-  core.loadScript = function (url) {
+  core.loadScript = function (url) {    // TODO: statusMessage
     var d = $.Deferred();
     var sel = $('script[src="' + url + '"]');
     if (sel.length) {
@@ -158,7 +158,11 @@ var olapp = {
   };
 
   core.loadLayerFromFile = function (file) {
-    if (!olapp.project) alert('No project');   // TODO: assert
+    if (!olapp.project) {
+      console.log('No project');
+      return;
+    }
+    gui.status.showMessage('Loading ' + file.name + '...');
 
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -171,6 +175,7 @@ var olapp = {
       else {
         alert('Unknown format file: ' + file.name);
       }
+      gui.status.clear();
     }
     reader.readAsText(file, 'UTF-8');
   };
@@ -396,8 +401,9 @@ var olapp = {
           }, 0);
         }
         else {
-          // TODO: status message
+          gui.status.showMessage('Loading EPSG code list...');
           core.loadScript('js/epsg.js').then(function () {
+            gui.status.clear();
             var code = parseInt(name.substr(5));
             for (var i = 0, l = olapp.epsgList.length; i < l; i++) {
               if (olapp.epsgList[i].code == code) {
@@ -464,6 +470,7 @@ var olapp = {
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
     // Returns a deferred object which is resolved when the project has been loaded to application.
     load: function (prj) {
+      gui.status.showMessage('Loading Project...');
       var d, p;
       if (prj instanceof olapp.Project) {
         d = core.project._loadDeferred || $.Deferred();
@@ -503,7 +510,6 @@ var olapp = {
           var reader = new FileReader();
           reader.onload = function (event) {
             eval(reader.result);
-            // TODO: status message
           }
           reader.readAsText(prj, 'UTF-8');
         }
@@ -581,6 +587,8 @@ var olapp = {
         map.addLayer(layer);
         gui.addLayer(layer);
       });
+
+      gui.status.clear();
     },
 
     loadLayerSource: function (layer, url) {
@@ -1021,8 +1029,9 @@ var olapp = {
       body.find('textarea[name=desc]').val(project.description);
       body.find('input[name=crs]').val(project.view.getProjection().getCode());
       body.find('button').click(function () {
-        // TODO: status message
+        gui.status.showMessage('Loading EPSG code list...');
         core.loadScript('js/epsg.js').then(function () {
+          gui.status.clear();
           var container = $('<div />');
           var filterBox = $('<input type="text" style="width: 100%;">').on('change keyup', function () {
             var filter = $(this).val().toLowerCase();
@@ -1164,8 +1173,11 @@ var olapp = {
           }
         };
         var layer = source.get(src).createLayer(id, layerOptions);
-        if (layer) core.project.addLayer(layer);
-        // TODO: status message
+        if (layer) {
+          core.project.addLayer(layer);
+          gui.status.showMessage('Layer "' + layer.title + '" has been added to the map.', 3000);
+        }
+        else gui.status.showMessage('Failed to create layer.', 3000);
       };
 
       var appendItem = function (sourceName, item) {
@@ -1387,6 +1399,25 @@ var olapp = {
           }
         });
       });
+    }
+
+  };
+
+
+  // olapp.gui.status
+  gui.status = {
+
+    clear: function () {    // TODO: optional message id
+      $('#status').fadeOut();
+    },
+
+    showMessage: function (html, millisec) {    // TODO: multiple message. Should return message id.
+      $('#status').stop(true, true).html(html).show();
+      if (millisec) {
+        window.setTimeout(function () {
+          $('#status').fadeOut();
+        }, millisec);
+      }
     }
 
   };
