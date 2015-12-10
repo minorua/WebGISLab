@@ -183,19 +183,22 @@ var olapp = {
     var id = filename || '';
     if (id.indexOf('#') === -1) id += '#' + parseInt($.now() / 1000).toString(16);
 
+    if (style === undefined) style = {color: tinycolor.random().toRgbString()};
+
+    var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
     var layer = new ol.layer.Vector({
       source: src,
-      style: core.createStyleFunction(),
+      style: styleFunc,
       olapp: {
         source: (ext.indexOf('json') !== -1) ? 'JSON' : 'Text',
         layer: id,
-        data: source
+        data: source,
+        style: style
       }
     });
 
-    if (style !== undefined) {
+    if (style.override) {
       // Set style to features
-      var styleFunc = core.createStyleFunction(style.color, style.width, style.fillColor);
       var features = src.getFeatures();
       for (var i = 0, l = features.length; i < l; i++) {
         features[i].setStyle(styleFunc(features[i]));
@@ -1220,6 +1223,7 @@ var olapp = {
             obj.style.color = color;
             obj.style.width = width;
             obj.style.fillColor = fillColor;
+            obj.style.override = true;
 
             // Set style to features
             var styleFunc = core.createStyleFunction(color, width, fillColor);
