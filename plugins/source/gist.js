@@ -37,18 +37,22 @@
       return null;
     }
 
-    var filename = url.split('/').pop();
+    var olappObj = (layerOptions || {}).olapp || {};
+    var style = olappObj.style || {color: tinycolor.random().toRgbString()};
+    var styleFunc = olapp.core.createStyleFunction(style.color, style.width, style.fillColor);
     var options = {
-      style: olapp.core.createStyleFunction(),   // TODO: store color in olapp.style
-      title: filename
+      style: styleFunc,
+      title: url.split('/').pop()
     };
     var layer = new ol.layer.Vector($.extend(options, layerOptions));
+    olappObj = layer.get('olapp');
+    olappObj.layer = url;
+    olappObj.style = style;
 
     $.get(url).then(function (data) {
       var source = olapp.core.loadSource(data);
       if (source) {
         layer.setSource(source);
-        layer.get('olapp').layer = url;
       }
       else {
         bootbox.alert('Failed to create a layer from the Gist file.<br>' + url);
@@ -78,6 +82,7 @@
       $(html).appendTo(list).children('button').click(function () {
         if ($(this).hasClass('btn-primary')) {  // Add
           var layerOptions = {
+            title: filename,
             olapp: {
               source: sourceName
             }
