@@ -4,7 +4,7 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
 
 ## Released Web Maps
 
-* 飛び出せ ニッポン! (Beta): http://minorua.github.io/WebGISLab/simple.html?project=japan3d
+* 飛び出せ ニッポン! (Beta): http://minorua.github.io/maps/japan3d.html
 
     地理院タイルの「標準地図」「色別標高図」「写真」レイヤの表示が可能で、クリック1つで3D表示にすることができます. 簡単な操作で3DモデルをSTLファイルに保存することができ、3Dプリンタを用いて地形をパソコンの外へ出力することができます.
 
