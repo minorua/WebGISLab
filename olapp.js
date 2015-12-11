@@ -1561,13 +1561,15 @@ olapp.Project.prototype = {
     if (layer.get('title') === undefined) layer.set('title', 'no title');
     if (layer.get('blendMode') === undefined) layer.set('blendMode', 'source-over');
 
-    layer.on('precompose', function (evt) {
-      evt.context.globalCompositeOperation = this.get('blendMode');
+    var layers = (layer instanceof ol.layer.Group) ? layer.getLayers() : [layer];
+    layers.forEach(function (lyr) {
+      lyr.on('precompose', function (evt) {
+        evt.context.globalCompositeOperation = layer.get('blendMode');
+      });
+      lyr.on('postcompose', function (evt) {
+        evt.context.globalCompositeOperation = 'source-over';
+      });
     });
-    layer.on('postcompose', function (evt) {
-      evt.context.globalCompositeOperation = 'source-over';
-    });
-
     layer.set('id', this.getNextLayerId());
     this.mapLayers.push(layer);
   },
