@@ -5,7 +5,8 @@ olapp.loadProject(new olapp.Project({
     projection: 'EPSG:3857',
     center: ol.proj.transform([138.7, 35.4], 'EPSG:4326', 'EPSG:3857'),
     maxZoom: 18,
-    zoom: 5
+    zoom: 5,
+    enableRotation: false
   }),
   plugins: ['source/gsitiles.js'],
   layers: [
