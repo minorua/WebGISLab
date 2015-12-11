@@ -21,10 +21,11 @@
 
   var html =
 '<li class="list-group-item">' +
-'  <label style="width: 100%;">Enter Gist URL:<br>' +
-'    <input type="text" style="width: 100%; font-weight: normal;" title="Gist URL (https://gist.github.com/....) or raw file URL (https://gist.githubusercontent.com/....)">' +
-'  </label>' +
-'  <div style="text-align: right; height: 18px;"><button type="button" class="btn btn-primary">Fetch</button></div>' +
+'  <div>Enter URL of Gist you want to fetch:</div>' +
+'  <div style="width:100%;">' +
+'    <input type="text" style="width:calc(100% - 56px); height:26px;" placeholder="https://gist.github.com/username/Gist_ID" title="Raw file URL (https://gist.githubusercontent.com/....) is also acceptable.">' +
+'    <button type="button" class="btn btn-primary" style="width:56px; height:26px; float:right;">Fetch</button>' +
+'  </div>' +
 '</li>';
   layers[0].listItem = $(html);
 
