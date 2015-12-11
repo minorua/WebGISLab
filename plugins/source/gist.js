@@ -1,7 +1,7 @@
 // gist.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
-// Dependencies: jQuery, OpenLayers 3
+// Dependencies: jQuery, Bootstrap, OpenLayers 3
 
 (function () {
   var plugin = {
@@ -22,9 +22,11 @@
   var html =
 '<li class="list-group-item">' +
 '  <div>Enter URL of Gist you want to fetch:</div>' +
-'  <div style="width:100%;">' +
-'    <input type="text" style="width:calc(100% - 56px); height:26px;" placeholder="https://gist.github.com/username/Gist_ID" title="Raw file URL (https://gist.githubusercontent.com/....) is also acceptable.">' +
-'    <button type="button" class="btn btn-primary" style="width:56px; height:26px; float:right;">Fetch</button>' +
+'  <div class="input-group">' +
+'    <input type="text" class="form-control" style="height:22px;" placeholder="https://gist.github.com/username/Gist_ID" title="Raw file URL (https://gist.githubusercontent.com/....) is also acceptable.">' +
+'    <span class="input-group-btn">' +
+'      <button type="button" class="btn btn-primary" style="height:22px;">Fetch</button>' +
+'    </span>' +
 '  </div>' +
 '</li>';
   layers[0].listItem = $(html);
