@@ -28,6 +28,95 @@
 '</li>';
   layers[0].listItem = $(html);
 
+  var storage = {
+    gists: function () {
+      return JSON.parse(localStorage.gists || '[]');
+    },
+    // Store a Gist URL in local storage
+    append: function (url, filename, description) {
+      var gists = JSON.parse(localStorage.gists || '[]');
+      var id = filename + '#' + parseInt($.now() / 1000).toString(16);
+      var obj = {id: id, url: url, filename: filename, description: description};
+      gists.push(obj);
+      localStorage.gists = JSON.stringify(gists);
+      return obj;
+    },
+    // Remove a Gist from local storage (In fact, set deleted flag)
+    remove: function (id, _restore) {
+      var gists = JSON.parse(localStorage.gists || '[]');
+      for (var i = 0; i < gists.length; i++) {
+        if (gists[i].id === id) {
+          gists[i].deleted = !_restore;
+          break;
+        }
+      }
+      localStorage.gists = JSON.stringify(gists);
+    },
+    // Restore removed gist
+    restore: function (id) {
+      this.remove(id, true);
+    },
+    // Clean up stored Gists
+    clean: function () {
+      var gists = JSON.parse(localStorage.gists || '[]');
+      for (var i = gists.length - 1; i >= 0; i--) {
+        if (gists[i].deleted) gists.splice(i, 1);
+      }
+      localStorage.gists = JSON.stringify(gists);
+    }
+  };
+  storage.clean();
+
+  var tooltip = {
+    remove: 'Remove this layer URL from local storage',
+    restore: 'Restore this layer URL'
+  };
+
+  function appendItem(gist) {
+    var html =
+'<li class="list-group-item">' +
+'  <button type="button" class="btn btn-default"></button>' +
+'  <button type="button" class="btn btn-primary" title="Add this layer to map">Add</button>' + gist.filename +
+'</li>';
+    var obj = $(html).attr('title', gist.description || '');
+    var icon = '<span class="glyphicon glyphicon-floppy-remove"></span>';
+    obj.children('button.btn-default').attr('title', tooltip.remove).html(icon);
+    obj.children('button').click(function () {
+      if ($(this).hasClass('btn-primary')) {
+        // Add layer
+        var layerOptions = {
+          title: gist.filename,
+          olapp: {
+            source: sourceName
+          }
+          // TODO: set description property
+        };
+        var layer = olapp.source.Gist.createLayer(gist.url, layerOptions);
+        if (layer) olapp.core.project.addLayer(layer);
+      }
+      else {
+        var remove = $(this).children('span').length > 0;
+        $(this).html((remove) ? 'Restore' : icon).attr('title', (remove) ? tooltip.restore : tooltip.remove);
+        $(this).parent().css('color', (remove) ? '#999' : '#000')
+               .children('.btn-primary').css('display', (remove) ? 'none' : 'inline-block');
+        if (remove) storage.remove(gist.id);
+        else storage.restore(gist.id);
+      }
+    });
+    layers.push({id: gist.url, name: gist.filename, listItem: obj});
+    return obj;
+  }
+
+  function appendNewItem(url, filename, description) {
+    var listItem = appendItem(storage.append(url, filename, description));
+    layers[0].listItem.parent().append(listItem);
+  }
+
+  // Append stored Gists to layer list
+  storage.gists().forEach(function (gist) {
+    appendItem(gist);
+  });
+
   /* olapp.source.Gist */
   olapp.source.Gist = new olapp.Source('Gist', layers);
   olapp.source.Gist.createLayer = function (id, layerOptions) {
@@ -70,34 +159,6 @@
     var url = layers[0].listItem.find('input').val();
     if (!url) return;
 
-    var list = layers[0].listItem.parent();
-    function appendItem(url, filename, description) {
-      var html =
-'<li class="list-group-item">' +
-'  <button type="button" class="btn btn-default" title="Store this layer URL in local storage">' +
-'   <span class="glyphicon glyphicon-floppy-disk"></span>' +
-'  </button>' +
-'  <button type="button" class="btn btn-primary">Add</button>' + filename +
-'</li>';
-      $(html).appendTo(list).children('button').click(function () {
-        if ($(this).hasClass('btn-primary')) {  // Add
-          var layerOptions = {
-            title: filename,
-            olapp: {
-              source: sourceName
-            }
-            // TODO: set description property
-          };
-          var layer = olapp.source.Gist.createLayer(url, layerOptions);
-          if (layer) olapp.core.project.addLayer(layer);
-        }
-        else {    // TODO: Store URL in local storage
-          // glyphicon-floppy-saved
-          // glyphicon-floppy-remove
-        }
-      });
-    }
-
     if (url.indexOf('https://gist.github.com/') === 0) {
       // Get metadata of the Gist
       var gistId = url.split('/')[4];
@@ -105,14 +166,14 @@
         if (!json.files) return;
         for (var file in json.files) {
           var f = json.files[file];
-          appendItem(f.raw_url, f.filename, json.description);
+          appendNewItem(f.raw_url, f.filename, json.description);
         }
       }, function () {
         alert('Failed to download Gist metadata.');
       });
     }
     else if(url.indexOf('https://gist.githubusercontent.com/') === 0) {
-      appendItem(url, url.split('/').pop());
+      appendNewItem(url, url.split('/').pop());
     }
     else {
       alert('Invalid URL');
