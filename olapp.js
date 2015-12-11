@@ -1619,6 +1619,7 @@ olapp.Project.prototype = {
     var center = this.view.getCenter() || [0, 0];
     var maxZoom = parseInt(olapp.tools.projection.zoomLevelFromResolution(this.view.minResolution_));
     var zoom = this.view.getZoom();
+    var enableRotation = !(this.view.constraints_.rotation === ol.RotationConstraint.disable);
     var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
 
     var layers = [], sources = [];
@@ -1665,7 +1666,8 @@ olapp.Project.prototype = {
 '    projection: ' + quote_escape(projection) + ',',
 '    center: ' + JSON.stringify(center) + ',',
 '    maxZoom: ' + maxZoom + ',',
-'    zoom: ' + zoom,
+'    zoom: ' + zoom + ',',
+'    enableRotation: ' + enableRotation,
 '  }),',
 '  plugins: ' + JSON.stringify(this.plugins) + ',',
 '  init: ' + initFuncStr + ',',
