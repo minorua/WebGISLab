@@ -148,7 +148,7 @@
       }
       else {
         bootbox.alert('Failed to create a layer from the Gist file.<br>' + url);
-        olapp.project.removeLayer(layer.get('id'));
+        olapp.core.project.removeLayer(layer.get('id'));
       }
     }, function () {
       bootbox.alert('Failed to download Gist file:<br>' + url);
