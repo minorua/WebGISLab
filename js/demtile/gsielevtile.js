@@ -100,9 +100,7 @@
       var merc_rect = (projection == 'EPSG:3857') ? extent : ol.proj.transformExtent(extent, projection, 'EPSG:3857');
       if (!ol.extent.intersects(this.extent, merc_rect)) {
         var d = new $.Deferred();
-        window.setTimeout(function () {
-          d.resolve(Array.apply(null, Array(width * height)).map(function (x, i) { return 0; }));
-        }, 0);
+        d.resolve(Array.apply(null, Array(width * height)).map(function (x, i) { return 0; }));
         return d.promise();
       }
       var over_smpl = 1;

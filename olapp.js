@@ -119,10 +119,7 @@ var olapp = {
     var sel = $('script[src="' + url + '"]');
     if (sel.length) {
       console.log('Already loaded:', url);
-      window.setTimeout(function () {
-        d.resolve(sel.get(0));
-      }, 0);
-      return d.promise();
+      return d.resolve(sel.get(0)).promise();
     }
 
     var s = document.createElement('script');
@@ -390,16 +387,8 @@ var olapp = {
     getDefinition: function (name) {
       var d = $.Deferred();
       if (name.indexOf('EPSG:') === 0) {
-        if (name == 'EPSG:3857') {
-          setTimeout(function () {
-            d.resolve();
-          }, 0);
-        }
-        else if (name in core.crs.definedCRSs) {
-          setTimeout(function () {
-            d.resolve(core.crs.definedCRSs[name]);
-          }, 0);
-        }
+        if (name == 'EPSG:3857') return d.resolve().promise();
+        else if (name in core.crs.definedCRSs) return d.resolve(core.crs.definedCRSs[name]).promise();
         else {
           var msg = gui.status.showMessage('Loading EPSG code list...');
           core.loadScript('js/epsg.js').always(msg.remove).then(function () {
@@ -412,14 +401,10 @@ var olapp = {
             }
             d.reject();
           });
+          return d.promise();
         }
       }
-      else {
-        setTimeout(function () {
-          d.reject();
-        }, 0);
-      }
-      return d.promise();
+      return d.reject().promise();
     }
 
   };
@@ -457,7 +442,6 @@ var olapp = {
     },
 
     _loadDeferred: null,
-    _loadPromise: null,
 
     _loadingLayers: {},
 
@@ -469,26 +453,20 @@ var olapp = {
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
     // Returns a deferred object which is resolved when the project has been loaded to application.
     load: function (prj) {
-      var d, p;
+      var d = core.project._loadDeferred;
       if (prj instanceof olapp.Project) {
         gui.status.showMessage('Loading Project...');
-        d = core.project._loadDeferred || $.Deferred();
-        p = core.project._loadPromise || d.promise();
-
-        var setProject = function () {
-          core.project.set(prj);
-          core.project._loadDeferred = core.project._loadPromise = null;
-          d.resolve();
-        };
 
         // Load and initialize plugins, and then set the project.
-        if (prj.plugins.length > 0) plugin.load(prj.plugins).then(setProject);
-        else window.setTimeout(setProject, 0);
-
-        return p;
+        if (!d) d = $.Deferred();
+        plugin.load(prj.plugins).then(function () {
+          core.project.set(prj);
+          core.project._loadDeferred = null;
+          d.resolve();
+        });
+        return d.promise();
       }
       else {
-        d = core.project._loadDeferred;
         if (d) {
           console.log('Another project starts to load before previous one finishes loading.');
           d.reject();
@@ -515,8 +493,7 @@ var olapp = {
         }
 
         d = core.project._loadDeferred = $.Deferred();
-        p = core.project._loadPromise = d.promise();
-        return p;
+        return d.promise();
       }
     },
 
@@ -1492,17 +1469,12 @@ var olapp = {
     });
 
     var d = $.Deferred();
-    if (loadingPlugins.length == 0) {
-      window.setTimeout(function () {
-        d.resolve();
-      }, 0);
-    }
-    else {
-      plugin._loadingSets.push({
-        plugins: loadingPlugins,
-        deferred: d
-      });
-    }
+    if (loadingPlugins.length == 0) return d.resolve().promise();
+
+    plugin._loadingSets.push({
+      plugins: loadingPlugins,
+      deferred: d
+    });
     return d.promise();
   };
 

@@ -50,14 +50,12 @@ olapp.database.open = function () {
       request.onerror = function (e) {
         d.reject();
       };
+      return d.promise();
     }
     else {
       console.log('DB is not ready');
-      window.setTimeout(function () {
-        d.reject();
-      }, 0);
+      return d.reject().promise();
     }
-    return d.promise();
   };
 
   var putTileCache = function (url, data) {
