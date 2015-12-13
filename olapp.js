@@ -455,13 +455,17 @@ var olapp = {
     load: function (prj) {
       var d = core.project._loadDeferred;
       if (prj instanceof olapp.Project) {
-        gui.status.showMessage('Loading Project...');
+        var msg = gui.status.showMessage('Loading Project...');
 
         // Load and initialize plugins, and then set the project.
         if (!d) d = $.Deferred();
         plugin.load(prj.plugins).then(function () {
           core.project.set(prj);
           core.project._loadDeferred = null;
+
+          msg.remove();
+          gui.status.showMessage('Project has been loaded.', 1);
+
           d.resolve();
         });
         return d.promise();
@@ -564,8 +568,6 @@ var olapp = {
         map.addLayer(layer);
         gui.addLayer(layer);
       });
-
-      gui.status.clear();
     },
 
     loadLayerSource: function (layer, url) {
@@ -1385,14 +1387,20 @@ var olapp = {
 
     _lastMsgIndex: 0,
 
-    clear: function (msg) {
+    clear: function (msg, fade) {
       var obj;
       if (msg === undefined) obj = $('#status').children();
       else if (typeof msg == 'object') obj = $('#' + msg.id);
       else obj = $('#' + msg);
-      obj.fadeOut('normal', function () {
-        $(this).remove();
-      });
+
+      if (fade) {
+        obj.fadeOut('normal', function () {
+          $(this).remove();
+        });
+      }
+      else {
+        obj.remove();
+      }
     },
 
     showMessage: function (html, millisec) {
@@ -1400,7 +1408,7 @@ var olapp = {
       $('<div/>', {id: msgId}).html(html).appendTo($('#status'));
       if (millisec) {
         window.setTimeout(function () {
-          gui.status.clear(msgId);
+          gui.status.clear(msgId, true);
         }, millisec);
       }
       return {
