@@ -162,7 +162,7 @@ var olapp = {
       console.log('No project');
       return;
     }
-    gui.status.showMessage('Loading ' + file.name + '...');
+    var msg = gui.status.showMessage('Loading ' + file.name + '...');
 
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -175,7 +175,7 @@ var olapp = {
       else {
         alert('Unknown format file: ' + file.name);
       }
-      gui.status.clear();
+      msg.remove();
     }
     reader.readAsText(file, 'UTF-8');
   };
@@ -401,9 +401,8 @@ var olapp = {
           }, 0);
         }
         else {
-          gui.status.showMessage('Loading EPSG code list...');
-          core.loadScript('js/epsg.js').then(function () {
-            gui.status.clear();
+          var msg = gui.status.showMessage('Loading EPSG code list...');
+          core.loadScript('js/epsg.js').always(msg.remove).then(function () {
             var code = parseInt(name.substr(5));
             for (var i = 0, l = olapp.epsgList.length; i < l; i++) {
               if (olapp.epsgList[i].code == code) {
@@ -470,9 +469,9 @@ var olapp = {
     //   prj: olapp.Project object, string (URL), File or Object (JSON).
     // Returns a deferred object which is resolved when the project has been loaded to application.
     load: function (prj) {
-      gui.status.showMessage('Loading Project...');
       var d, p;
       if (prj instanceof olapp.Project) {
+        gui.status.showMessage('Loading Project...');
         d = core.project._loadDeferred || $.Deferred();
         p = core.project._loadPromise || d.promise();
 
@@ -502,7 +501,8 @@ var olapp = {
 
         if (typeof prj == 'string') {
           // Load a project script
-          core.loadScript(prj).then(function (elem) {
+          var msg = gui.status.showMessage('Fetching Project...');
+          core.loadScript(prj).always(msg.remove).then(function (elem) {
             core.project._scriptElement = elem;
           });
         }
@@ -1029,9 +1029,8 @@ var olapp = {
       body.find('textarea[name=desc]').val(project.description);
       body.find('input[name=crs]').val(project.view.getProjection().getCode());
       body.find('button').click(function () {
-        gui.status.showMessage('Loading EPSG code list...');
-        core.loadScript('js/epsg.js').then(function () {
-          gui.status.clear();
+        var msg = gui.status.showMessage('Loading EPSG code list...');
+        core.loadScript('js/epsg.js').always(msg.remove).then(function () {
           var container = $('<div />');
           var filterBox = $('<input type="text" style="width: 100%;">').on('change keyup', function () {
             var filter = $(this).val().toLowerCase();
@@ -1407,17 +1406,32 @@ var olapp = {
   // olapp.gui.status
   gui.status = {
 
-    clear: function () {    // TODO: optional message id
-      $('#status').fadeOut();
+    _lastMsgIndex: 0,
+
+    clear: function (msg) {
+      var obj;
+      if (msg === undefined) obj = $('#status').children();
+      else if (typeof msg == 'object') obj = $('#' + msg.id);
+      else obj = $('#' + msg);
+      obj.fadeOut('normal', function () {
+        $(this).remove();
+      });
     },
 
-    showMessage: function (html, millisec) {    // TODO: multiple message. Should return message id.
-      $('#status').stop(true, true).html(html).show();
+    showMessage: function (html, millisec) {
+      var msgId = 'status_' + (++this._lastMsgIndex);
+      $('<div/>', {id: msgId}).html(html).appendTo($('#status'));
       if (millisec) {
         window.setTimeout(function () {
-          $('#status').fadeOut();
+          gui.status.clear(msgId);
         }, millisec);
       }
+      return {
+        id: msgId,
+        remove: function () {
+          gui.status.clear(msgId);
+        }
+      };
     }
 
   };

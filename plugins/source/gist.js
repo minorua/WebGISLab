@@ -141,7 +141,8 @@
     olappObj.layer = url;
     olappObj.style = style;
 
-    $.get(url).then(function (data) {
+    var msg = olapp.gui.status.showMessage('Fetching Gist content...');
+    $.get(url).always(msg.remove).then(function (data) {
       var source = olapp.core.loadSource(data);
       if (source) {
         layer.setSource(source);
@@ -165,8 +166,8 @@
     if (url.indexOf('https://gist.github.com/') === 0) {
       // Get metadata of the Gist
       var gistId = url.split('/')[4];
-      $.getJSON('https://api.github.com/gists/' + gistId).then(function (json) {
-        if (!json.files) return;
+      var msg = olapp.gui.status.showMessage('Fetching metadata of the Gist...');
+      $.getJSON('https://api.github.com/gists/' + gistId).always(msg.remove).then(function (json) {
         for (var file in json.files) {
           var f = json.files[file];
           appendNewItem(f.raw_url, f.filename, json.description);

@@ -25,10 +25,11 @@ html, body {
   overflow: auto;
 }
 #status {
-  display: none;
   position: absolute;
   left: 0;
   top: 50px;
+}
+#status > div {
   background-color: white;
 }
 
