@@ -1158,35 +1158,28 @@ var olapp = {
         else gui.status.showMessage('Failed to create layer.', 3000);
       };
 
-      var appendItem = function (sourceName, item) {
-        if (item.listItem !== undefined) {
-          list.append(item.listItem);
+      function populateList(sourceName) {
+        var src = source.get(sourceName);
+        if (src.populateList !== undefined) {
+          src.populateList(list);
         }
         else {
-          var html =
+          src.layers.forEach(function (item) {
+            var html =
 '<li class="list-group-item">' +
 '  <button type="button" class="btn btn-primary">Add</button>' +
 '  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
 '</li>';
-          $(html).appendTo(list).children('button').click(function () {
-            var srcname_id = $(this).parent().children('span').text().split('/');
-            addLayer(srcname_id[0], srcname_id[1]);
+            $(html).appendTo(list).children('button').click(function () {
+              var srcname_id = $(this).parent().children('span').text().split('/');
+              addLayer(srcname_id[0], srcname_id[1]);
+            });
           });
         }
-      };
+      }
 
-      if (sourceName === undefined) {
-        source.sourceNames(groupName).forEach(function (sourceName) {
-          source.get(sourceName).layers.forEach(function (item) {
-            appendItem(sourceName, item);
-          });
-        });
-      }
-      else {
-        source.get(sourceName).layers.forEach(function (item) {
-          appendItem(sourceName, item);
-        });
-      }
+      if (sourceName === undefined) source.sourceNames(groupName).forEach(populateList);
+      else populateList(sourceName);
     }
 
   };
@@ -1714,7 +1707,10 @@ olapp.Source.prototype = {
   createLayer: function (id, layerOptions) {
     console.log(this.name, 'createLayer method is not implemented');
     return null;
-  }
+  },
+
+  // Implement this method if the source uses custom function to generate list items
+  populateList: undefined
 
 };
 
