@@ -1609,7 +1609,7 @@ olapp.Project.prototype = {
     var center = this.view.getCenter() || [0, 0];
     var maxZoom = parseInt(olapp.tools.projection.zoomLevelFromResolution(this.view.minResolution_));
     var zoom = this.view.getZoom();
-    var enableRotation = !(this.view.constraints_.rotation === ol.RotationConstraint.disable);
+    var enableRotation = (this.view.constraints_.rotation !== ol.RotationConstraint.disable);
     var initFuncStr = (this.init) ? this.init.toString() : 'undefined';
 
     var layers = [], sources = [];
@@ -1688,8 +1688,7 @@ olapp.Source
 // Constructor
 //   name: source name
 //   layers: List of layer items. Each item should have id and name properties.
-//           Optionally it can have listItem and/or more properties.
-//           listItem property can be a HTML string, a DOM element or a jQuery object.
+//           Not used if populateList method is implemented.
 olapp.Source = function (name, layers) {
   this.name = name;
   this.layers = layers || [];

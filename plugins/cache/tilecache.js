@@ -36,13 +36,13 @@ olapp.database.open = function () {
   olapp.database.open();
 
   var storeName = 'tilecache';
-  var getTileCache = function (key) {
+  var getTileCache = function (url) {
     var d = $.Deferred();
     var db = olapp.database._db;
     if (db) {
       var tx = db.transaction([storeName]);
       var store = tx.objectStore(storeName);
-      var request = store.get(key);
+      var request = store.get(url);
       request.onsuccess = function (e) {
         if (request.result) d.resolve(request.result.data);
         else d.reject();
