@@ -489,6 +489,9 @@ var olapp = {
           });
         }
         else if (prj instanceof File) {
+          // Remove hash to respect view position/zoom in the project to load
+          window.location.replace('#');
+
           var reader = new FileReader();
           reader.onload = function (event) {
             eval(reader.result);
