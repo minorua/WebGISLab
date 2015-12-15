@@ -767,7 +767,10 @@ var olapp = {
       }
       else {
         for (var i = 0; i < files.length; i++) {
-          core.loadLayerFromFile(files[i]);
+          var ext = files[i].name.split('.').pop().toLowerCase();
+          if (ext != 'jpeg' && ext != 'jpg') {    // TODO: olapp: file drop event listeners
+            core.loadLayerFromFile(files[i]);
+          }
         }
       }
     });
@@ -2017,7 +2020,7 @@ olapp.createDefaultProject = function () {
       maxZoom: 18,
       zoom: 5
     }),
-    plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gist.js'],
+    plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gist.js', 'import/photo.js'],
     layers: [   // from bottom to top
       {source: 'GSITiles', layer: 'std'},                                // 標準地図
       {source: 'GSITiles', layer: 'relief', options: {visible: false}},  // 色別標高図

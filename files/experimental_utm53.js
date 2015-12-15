@@ -9,7 +9,7 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 20,
     zoom: 8
   }),
-  plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'source/gist.js', 'tool/measure-vincenty.js'],
+  plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'source/gist.js', 'import/photo.js', 'tool/measure-vincenty.js'],
   layers: [
     {source: 'GSITiles', layer: 'std'},                                 // 標準地図
     {source: 'NaturalEarth', layer: 'cl', options: {visible: false}}    // Coastline

@@ -7,7 +7,7 @@ olapp.loadProject(new olapp.Project({
     maxZoom: 18,
     zoom: 5
   }),
-  plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'source/gist.js', 'tool/measure-vincenty.js'],
+  plugins: ['source/gsitiles.js', 'source/gsielevtile.js', 'source/gsj.js', 'source/gist.js', 'import/photo.js', 'tool/measure-vincenty.js'],
   layers: [
     {source: 'GSITiles', layer: 'std'},                                   // 標準地図
     {source: 'GSITiles', layer: 'relief', options: {visible: false}},     // 色別標高図
