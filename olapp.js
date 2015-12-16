@@ -1406,9 +1406,9 @@ var olapp = {
       $('#three_save').click(function () {
         bootbox.dialog({
           title: 'Save the model',
-          message: 'Click save button if you want to save the model in STL format.',
+          message: 'Click save button to save the 3D model (.stl) and the map image (.png).',
           buttons: {
-            stl: {
+            save: {
               label: 'Save',
               className: "btn-primary",
               callback: function () {

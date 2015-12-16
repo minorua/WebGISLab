@@ -169,7 +169,8 @@
 
       this.objectGroup = new THREE.Group();
       this.build();
-      this.objectGroup.updateMatrixWorld();   //
+      this.objectGroup.scale.z = zExaggeration;
+      this.updateMatrixWorld();
     };
     demLayer.rebuild(true);
 
@@ -179,11 +180,6 @@
       var stlData = exporter.parse(demLayer.objectGroup).buffer;
       saveAs(new Blob([stlData]), "terrain.stl");
 
-      /*
-      // TODO: FIXME
-      // With Chrome, two terrain.png files are saved.
-      //   ref. https://github.com/eligrey/FileSaver.js/issues/165
-      // Note: Map canvas image can be saved from Project menu.
       var image = project.images[0];
       var binStr = atob(image.data.split(',')[1]),
           len = binStr.length,
@@ -192,7 +188,6 @@
         imgData[i] = binStr.charCodeAt(i);
       }
       saveAs(new Blob([imgData]), "terrain.png");
-      */
 
       Q3D.application.start();
     });
