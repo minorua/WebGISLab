@@ -1385,6 +1385,12 @@ var olapp = {
         threejs().stop();
       });
 
+      // z exaggeration
+      $('#three_zexag').find('li').click(function () {
+        $('#three_zexag').find('button span').first().html($(this).text());
+        threejs().setExaggeration(parseFloat($(this).text().replace('x', '')));
+      });
+
       // automatic rotation
       $('#three_rotate').click(function () {
         threejs().rotate(!threejs().isRotating());

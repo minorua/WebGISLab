@@ -260,6 +260,13 @@ a.btn-blendmode span.active {
   opacity: 0.5;
 }
 
+#three_zexag {
+  float: right;
+  margin-right: 5px;
+  opacity: 0.7;
+  z-index: 99;
+}
+
 #webgl {
 }
 

@@ -11,6 +11,8 @@
     description: ''
   };
 
+  var zExaggeration = 1;
+
   plugin.init = function () {
     var scripts = [
       'lib/threejs/three.min.js',
@@ -44,7 +46,6 @@
     }
 
     var planeWidth = 250 / scaleFactor;
-    var zExaggeration = 1.5;
 
     var project = new Q3D.Project({
       baseExtent: extent,
@@ -55,7 +56,7 @@
       title: '',
       width: planeWidth,
       zShift: 0,
-      zExaggeration: zExaggeration * scaleFactor
+      zExaggeration: scaleFactor
     });
 
     // map canvas image
@@ -120,6 +121,10 @@
       app.init(container);
       app.loadProject(project);
 
+      // z exaggeration
+      app.scene.scale.z = zExaggeration;
+      app.scene.updateMatrixWorld();
+
       // overrides
       app.showQueryResult = function (point, layerId, featureId) {
         // clicked coordinates
@@ -145,6 +150,13 @@
 
   plugin.rotate = function (active) {
     Q3D.application.controls.autoRotate = active;
+  };
+
+  plugin.setExaggeration = function (exag) {
+    var scene = Q3D.application.scene;
+    scene.scale.z = exag;
+    scene.updateMatrixWorld();
+    zExaggeration = exag;
   };
 
   plugin.save = function () {
