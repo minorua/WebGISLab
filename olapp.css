@@ -123,18 +123,29 @@ a.btn-blendmode span.active {
 
 
 /* project properties */
-#dlg_project input[type="text"], #dlg_project textarea {
+#dlg_project input[name="title"], #dlg_project textarea {
   width: 430px;
-}
-
-#dlg_project tr:last-child input {
-  width: 365px;
 }
 
 #dlg_project td:first-child {
   width: 120px;
   vertical-align: top;
 }
+
+
+#dlg_project table.crs-table td:first-child {
+  width: 110px;
+  vertical-align: middle;
+}
+
+#dlg_project table.crs-table input[name="epsg"] {
+  width: 181px;
+}
+
+#dlg_project table.crs-table input[name="proj4"] {
+  width: 320px;
+}
+
 
 
 /* layer properties dialog */

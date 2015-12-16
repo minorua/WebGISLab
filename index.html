@@ -103,7 +103,31 @@
         </button>
         <h4 class="modal-title">Project Properties</h4>
       </div>
-      <div class="modal-body"></div>
+      <div class="modal-body">
+        <form>
+          <input type="submit" style="display: none;">
+          <table>
+            <tr><td>Title</td><td><input type="text" class="form-control" name="title"></td></tr>
+            <tr><td>Description</td><td><textarea class="form-control" name="desc" rows="4"></textarea></td></tr>
+            <tr><td>CRS</td><td>
+              <table class="crs-table">
+                <tr>
+                  <td><input type="radio" name="crs" value="epsg">EPSG Code</td>
+                  <td><div class="input-group">
+                    <span class="input-group-addon">EPSG:</span>
+                    <input type="text" class="form-control" name="epsg">
+                    <span class="input-group-btn"><button class="btn btn-default" type="button">Browse</button></span>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="crs" value="proj4">Proj4</td>
+                  <td><input type="text" class="form-control" name="proj4" placeholder="+proj=..."></td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </form>
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary">OK</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
