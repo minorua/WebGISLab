@@ -9,6 +9,11 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
     地理院タイルの「標準地図」「色別標高図」「写真」レイヤの表示が可能で、クリック1つで3D表示にすることができます. 簡単な操作で3DモデルをSTLファイルに保存することができ、3Dプリンタを用いて地形をパソコンの外へ出力することができます.
 
 
+## Screenshots
+
+https://github.com/minorua/WebGISLab/issues/1
+
+
 ## Demo Projects
 
 * Default Project: http://minorua.github.io/WebGISLab/index.html ([メニューなし版](http://minorua.github.io/WebGISLab/simple.html))
@@ -90,10 +95,9 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
     - [x] ドラッグ&ドロップで
     - [ ] レイヤ追加ダイアログから
 - ローカルの写真ファイルの読み込み
-    - [ ] ドラック&ドロップで
-    - [ ] 場所情報の取得
-    - [ ] 地図上にマーカまたはサムネイルの配置
-    - [ ] ポップアップ表示
+    - [x] ドラック&ドロップで
+    - [x] 場所情報の取得し地図上にマーカまたはサムネイルを配置する
+    - [x] ポップアップ表示
     - [ ] IndexedDBに保存 (保管目的ではない)
 - GistやGitHubにアップロードされたファイルの読み込み
     - クロスオリジンアクセスが可能 (CORS)
@@ -108,9 +112,10 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
     - [x] 発行可能な構成でHTMLファイルとプロジェクトファイル、ライブラリファイルをアーカイブ
 - 3Dビューア (three.js)
     - [x] 3Dビューア
+    - [x] Z誇張度の変更
     - [x] 回転ボタン
     - [x] STLファイル保存ボタン
-        - [ ] 地図画像も保存
+        - [x] 地図画像も保存
 - Cesiumの起動
     - [ ] Cesiumの起動
     - [ ] ストレージデータの共有
@@ -122,7 +127,7 @@ OpenLayersを利用したWebGISアプリケーションの開発。試行錯誤�
     - 外部サイトへのリンク
 - タッチデバイス対応
 - 軽量なコアアプリケーションと機能追加の容易性
-    - プラグイン管理
+    - モジュール、プラグイン管理
 
 ### 試験的な機能
 
@@ -166,15 +171,12 @@ olapp.loadProject(new olapp.Project({
 ### プロジェクトの保存
 
 - プロジェクトの文字列化 (Project.toString())
-- jsファイルの保存
-- ストレージへの保存
 
 ### プロジェクトに対する変更の保存
 
-- レイヤの追加削除
+- レイヤ構成
 - スタイル設定
-- 読み込まれたローカルファイルデータ(データまたは参照)
-    - レイヤに設定されたスタイル(データまたは関数)
+- 読み込まれたファイルのデータ
 
 ```javascript
 olapp.loadProject(new olapp.Project({
@@ -222,23 +224,25 @@ olapp.loadProject(new olapp.Project({
 
 ### プロジェクトの読み込み
 
-- メニューからの読み込み
-    - 読み込み可能な用意されたプロジェクト一覧
-    - ストレージに保存されたプロジェクト一覧
-- URLパラメータによる読み込み
-    - index.html?project=project_name
+- 読み込み方法
+    - メニューから
+        - 用意されたプロジェクト一覧
+        - ストレージに保存されたプロジェクト一覧
+    - URLパラメータ
+        - index.html?project=project_name
     - 安全のためにfilesフォルダ以下のプロジェクトファイルに限定
-- HTMLファイルのScriptタグによる読み込み
-- ローカルのプロジェクトファイルのドラッグ&ドロップによる読み込み
+    - HTMLファイルのScriptタグ
+    - プロジェクトファイルのドラッグ&ドロップ
 
 
-## Design for Plugin
+## Design for Module/Plugin Management
 
-- 必要な機能を必要な時にロードする
-    - プロジェクトファイルまたはGUIから
-- プラグインができることの例
-    - メニューアイテムの追加
-    - ダイアログの表示
+- 周辺的な機能のモジュールは使用する時にロードする
+- プラグインで用途に合わせたカスタマイズ
+- モジュールの例
+    - 3Dビューア
+    - ウィンドウへドロップされたファイルの種類に応じた読み込み処理
+- プラグインの例
     - データソースの追加
 
 プラグインのコード
@@ -263,8 +267,3 @@ olapp.loadProject(new olapp.Project({
 ## テスト
 
 http://minorua.github.io/WebGISLab/test.html
-
-
-## スクリーンショット
-
-https://github.com/minorua/WebGISLab/issues/1
