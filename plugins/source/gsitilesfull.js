@@ -23,8 +23,11 @@
         Array.prototype.push.apply(layers, parseLayerGroup(entry, title + '/'));
       }
       else {
-        entry.name = title;
-        layers.push(entry);
+        var ext = entry.url.split('.').pop();
+        if (ext != 'geojson' && ext != 'kml') {
+          entry.name = title;
+          layers.push(entry);
+        }
       }
     });
     return layers;
