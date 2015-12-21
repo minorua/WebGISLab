@@ -551,6 +551,7 @@ var olapp = {
             }
           }
           else {
+            // TODO: show message if olapp.source[lyr.source] doesn't exist.
             layer = olapp.source[lyr.source].createLayer(lyr.layer, layerOptions);
           }
 
