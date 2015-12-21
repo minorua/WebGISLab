@@ -63,6 +63,7 @@ olapp.exportFiles = [
 'plugins/source/gist.js',
 'plugins/source/gsielevtile.js',
 'plugins/source/gsitiles.js',
+'plugins/source/gsitilesfull.js',
 'plugins/source/gsj.js',
 'plugins/source/naturalearth.js',
 'plugins/tool/measure-vincenty.js',
