@@ -1652,7 +1652,7 @@ olapp.Project.prototype = {
 
   toString: function () {
     function quote_escape(text, singleQuote) {
-      text = text.replace(/\n/g, '\\n');
+      text = text.replace(/\\/g, '\\\\').replace(/\n/g, '\\n');
       if (singleQuote) return "'" + text.replace(/\'/g, "\\'") + "'";
       return '"' + text.replace(/\"/g, '\\"') + '"';
     }
