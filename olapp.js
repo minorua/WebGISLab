@@ -1201,7 +1201,8 @@ var olapp = {
         var layer = source.get(src).createLayer(id, layerOptions);
         if (layer) {
           core.project.addLayer(layer);
-          gui.status.showMessage('Layer "' + layer.title + '" has been added to the map.', 3000);
+          debugger;
+          gui.status.showMessage('Layer "' + layer.get('title') + '" has been added to the map.', 3000);
         }
         else gui.status.showMessage('Failed to create layer.', 3000);
       };
