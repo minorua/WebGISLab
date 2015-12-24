@@ -146,11 +146,11 @@ var olapp = {
       return d.promise();
     }
     else {
-      var loads = [];
+      var ds = [];
       for (var i = 0; i < urls.length; i++) {
-        loads.push(core.loadScript(urls[i]));
+        ds.push(core.loadScript(urls[i]));
       }
-      return $.when.apply(this, loads);
+      return $.when.apply(this, ds);
     }
   };
 
@@ -466,9 +466,14 @@ var olapp = {
       if (prj instanceof olapp.Project) {
         var msg = gui.status.showMessage('Loading Project...');
 
+        d = d || $.Deferred();
         // Load and initialize plugins, and then set the project.
-        if (!d) d = $.Deferred();
-        plugin.load(prj.plugins).then(function () {
+        var ds = [];
+        prj.plugins.forEach(function (pluginPath) {
+          ds.push(plugin.load(pluginPath));
+        });
+
+        $.when.apply(this, ds).then(function () {
           core.project.set(prj);
           core.project._loadDeferred = null;
 
@@ -718,8 +723,8 @@ var olapp = {
     });
 
     $('#clone_app').click(function () {
-      plugin.load(['export/clone.js']).then(function () {
-        plugin.plugins['export/clone.js'].run();
+      plugin.load('export/clone.js').then(function (module) {
+        module.run();
       });
     });
 
@@ -805,8 +810,8 @@ var olapp = {
           }
           else {
             var pluginPath = 'file/' + moduleName + '.js';
-            plugin.load(pluginPath).then(function () {
-              plugin.plugins[pluginPath].loadFiles(files);
+            plugin.load(pluginPath).then(function (module) {
+              module.loadFiles(files);
             });
           }
         }
@@ -1399,32 +1404,31 @@ var olapp = {
   gui.dialog.threejs = {
 
     init: function () {
-      var threejs = function () {
-        return plugin.plugins['3dviewer/threejs.js'];
-      };
+      var threejs;
       $('#dlg_threejs').on('show.bs.modal', function () {
         $('#three_rotate').removeClass('active');
-        plugin.load(['3dviewer/threejs.js']).then(function () {
-          threejs().run();
+        plugin.load('3dviewer/threejs.js').then(function (module) {
+          threejs = module;
+          threejs.run();
         });
       });
       $('#dlg_threejs').on('hide.bs.modal', function () {
-        threejs().stop();
+        threejs.stop();
       });
 
       // z exaggeration
       $('#three_zexag').find('li').click(function () {
         $('#three_zexag').find('button span').first().html($(this).text());
-        threejs().setExaggeration(parseFloat($(this).text().replace('x', '')));
+        threejs.setExaggeration(parseFloat($(this).text().replace('x', '')));
       });
 
       // automatic rotation
       $('#three_rotate').click(function () {
-        threejs().rotate(!threejs().isRotating());
+        threejs.rotate(!threejs.isRotating());
       });
       window.addEventListener('keyup', function (e) {
         if (e.keyCode == 82 && $('#dlg_threejs').is(':visible')) {    // R
-          if (threejs().isRotating()) $('#three_rotate').addClass('active');
+          if (threejs.isRotating()) $('#three_rotate').addClass('active');
           else $('#three_rotate').removeClass('active');
         }
       });
@@ -1439,7 +1443,7 @@ var olapp = {
               label: 'Save',
               className: "btn-primary",
               callback: function () {
-                threejs().save();
+                threejs.save();
               }
             },
             cancel: {
@@ -1527,66 +1531,42 @@ var olapp = {
 
 
   // olapp.plugin
+  var loadingPlugins = {};
   plugin.plugins = {};
-  plugin._loadingSets = [];
 
-  // TODO: load *a* plugin (for simplification)
-  // Load a plugin/plugins
-  //   pluginPaths: a plugin path string or an array of plugin paths.
-  // Returns a deferred object which is resolved when all the plugins have been loaded and initialized.
-  plugin.load = function (pluginPaths) {
-    if (typeof pluginPaths == 'string') pluginPaths = [pluginPaths];
+  // Load a plugin
+  //   pluginPath: a plugin path string.
+  // Returns a deferred object which is resolved the plugin has been loaded and initialized.
+  plugin.load = function (pluginPath) {
+    if (pluginPath in plugin.plugins) return $.Deferred().resolve(plugin.plugins[pluginPath]).promise();  // already loaded
+    if (pluginPath in loadingPlugins) return loadingPlugins[pluginPath].promise();  // now loading
 
-    // add scripts
-    var head = document.getElementsByTagName('head')[0];
-    var loadingPlugins = [];
-    pluginPaths.forEach(function (pluginPath) {
-      if (pluginPath in plugin.plugins) return;   // already loaded
-
-      var s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = 'plugins/' + pluginPath;
-      head.appendChild(s);
-      loadingPlugins.push(pluginPath);
-    });
+    // Load the plugin
+    core.loadScript('plugins/' + pluginPath);
 
     var d = $.Deferred();
-    if (loadingPlugins.length == 0) return d.resolve().promise();
-
-    plugin._loadingSets.push({
-      plugins: loadingPlugins,
-      deferred: d
-    });
+    loadingPlugins[pluginPath] = d;
     return d.promise();
   };
 
   // Register a plugin
-  // register() is called from end of a plugin code, whereas load() is called from project/gui.
+  // Note: register() is called from end of a plugin code, whereas load() is called from project/gui.
   plugin.register = function (pluginPath, module) {
-    // Register and initialize the plugin
+    // Put the plugin module into plugin holder
     plugin.plugins[pluginPath] = module;
 
-    var resolve = function () {
-      // Resolve deferred object if all the plugins in the set have been loaded and initialized.
-      plugin._loadingSets.forEach(function (pluginSet) {
-        var index = pluginSet.plugins.indexOf(pluginPath);
-        if (index !== -1) {
-          pluginSet.plugins.splice(index, 1);
-          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();    // TODO: return module
-        }
-      });
+    // Initialize plugin
+    var d = (module.init) ? module.init() : undefined;
 
-      // Remove completely loaded plugin-set from the array.
-      for (var i = plugin._loadingSets.length - 1; i >= 0; i--) {
-        if (plugin._loadingSets[i].plugins.length == 0) plugin._loadingSets.splice(i, 1);
-      }
-    };
-
-    var d;
-    if (module.init !== undefined) d = module.init();
-
-    if (typeof d == 'object') d.then(resolve);
-    else resolve();
+    // Resolve deferred object when the plugin has been initialized
+    if (pluginPath in loadingPlugins) {
+      var resolve = function () {
+        loadingPlugins[pluginPath].resolve(module);
+        delete loadingPlugins[pluginPath];
+      };
+      if (typeof d == 'object') d.then(resolve);
+      else resolve();
+    }
   };
 
 })();
