@@ -15,7 +15,7 @@ olapp - An OpenLayers application
 .plugin           - Plugin module.
 .project          - An object of olapp.Project. Current project.
 .source           - Data source management module. A souce class is a subclass based on olapp.source.Base.
-.tools            - An object. Key is a function/class/group name. Value is a function/class/group. A group is a sub-object.
+.tools            - Holder of tools.
 
 .init()             - Initialize application.
 .loadProject()      - Load a project.
@@ -781,13 +781,38 @@ var olapp = {
 
       var files = e.originalEvent.dataTransfer.files;
       if (files.length == 1 && files[0].name.split('.').pop().toLowerCase() == 'js') {
+        // Load project file
         core.project.load(files[0]);
       }
       else {
+        // Group files into file types
+        var filesToLoad = {photo: [], vector: []};
+        var ext2mod = {
+          'jpeg': 'photo',
+          'jpg': 'photo'
+        };
         for (var i = 0; i < files.length; i++) {
           var ext = files[i].name.split('.').pop().toLowerCase();
-          if (ext != 'jpeg' && ext != 'jpg') {    // TODO: olapp: file drop event listeners
-            core.loadLayerFromFile(files[i]);
+          filesToLoad[ext2mod[ext] || 'vector'].push(files[i]);
+        }
+
+        // Load files
+        function loadFiles(files, moduleName) {
+          if (moduleName == 'vector') {
+            files.forEach(function (file) {
+              core.loadLayerFromFile(file);
+            });
+          }
+          else {
+            var pluginPath = 'file/' + moduleName + '.js';
+            plugin.load(pluginPath).then(function () {
+              plugin.plugins[pluginPath].loadFiles(files);
+            });
+          }
+        }
+        for (var moduleName in filesToLoad) {
+          if (filesToLoad[moduleName].length) {
+            loadFiles(filesToLoad[moduleName], moduleName);
           }
         }
       }
@@ -1505,6 +1530,7 @@ var olapp = {
   plugin.plugins = {};
   plugin._loadingSets = [];
 
+  // TODO: load *a* plugin (for simplification)
   // Load a plugin/plugins
   //   pluginPaths: a plugin path string or an array of plugin paths.
   // Returns a deferred object which is resolved when all the plugins have been loaded and initialized.
@@ -1546,7 +1572,7 @@ var olapp = {
         var index = pluginSet.plugins.indexOf(pluginPath);
         if (index !== -1) {
           pluginSet.plugins.splice(index, 1);
-          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();
+          if (pluginSet.plugins.length == 0) pluginSet.deferred.resolve();    // TODO: return module
         }
       });
 
@@ -2069,7 +2095,7 @@ olapp.createDefaultProject = function () {
       maxZoom: 18,
       zoom: 5
     }),
-    plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gist.js', 'import/photo.js'],
+    plugins: ['source/naturalearth.js', 'source/gsitiles.js', 'source/gist.js'],
     layers: [   // from bottom to top
       {source: 'GSITiles', layer: 'std'},                                // 標準地図
       {source: 'GSITiles', layer: 'relief', options: {visible: false}},  // 色別標高図
