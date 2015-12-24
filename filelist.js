@@ -59,7 +59,7 @@ olapp.exportFiles = [
 'plugins/3dviewer/threejs.js',
 'plugins/cache/tilecache.js',
 'plugins/export/clone.js',
-'plugins/import/photo.js',
+'plugins/file/photo.js',
 'plugins/source/gist.js',
 'plugins/source/gsielevtile.js',
 'plugins/source/gsitiles.js',
