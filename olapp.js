@@ -722,8 +722,8 @@ var olapp = {
       core.saveMapImage('mapimage.png');
     });
 
-    $('#clone_app').click(function () {
-      plugin.load('export/clone.js').then(function (module) {
+    $('#publish').click(function () {
+      plugin.load('export/publish.js').then(function (module) {
         module.run();
       });
     });

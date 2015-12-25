@@ -1,15 +1,15 @@
-// clone.js
+// publish.js
 // (C) 2015 Minoru Akagi | MIT License
 // https://github.com/minorua/WebGISLab
 // Dependencies: jQuery
 
 (function () {
   var plugin = {
-    name: 'Clone Application',
-    path: 'export/clone.js',
+    name: 'Publish Project',
+    path: 'export/publish.js',
     type: 'export',
     experimental: true,
-    description: 'Clone the application and set the current project as default project.'
+    description: 'Publish the current project.'
   };
 
   plugin.init = function () {
@@ -29,7 +29,7 @@
 '<label><input type="radio" name="pagetype" value="simple" checked>simple.html</label>';
 
     bootbox.dialog({
-      title: 'Clone the Application',
+      title: 'Publish the Project',
       message: html,
       buttons: {
         ok: {
