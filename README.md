@@ -230,7 +230,7 @@ olapp.loadProject(new olapp.Project({
         - ストレージに保存されたプロジェクト一覧
     - URLパラメータ
         - index.html?project=project_name
-    - 安全のためにfilesフォルダ以下のプロジェクトファイルに限定
+        - 安全のためにfilesフォルダ以下のプロジェクトファイルに限定
     - HTMLファイルのScriptタグ
     - プロジェクトファイルのドラッグ&ドロップ
 
@@ -259,7 +259,7 @@ olapp.loadProject(new olapp.Project({
 
   ...
 
-  olapp.plugin.addPlugin(myplugin);
+  olapp.plugin.register('path_to_plugin', myplugin);
 })();
 ```
 
