@@ -58,7 +58,7 @@ olapp.exportFiles = [
 'lib/tinycolor/tinycolor-min.js',
 'plugins/3dviewer/threejs.js',
 'plugins/cache/tilecache.js',
-'plugins/export/clone.js',
+'plugins/export/publish.js',
 'plugins/file/photo.js',
 'plugins/source/gist.js',
 'plugins/source/gsielevtile.js',
