@@ -377,22 +377,22 @@ var olapp = {
   // olapp.core.crs - CRS management module
   core.crs = {
 
-    definedCRSs: {},
+    definedNames: {},
 
     define: function (name, proj4Str) {
       proj4.defs(name, proj4Str);
-      core.crs.definedCRSs[name] = proj4Str;
+      core.crs.definedNames[name] = proj4Str;
     },
 
     isDefined: function (name) {
-      return (name in core.crs.definedCRSs || name == 'EPSG:3857' || name == 'EPSG:4326');
+      return (name in core.crs.definedNames || name == 'EPSG:3857' || name == 'EPSG:4326');
     },
 
     getDefinition: function (name) {
       var d = $.Deferred();
-      if (name in core.crs.definedCRSs) {
+      if (name in core.crs.definedNames) {
         var obj = {
-          proj: core.crs.definedCRSs[name]
+          proj: core.crs.definedNames[name]
         };
         return d.resolve(obj).promise();
       }
@@ -1040,7 +1040,7 @@ var olapp = {
       else {
         var prj = body.find('input[name=proj4]').val();
         if (prj) {
-          if (project.view.getProjection().getCode() !== 'custom' || prj !== core.crs.definedCRSs['custom']) {
+          if (project.view.getProjection().getCode() !== 'custom' || prj !== core.crs.definedNames['custom']) {
             core.crs.define('custom', prj);
             core.project.setCRS('custom');
           }
@@ -1138,7 +1138,7 @@ var olapp = {
       }
       else {
         body.find('input[name=crs][value=proj4]').prop('checked', true);
-        body.find('input[name=proj4]').val(core.crs.definedCRSs[crs]);
+        body.find('input[name=proj4]').val(core.crs.definedNames[crs]);
       }
       dlg.modal('show');
     }
@@ -1730,7 +1730,7 @@ olapp.Project.prototype = {
 
     if (projection != 'EPSG:3857') {
       content.unshift('olapp.defineProjection(' + quote_escape(projection) + ', ' +
-                                                  quote_escape(olapp.core.crs.definedCRSs[projection]) + ');\n');
+                                                  quote_escape(olapp.core.crs.definedNames[projection]) + ');\n');
     }
     return content.join('\n');
   }
