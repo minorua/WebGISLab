@@ -17,22 +17,22 @@
   var layers = [
     {
       id: 'cl',
-      name: 'Coastline',
+      title: 'Coastline',
       filename: 'ne_110m_coastline.js'
     },
     {
       id: 'la',
-      name: 'Land',
+      title: 'Land',
       filename: 'ne_110m_land.js'
     },
     {
       id: 'oc',
-      name: 'Ocean',
+      title: 'Ocean',
       filename: 'ne_110m_ocean.js'
     },
     {
       id: 'g10',
-      name: 'Graticules 10',
+      title: 'Graticules 10',
       filename: 'ne_110m_graticules_10.js'
     }
   ];
@@ -45,7 +45,7 @@
 
     var options = {
       style: olapp.core.createStyleFunction(),
-      title: lyr.name
+      title: lyr.title
     };
     var layer = new ol.layer.Vector($.extend(options, layerOptions));
     var url = 'files/ne/' + lyr.filename;

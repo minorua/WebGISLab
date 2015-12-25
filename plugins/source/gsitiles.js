@@ -15,7 +15,7 @@
   var layers = [
     {
       id: 'std',
-      name: '標準地図',
+      title: '標準地図',
       format: 'png',
       zmin: 2,
       zmax: 18,
@@ -23,35 +23,35 @@
     },
     {
       id: 'pale',
-      name: '淡色地図',
+      title: '淡色地図',
       format: 'png',
       zmin: 12,
       zmax: 18
     },
     {
       id: 'blank',
-      name: '白地図',
+      title: '白地図',
       format: 'png',
       zmin: 5,
       zmax: 14
     },
     {
       id: 'english',
-      name: 'English',
+      title: 'English',
       format: 'png',
       zmin: 5,
       zmax: 11
     },
     {
       id: 'relief',
-      name: '色別標高図',
+      title: '色別標高図',
       format: 'png',
       zmin: 5,
       zmax: 15
     },
     {
       id: 'ort',
-      name: '写真',
+      title: '写真',
       format: 'jpg',
       zmin: 2,
       zmax: 18,
@@ -59,49 +59,49 @@
     },
     {
       id: 'gazo1',
-      name: '国土画像情報（第一期：1974～1978年撮影）',
+      title: '国土画像情報（第一期：1974～1978年撮影）',
       format: 'jpg',
       zmin: 10,
       zmax: 17
     },
     {
       id: 'gazo2',
-      name: '国土画像情報（第二期：1979～1983年撮影）',
+      title: '国土画像情報（第二期：1979～1983年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
     {
       id: 'gazo3',
-      name: '国土画像情報（第三期：1984～1986年撮影）',
+      title: '国土画像情報（第三期：1984～1986年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
     {
       id: 'gazo4',
-      name: '国土画像情報（第四期：1988～1990年撮影）',
+      title: '国土画像情報（第四期：1988～1990年撮影）',
       format: 'jpg',
       zmin: 15,
       zmax: 17
     },
     {
       id: 'ort_old10',
-      name: '空中写真（1961～1964年）',
+      title: '空中写真（1961～1964年）',
       format: 'png',
       zmin: 15,
       zmax: 17
     },
     {
       id: 'ort_USA10',
-      name: '空中写真（1945～1950年）',
+      title: '空中写真（1945～1950年）',
       format: 'png',
       zmin: 15,
       zmax: 17
     },
     {
       id: 'airphoto',
-      name: '簡易空中写真（2004年～）',
+      title: '簡易空中写真（2004年～）',
       format: 'png',
       zmin: 5,
       zmax: 18
@@ -153,7 +153,7 @@
       // Create two layers and a layer group that binds the layers
       options = {
         layers: [new ol.layer.Tile(options1), new ol.layer.Tile(options2)],
-        title: lyr.name
+        title: lyr.title
       };
       return new ol.layer.Group($.extend(options, layerOptions));
     }
@@ -163,7 +163,7 @@
         extent: extentJp,
         maxResolution: olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1),
         source: source,
-        title: lyr.name
+        title: lyr.title
       };
       return new ol.layer.Tile($.extend(options, layerOptions));
     }

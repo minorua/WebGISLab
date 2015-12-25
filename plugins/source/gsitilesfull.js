@@ -25,7 +25,7 @@
       else {
         var ext = entry.url.split('.').pop();
         if (ext != 'geojson' && ext != 'kml') {
-          entry.name = title;
+          entry.title = title;
           layers.push(entry);
         }
       }

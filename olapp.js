@@ -1247,7 +1247,7 @@ var olapp = {
             var html =
 '<li class="list-group-item">' +
 '  <button type="button" class="btn btn-primary">Add</button>' +
-'  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.name +
+'  <span style="display: none;">' + sourceName + '/' + item.id + '</span>' + item.title +
 '</li>';
             $(html).appendTo(list).children('button').click(function () {
               var srcname_id = $(this).parent().children('span').text().split('/');

@@ -14,31 +14,31 @@ olapp.core.loadScript('js/source/gsielevtile.js').then(function () {
   var layers = [
     {
       id: 'hillshade',
-      name: '陰影図 (標高タイル)',
+      title: '陰影図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
     {
       id: 'relief',
-      name: '段彩図 (標高タイル)',
+      title: '段彩図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
     {
       id: 'relief_low',
-      name: '低標高向けカラー標高図 (標高タイル)',
+      title: '低標高向けカラー標高図 (標高タイル)',
       zmin: 0,
       zmax: 14
     },
     {
       id: 'slope',
-      name: '傾斜区分図 (標高タイル. z>=10)',
+      title: '傾斜区分図 (標高タイル. z>=10)',
       zmin: 10,
       zmax: 14
     },
     {
       id: 'slope_steep',
-      name: '急傾斜地図 (標高タイル. z>=10)',
+      title: '急傾斜地図 (標高タイル. z>=10)',
       zmin: 10,
       zmax: 14
     }
@@ -97,7 +97,7 @@ olapp.core.loadScript('js/source/gsielevtile.js').then(function () {
     options = {
       extent: extentJp,
       source: new ol.source.GSIElevTile(options),
-      title: lyr.name
+      title: lyr.title
     };
     if (lyr.zmin > 2) options.maxResolution = olapp.tools.projection.resolutionFromZoomLevel(lyr.zmin - 0.1);
 

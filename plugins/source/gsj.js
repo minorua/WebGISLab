@@ -16,7 +16,7 @@
   var layers = [
     {
       id: 'g',
-      name: 'シームレス地質図 (詳細版)',
+      title: 'シームレス地質図 (詳細版)',
       matrixSet: 'g_set'
     }
   ];
@@ -28,7 +28,7 @@
     if (!lyr) return null;
 
     var options = {
-      title: lyr.name
+      title: lyr.title
     };
     var gsjlayer = new ol.layer.Tile($.extend(options, layerOptions));
 
