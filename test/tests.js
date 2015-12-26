@@ -6,7 +6,9 @@ var projectsToTest = [
   {title: 'Experimental UTM53 Project', filename: 'files/experimental_utm53.js'}
 ];
 
-projectsToTest.forEach(function (project) {
+function testNextProject() {
+  if (projectsToTest.length == 0) return;
+  var project = projectsToTest.shift();
   QUnit.test('Project loading:' + project.title, function(assert) {
     var done = assert.async();
     olapp.loadProject(project.filename).then(function () {
@@ -18,6 +20,11 @@ projectsToTest.forEach(function (project) {
       });
       assert.ok(olapp.project.toString(), 'Serializable');
       done();
+      testNextProject();
+    }, function () {
+      assert.ok(false, 'Failed to load project.');
     });
   });
-});
+}
+
+testNextProject();
