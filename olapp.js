@@ -802,7 +802,7 @@ var olapp = {
         }
 
         // Load files
-        function loadFiles(files, moduleName) {
+        var loadFiles = function (files, moduleName) {
           if (moduleName == 'vector') {
             files.forEach(function (file) {
               core.loadLayerFromFile(file);
@@ -814,7 +814,7 @@ var olapp = {
               module.loadFiles(files);
             });
           }
-        }
+        };
         for (var moduleName in filesToLoad) {
           if (filesToLoad[moduleName].length) {
             loadFiles(filesToLoad[moduleName], moduleName);
